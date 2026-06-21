@@ -1,0 +1,7 @@
+dataset/
+runs/
+Fish_Data/
+venv/
+*.pt
+__pycache__/
+*.cache
