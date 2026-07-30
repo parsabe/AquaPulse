@@ -1,0 +1,20 @@
+numpy
+tqdm
+sk-video
+torch
+moviepy
+torchvision
+# Core Computer Vision & YOLO Neural Tracking
+ultralytics
+pillow
+
+# PyTorch Deep Learning Engine (CUDA / CPU)
+
+langchain-ollama
+requests
+huggingface-hub
+
+# Multilingual Text-To-Speech (TTS) Voice Engine
+pyttsx3>=2.90
+pywin32>=306
+

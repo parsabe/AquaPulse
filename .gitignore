@@ -1,0 +1,16 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Massive Data and Processing Folders
+0 - Preprocessing/
+3 - AI process/
+Datasets/
+
+# Cluster / Environment configs
+DGX Clusters/
+
+# Archives
+*.zip
