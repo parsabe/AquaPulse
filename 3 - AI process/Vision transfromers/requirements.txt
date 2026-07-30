@@ -1,0 +1,23 @@
+# Vision Transformers & Cyberpunk Marine Tracking Suite - Requirements
+
+# Core Computer Vision & YOLO Neural Tracking
+ultralytics>=8.3.0
+opencv-python>=4.10.0
+numpy>=1.26.0
+pillow>=10.0.0
+
+# PyTorch Deep Learning Engine (CUDA / CPU)
+torch>=2.4.0
+torchvision>=0.19.0
+
+# LLM Persona & REST API Integrations
+langchain-ollama>=0.2.0
+requests>=2.31.0
+huggingface-hub>=0.24.0
+
+# Multilingual Text-To-Speech (TTS) Voice Engine
+pyttsx3>=2.90
+pywin32>=306
+
+# Optional: AMD GPU DirectML Support on Windows
+# torch-directml
