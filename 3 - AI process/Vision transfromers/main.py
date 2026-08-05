@@ -928,6 +928,20 @@ def on_mouse_event(event, x, y, flags, param):
             if not clicked_on_fish:
                 locked_target = None
 
+def get_screen_resolution():
+    """Detects active display resolution across operating systems and monitors."""
+    try:
+        import ctypes
+        user32 = ctypes.windll.user32
+        user32.SetProcessDPIAware()
+        sw = user32.GetSystemMetrics(0)
+        sh = user32.GetSystemMetrics(1)
+        if sw > 0 and sh > 0:
+            return sw, sh
+    except Exception:
+        pass
+    return 1920, 1080
+
 # --- 5. VIDEO PROCESSING SETUP WITH DYNAMIC SCREEN SCALING ---
 cap = cv2.VideoCapture(video_path)
 if not cap.isOpened():
@@ -940,12 +954,14 @@ fps = int(cap.get(cv2.CAP_PROP_FPS))
 if fps <= 0:
     fps = 30
 
-max_target_h = 900
+screen_w, screen_h = get_screen_resolution()
+max_target_h = int(screen_h * 0.85)
+
 if raw_h > max_target_h:
     scale_factor = float(max_target_h) / float(raw_h)
     video_w = int(raw_w * scale_factor)
     video_h = max_target_h
-    print(f"📐 Dynamic UI Scale Applied: {raw_w}x{raw_h} -> {video_w}x{video_h} (scale={scale_factor:.3f})")
+    print(f"📐 Dynamic UI Scale Applied for Monitor ({screen_w}x{screen_h}): {raw_w}x{raw_h} -> {video_w}x{video_h} (scale={scale_factor:.3f})")
 else:
     scale_factor = 1.0
     video_w = raw_w
@@ -959,7 +975,16 @@ fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, fps, (canvas_w, canvas_h))
 
 window_name = "Spreewald Cyberpunk Vision Telemetry"
-cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
+cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+
+# Determine fit dimensions relative to active monitor work area
+init_win_w = min(canvas_w, int(screen_w * 0.90))
+init_win_h = min(canvas_h, int(screen_h * 0.85))
+
+# Initialize canvas and window before setting mouse callback
+dummy_canvas = np.zeros((canvas_h, canvas_w, 3), dtype=np.uint8)
+cv2.imshow(window_name, dummy_canvas)
+cv2.resizeWindow(window_name, init_win_w, init_win_h)
 
 buffer_duration_sec = 2.0
 buffer_frames = int(buffer_duration_sec * fps)
@@ -979,7 +1004,8 @@ master_script = ""
 track_history = defaultdict(lambda: deque(maxlen=30))
 heatmap_acc = np.zeros((video_h, video_w), dtype=np.float32)
 
-cv2.setMouseCallback(window_name, on_mouse_event, param={'buttons': [], 'hud_notifs': hud_notifs, 'video_w': video_w})
+mouse_cb_param = {'buttons': [], 'hud_notifs': hud_notifs, 'video_w': video_w}
+cv2.setMouseCallback(window_name, on_mouse_event, param=mouse_cb_param)
 
 hud_notifs.add(f"⚡ DYNAMIC CASCADING Y-ENGINE ONLINE // SCALE: {video_w}x{video_h}", (0, 255, 255), 4.0)
 hud_notifs.add("🌿 GBIF OCCURRENCE API + PERSISTENT MEMORY CACHE ACTIVE", (255, 255, 0), 4.0)
@@ -1295,7 +1321,7 @@ while cap.isOpened():
         CyberButton(sb_x, btn_start_y + 160, 390, 28, "🎸 [J] JOHNNY RELIC", "trigger_johnny", (255, 0, 255))
     ]
 
-    cv2.setMouseCallback(window_name, on_mouse_event, param={'buttons': buttons, 'hud_notifs': hud_notifs, 'video_w': video_w})
+    mouse_cb_param['buttons'] = buttons
 
     # RENDER INTERACTIVE DOCK BUTTONS INSIDE SIDEBAR
     for btn in buttons:
