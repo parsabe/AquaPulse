@@ -13,8 +13,24 @@ from langchain_ollama import OllamaLLM
 
 # --- 1. CROSS-PLATFORM HARDWARE ACCELERATION ENGINE ---
 def detect_device_hardware():
-    """Forces execution on CPU at all times."""
-    return "cpu", "CPU Engine (CPU-Only Mode)"
+    """Detects available hardware acceleration across NVIDIA CUDA, Apple MPS, AMD GPU, or CPU."""
+    if torch.cuda.is_available():
+        device_name = torch.cuda.get_device_name(0)
+        return "cuda", f"CUDA ({device_name})"
+    
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return "mps", "Apple Metal GPU (MPS)"
+    
+    try:
+        import torch_directml
+        if torch_directml.is_available():
+            dml_device = torch_directml.device()
+            dml_name = torch_directml.device_name(0) if hasattr(torch_directml, "device_name") else "AMD DirectML GPU"
+            return dml_device, f"AMD DirectML ({dml_name})"
+    except ImportError:
+        pass
+    
+    return "cpu", "CPU Engine (Fallback)"
 
 def load_model_on_device(model_path, device_target):
     """Safely loads YOLO neural model onto detected hardware with fallback safety."""
@@ -41,8 +57,8 @@ def get_hardware_status_summary(device_target, device_desc):
 # --- 2. LOCAL AI & PATHS SETUP ---
 script_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(script_dir, "fish_model.pt")
-video_path = os.path.join(script_dir, "main2.mp4")
-output_path = os.path.join(script_dir, "tracked_output.mp4")
+video_path = os.path.join(script_dir, "dehazed_main2.mp4")
+output_path = os.path.join(script_dir, "tracked_output2.mp4")
 
 # Hardware detection and neural model loading
 target_dev, hw_desc = detect_device_hardware()
@@ -89,7 +105,7 @@ show_water_gif = False
 
 johnny_audio_files = []
 for fname in os.listdir(script_dir):
-    if (fname.lower().startswith("johnny") or "johndhny_quote" in fname.lower()) and fname.lower().endswith((".wav", ".mp3")):
+    if (fname.lower().startswith("johnny") or "johnny_quote" in fname.lower()) and fname.lower().endswith((".wav", ".mp3")):
         johnny_audio_files.append(os.path.join(script_dir, fname))
 
 if len(johnny_audio_files) > 0:
@@ -126,7 +142,7 @@ def fetch_gbif_image(species_name):
                                         decoded = cv2.cvtColor(decoded, cv2.COLOR_BGRA2BGR)
                                     elif decoded.ndim == 2:
                                         decoded = cv2.cvtColor(decoded, cv2.COLOR_GRAY2BGR)
-                                    resized = cv2.resize(decoded, (350, 180))
+                                    resized = cv2.resize(decoded, (380, 220))
                                     return resized
                         except Exception:
                             continue
@@ -152,7 +168,7 @@ def fetch_gbif_image(species_name):
                                 decoded = cv2.cvtColor(decoded, cv2.COLOR_BGRA2BGR)
                             elif decoded.ndim == 2:
                                 decoded = cv2.cvtColor(decoded, cv2.COLOR_GRAY2BGR)
-                            resized = cv2.resize(decoded, (350, 180))
+                            resized = cv2.resize(decoded, (380, 220))
                             return resized
     except Exception:
         pass
@@ -898,18 +914,18 @@ fps = int(cap.get(cv2.CAP_PROP_FPS))
 if fps <= 0:
     fps = 30
 
-max_target_h = 560
+max_target_h = 900
 if raw_h > max_target_h:
     scale_factor = float(max_target_h) / float(raw_h)
     video_w = int(raw_w * scale_factor)
     video_h = max_target_h
-    print(f"📐 Dynamic UI Scale Applied for 14-inch Display: {raw_w}x{raw_h} -> {video_w}x{video_h} (scale={scale_factor:.3f})")
+    print(f"📐 Dynamic UI Scale Applied: {raw_w}x{raw_h} -> {video_w}x{video_h} (scale={scale_factor:.3f})")
 else:
     scale_factor = 1.0
     video_w = raw_w
     video_h = raw_h
 
-sidebar_w = 380
+sidebar_w = 420
 canvas_w = video_w + sidebar_w
 canvas_h = video_h
 
@@ -917,8 +933,7 @@ fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, fps, (canvas_w, canvas_h))
 
 window_name = "Spreewald Cyberpunk Vision Telemetry"
-cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-cv2.resizeWindow(window_name, canvas_w, canvas_h)
+cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
 
 buffer_duration_sec = 2.0
 buffer_frames = int(buffer_duration_sec * fps)
@@ -938,8 +953,7 @@ master_script = ""
 track_history = defaultdict(lambda: deque(maxlen=30))
 heatmap_acc = np.zeros((video_h, video_w), dtype=np.float32)
 
-mouse_param = {'buttons': [], 'hud_notifs': hud_notifs, 'video_w': video_w}
-cv2.setMouseCallback(window_name, on_mouse_event, param=mouse_param)
+cv2.setMouseCallback(window_name, on_mouse_event, param={'buttons': [], 'hud_notifs': hud_notifs, 'video_w': video_w})
 
 hud_notifs.add(f"⚡ DYNAMIC CASCADING Y-ENGINE ONLINE // SCALE: {video_w}x{video_h}", (0, 255, 255), 4.0)
 hud_notifs.add("🌿 GBIF OCCURRENCE API + PERSISTENT MEMORY CACHE ACTIVE", (255, 255, 0), 4.0)
@@ -1203,84 +1217,83 @@ while cap.isOpened():
         cv2.putText(sidebar, f"🤿 DR. PAULY HUD [{language_mode}]", (72, current_y + 15),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.36, (0, 255, 255), 1)
                     
-        next_y = draw_wrapped_text(sidebar, pauly_active_dialogue, start_x=15, start_y=current_y + 22, max_w=350, max_lines=3, font_scale=0.34, bg_alpha=pauly_ui_alpha)
+        next_y = draw_wrapped_text(sidebar, pauly_active_dialogue, start_x=20, start_y=current_y + 22, max_w=380, max_lines=3, font_scale=0.34, bg_alpha=pauly_ui_alpha)
         current_y = max(current_y + 80, next_y)
 
         # RENDER PERSISTENT GBIF ECOLOGICAL SPECIES IMAGE SNAPSHOT
         img_state = GLOBAL_SPECIES_IMAGES.get(target_sp_name)
         if isinstance(img_state, np.ndarray):
-            img_h, img_w = img_state.shape[:2]
-            img_x = 15
+            img_h, img_w = img_state.shape[:2] # 220, 380
+            img_x = 20
             sidebar[current_y : current_y + img_h, img_x : img_x + img_w] = img_state
             cv2.rectangle(sidebar, (img_x, current_y), (img_x + img_w, current_y + img_h), (0, 255, 255), 1)
             cv2.putText(sidebar, "GBIF ECOLOGICAL SPECIES SNAPSHOT", (img_x + 10, current_y - 6),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.34, (0, 255, 255), 1)
             current_y += img_h + 15
         elif img_state == "FAILED":
-            cv2.rectangle(sidebar, (15, current_y), (365, current_y + 100), (20, 28, 42), -1)
-            cv2.rectangle(sidebar, (15, current_y), (365, current_y + 100), (0, 0, 255), 1)
-            cv2.putText(sidebar, "[IMAGE NOT FOUND IN ECOLOGICAL DATABANKS]", (20, current_y + 55),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.32, (0, 0, 255), 1)
-            current_y += 115
+            cv2.rectangle(sidebar, (20, current_y), (380 + 20, current_y + 120), (20, 28, 42), -1)
+            cv2.rectangle(sidebar, (20, current_y), (380 + 20, current_y + 120), (0, 0, 255), 1)
+            cv2.putText(sidebar, "[IMAGE NOT FOUND IN ECOLOGICAL DATABANKS]", (25, current_y + 65),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.34, (0, 0, 255), 1)
+            current_y += 135
         else: # None -> Asynchronous Download in progress
-            cv2.rectangle(sidebar, (15, current_y), (365, current_y + 100), (20, 28, 42), -1)
-            cv2.rectangle(sidebar, (15, current_y), (365, current_y + 100), (0, 255, 255), 1)
-            cv2.putText(sidebar, "[DOWNLOADING SECURE ECOLOGICAL DATA...]", (22, current_y + 55),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.32, (0, 255, 255), 1)
-            current_y += 115
+            cv2.rectangle(sidebar, (20, current_y), (380 + 20, current_y + 120), (20, 28, 42), -1)
+            cv2.rectangle(sidebar, (20, current_y), (380 + 20, current_y + 120), (0, 255, 255), 1)
+            cv2.putText(sidebar, "[DOWNLOADING SECURE ECOLOGICAL DATA...]", (28, current_y + 65),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.34, (0, 255, 255), 1)
+            current_y += 135
     else:
-        current_y += 5
+        current_y += 10
 
     # DYNAMICALLY REPOSITION SIDEBAR BUTTON DOCK
     sb_x = video_w + 15
     btn_start_y = current_y
 
     buttons = [
-        CyberButton(sb_x, btn_start_y, 112, 24, "[S] FILTER", "toggle_filter", (0, 255, 255)),
-        CyberButton(sb_x + 118, btn_start_y, 112, 24, "[F] FX", "toggle_fx", (255, 255, 0)),
-        CyberButton(sb_x + 236, btn_start_y, 112, 24, "[V] VEC", "toggle_vec", (0, 255, 150)),
+        CyberButton(sb_x, btn_start_y, 125, 26, "[S] FILTER", "toggle_filter", (0, 255, 255)),
+        CyberButton(sb_x + 135, btn_start_y, 125, 26, "[F] FX", "toggle_fx", (255, 255, 0)),
+        CyberButton(sb_x + 270, btn_start_y, 120, 26, "[V] VEC", "toggle_vec", (0, 255, 150)),
         
-        CyberButton(sb_x, btn_start_y + 28, 112, 24, "[H] HEAT", "toggle_heat", (255, 0, 255)),
-        CyberButton(sb_x + 118, btn_start_y + 28, 112, 24, "[G] SONAR", "toggle_sonar", (0, 180, 255)),
-        CyberButton(sb_x + 236, btn_start_y + 28, 112, 24, "[Z] ZOOM", "toggle_pip", (255, 255, 0)),
+        CyberButton(sb_x, btn_start_y + 32, 125, 26, "[H] HEAT", "toggle_heat", (255, 0, 255)),
+        CyberButton(sb_x + 135, btn_start_y + 32, 125, 26, "[G] SONAR", "toggle_sonar", (0, 180, 255)),
+        CyberButton(sb_x + 270, btn_start_y + 32, 120, 26, "[Z] ZOOM", "toggle_pip", (255, 255, 0)),
         
-        CyberButton(sb_x, btn_start_y + 56, 112, 24, "CONF [+]", "conf_inc", (0, 255, 150)),
-        CyberButton(sb_x + 118, btn_start_y + 56, 112, 24, "CONF [-]", "conf_dec", (0, 255, 150)),
-        CyberButton(sb_x + 236, btn_start_y + 56, 112, 24, f"[L] LANG: {language_mode}", "toggle_lang", (0, 255, 255)),
+        CyberButton(sb_x, btn_start_y + 64, 125, 26, "CONF [+]", "conf_inc", (0, 255, 150)),
+        CyberButton(sb_x + 135, btn_start_y + 64, 125, 26, "CONF [-]", "conf_dec", (0, 255, 150)),
+        CyberButton(sb_x + 270, btn_start_y + 64, 120, 26, f"[L] LANG: {language_mode}", "toggle_lang", (0, 255, 255)),
         
-        CyberButton(sb_x, btn_start_y + 84, 170, 24, "[W] WATER GIF", "toggle_gif", (0, 255, 255)),
-        CyberButton(sb_x + 178, btn_start_y + 84, 170, 24, "[CTRL+T] CHAT", "toggle_chat", (255, 255, 0)),
+        CyberButton(sb_x, btn_start_y + 96, 190, 26, "[W] WATER GIF", "toggle_gif", (0, 255, 255)),
+        CyberButton(sb_x + 200, btn_start_y + 96, 190, 26, "[CTRL+T] CHAT", "toggle_chat", (255, 255, 0)),
         
-        CyberButton(sb_x, btn_start_y + 112, 348, 26, "📞 [C] CALL DR. PAULY", "call_pauly", (0, 255, 0)),
-        CyberButton(sb_x, btn_start_y + 140, 348, 26, "🎸 [J] JOHNNY RELIC", "trigger_johnny", (255, 0, 255))
+        CyberButton(sb_x, btn_start_y + 128, 390, 28, "📞 [C] CALL DR. PAULY", "call_pauly", (0, 255, 0)),
+        CyberButton(sb_x, btn_start_y + 160, 390, 28, "🎸 [J] JOHNNY RELIC", "trigger_johnny", (255, 0, 255))
     ]
 
-    mouse_param['buttons'] = buttons
-    mouse_param['video_w'] = video_w
+    cv2.setMouseCallback(window_name, on_mouse_event, param={'buttons': buttons, 'hud_notifs': hud_notifs, 'video_w': video_w})
 
     # RENDER INTERACTIVE DOCK BUTTONS INSIDE SIDEBAR
     for btn in buttons:
         btn.draw(canvas, is_hovered=btn.contains(mouse_pos[0], mouse_pos[1]))
 
     # LIVE OPENCV CHAT INPUT DISPLAY BAR [CTRL+T]
-    chat_y = canvas_h - 75
-    cv2.rectangle(sidebar, (15, chat_y), (sidebar_w - 15, chat_y + 30), (10, 18, 30), -1)
+    chat_y = canvas_h - 105
+    cv2.rectangle(sidebar, (15, chat_y), (sidebar_w - 15, chat_y + 35), (10, 18, 30), -1)
     border_chat_c = (0, 255, 255) if chat_mode_active else (80, 80, 100)
-    cv2.rectangle(sidebar, (15, chat_y), (sidebar_w - 15, chat_y + 30), border_chat_c, 1)
+    cv2.rectangle(sidebar, (15, chat_y), (sidebar_w - 15, chat_y + 35), border_chat_c, 1)
     
     cursor_str = "_" if (chat_mode_active and int(time.time()*2)%2==0) else ""
     chat_lbl = f"USER CHAT [CTRL+T]: {user_chat_buffer}{cursor_str}"
-    chat_lbl = fit_text_to_width(chat_lbl, max_pixel_width=330, font_scale=0.36)
-    cv2.putText(sidebar, chat_lbl, (22, chat_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (0, 255, 255) if chat_mode_active else (180, 180, 180), 1)
+    chat_lbl = fit_text_to_width(chat_lbl, max_pixel_width=360, font_scale=0.36)
+    cv2.putText(sidebar, chat_lbl, (25, chat_y + 22), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (0, 255, 255) if chat_mode_active else (180, 180, 180), 1)
 
     # PANEL 4: HOTKEY LEGEND
-    p4_y = canvas_h - 40
-    cv2.rectangle(sidebar, (15, p4_y), (sidebar_w - 15, canvas_h - 10), (20, 28, 42), -1)
-    cv2.rectangle(sidebar, (15, p4_y), (sidebar_w - 15, canvas_h - 10), (0, 255, 255), 1)
-    cv2.putText(sidebar, f"[L]: LANG ({language_mode}) | [C]: Pauly | [J]: Johnny", (22, p4_y + 14),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.32, (0, 255, 255), 1)
-    cv2.putText(sidebar, "[CTRL+T]: Chat | [S]: Filter | [W]: Gif | [Q]: Quit", (22, p4_y + 26),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.32, (255, 255, 255), 1)
+    p4_y = canvas_h - 65
+    cv2.rectangle(sidebar, (15, p4_y), (sidebar_w - 15, canvas_h - 15), (20, 28, 42), -1)
+    cv2.rectangle(sidebar, (15, p4_y), (sidebar_w - 15, canvas_h - 15), (0, 255, 255), 1)
+    cv2.putText(sidebar, f"[L]: LANG ({language_mode}) | [C]: Pauly | [J]: Johnny", (25, p4_y + 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.34, (0, 255, 255), 1)
+    cv2.putText(sidebar, "[CTRL+T]: Chat | [S]: Filter | [W]: Gif | [Q]: Quit", (25, p4_y + 40),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.34, (255, 255, 255), 1)
 
     # SMART EVENT SLICING LOGIC
     if has_high_conf_detection:
