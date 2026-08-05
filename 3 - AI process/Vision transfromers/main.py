@@ -1,4 +1,6 @@
 import os
+import sys
+import argparse
 import time
 import cv2
 import requests
@@ -57,7 +59,31 @@ def get_hardware_status_summary(device_target, device_desc):
 # --- 2. LOCAL AI & PATHS SETUP ---
 script_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(script_dir, "fish_model.pt")
-video_path = os.path.join(script_dir, "dehazed_main2.mp4")
+
+parser = argparse.ArgumentParser(description="AquaPulse Vision Transformer Tracking")
+parser.add_argument("video_pos", nargs="?", default=None, help="Path to input video file")
+parser.add_argument("--video", "-v", type=str, default=None, help="Path to input video file")
+args, _ = parser.parse_known_args()
+
+input_video_arg = args.video or args.video_pos
+
+if input_video_arg:
+    video_path = input_video_arg.strip('"\'')
+    if not os.path.isabs(video_path):
+        video_path = os.path.abspath(os.path.join(os.getcwd(), video_path))
+    print(f"🎬 Video source provided: {video_path}")
+else:
+    default_candidates = ["dehazed_main2.mp4", "main2.mp4", "main.mp4"]
+    video_path = None
+    for cand in default_candidates:
+        cand_path = os.path.join(script_dir, cand)
+        if os.path.exists(cand_path):
+            video_path = cand_path
+            break
+    if not video_path:
+        video_path = os.path.join(script_dir, "main2.mp4")
+    print(f"🎬 Using default video source: {video_path}")
+
 output_path = os.path.join(script_dir, "tracked_output2.mp4")
 
 # Hardware detection and neural model loading
