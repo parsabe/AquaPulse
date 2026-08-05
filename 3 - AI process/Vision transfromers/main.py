@@ -61,7 +61,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(script_dir, "fish_model.pt")
 
 parser = argparse.ArgumentParser(description="AquaPulse Vision Transformer Tracking")
-parser.add_argument("video_pos", nargs="?", default=None, help="Path to input video file")
+parser.add_argument("video_pos", nargs="?", default=None, help="Path to input video file (Drag & Drop support)")
 parser.add_argument("--video", "-v", type=str, default=None, help="Path to input video file")
 args, _ = parser.parse_known_args()
 
@@ -80,9 +80,28 @@ else:
         if os.path.exists(cand_path):
             video_path = cand_path
             break
+            
     if not video_path:
-        video_path = os.path.join(script_dir, "main2.mp4")
-    print(f"🎬 Using default video source: {video_path}")
+        # Prompt native GUI file dialog so user can pick ANY video file from computer
+        try:
+            import tkinter as tk
+            from tkinter import filedialog
+            root = tk.Tk()
+            root.withdraw()
+            root.attributes('-topmost', True)
+            selected_file = filedialog.askopenfilename(
+                title="Select Any Video File for AquaPulse Vision Tracking",
+                filetypes=[("Video Files", "*.mp4 *.avi *.mov *.mkv *.webm *.flv *.m4v"), ("All Files", "*.*")]
+            )
+            root.destroy()
+            if selected_file and os.path.exists(selected_file):
+                video_path = selected_file
+        except Exception:
+            pass
+
+    if not video_path:
+        video_path = os.path.join(script_dir, "main.mp4")
+    print(f"🎬 Active video source: {video_path}")
 
 output_path = os.path.join(script_dir, "tracked_output2.mp4")
 
@@ -1059,8 +1078,20 @@ while cap.isOpened():
 
     active_filter = selectable_filters[current_filter_idx]
 
-    # Run YOLO tracking on detected hardware device
-    results = model.track(frame, persist=True, tracker="botsort.yaml", device=active_device, conf=conf_threshold, verbose=False)
+    # Run YOLO tracking on detected hardware device with safe CPU fallback
+    try:
+        results = model.track(frame, persist=True, tracker="botsort.yaml", device=active_device, conf=conf_threshold, verbose=False)
+    except Exception as track_err:
+        if str(active_device) != "cpu":
+            print(f"⚠️ Hardware Acceleration error ({track_err}). Seamlessly switching to CPU mode.")
+            active_device = "cpu"
+            try:
+                model.to("cpu")
+            except Exception:
+                pass
+            results = model.track(frame, persist=True, tracker="botsort.yaml", device="cpu", conf=conf_threshold, verbose=False)
+        else:
+            raise track_err
 
     has_high_conf_detection = False
     best_target_crop = None
