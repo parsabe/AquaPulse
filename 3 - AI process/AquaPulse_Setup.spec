@@ -4,19 +4,13 @@ import os
 import sys
 
 block_cipher = None
-
 script_dir = os.path.abspath(r"C:\Users\parsa\Desktop\Code\3 - AI process")
-app_dist_dir = os.path.join(script_dir, "dist", "AquaPulse_App")
-
-datas = []
-if os.path.exists(app_dist_dir):
-    datas.append((app_dist_dir, "AquaPulse_App"))
 
 a = Analysis(
     [os.path.join(script_dir, 'AquaPulse_Setup.py')],
     pathex=[script_dir],
     binaries=[],
-    datas=datas,
+    datas=[],
     hiddenimports=['urllib.request', 'subprocess', 'shutil', 'os', 'sys', 'time'],
     hookspath=[],
     hooksconfig={},
