@@ -39,11 +39,15 @@ def select_video_file_dialog():
         print(f"Notice: File dialog notice ({e}).")
     return None
 
-# --- PARSE INPUT VIDEO ---
+# --- PARSE INPUT VIDEO & RUNTIME OPTIONS ---
 parser = argparse.ArgumentParser(description="AquaPulse Neural Vision & EnKF Data Assimilation")
 parser.add_argument("video_pos", nargs="?", default=None, help="Path to input video file")
 parser.add_argument("--video", "-v", type=str, default=None, help="Path to input video file")
+parser.add_argument("--headless", action="store_true", help="Run without opening OpenCV GUI window (ideal for Docker / headless servers)")
 args, _ = parser.parse_known_args()
+
+# Determine headless runtime mode
+is_headless = args.headless or os.environ.get("HEADLESS", "0") == "1" or not os.environ.get("DISPLAY")
 
 video_path = args.video or args.video_pos
 
@@ -54,8 +58,9 @@ if video_path:
     if os.path.exists(cleaned_arg):
         video_path = cleaned_arg
 
-if not video_path:
+if not video_path and not is_headless:
     video_path = select_video_file_dialog()
+
 
 if not video_path:
     for f in os.listdir(cfg.script_dir):
@@ -892,7 +897,11 @@ while cap.isOpened():
             active_tracker_cfg = "botsort.yaml"
         ui.hud_notifs.add(f"🤖 TRACKER ENGINE: {active_tracker_cfg.upper()}", (0, 149, 255), 2.5)
 
-    cv2.imshow(window_name, canvas)
+    if not is_headless:
+        try:
+            cv2.imshow(window_name, canvas)
+        except Exception:
+            is_headless = True
     out.write(canvas)
 
 cap.release()
@@ -917,7 +926,18 @@ if save_analysis_enabled and session_info is not None:
         print(f"✨ All session outputs successfully generated in: {session_info['session_dir']}")
         print("="*70 + "\n")
 
-    ui.display_analysis_export_loading_screen(window_name, canvas_w, canvas_h, session_info, _do_full_export)
+    if is_headless:
+        print("📦 Headless mode active: Exporting all session artifacts directly...")
+        _do_full_export()
+    else:
+        try:
+            ui.display_analysis_export_loading_screen(window_name, canvas_w, canvas_h, session_info, _do_full_export)
+        except Exception:
+            _do_full_export()
 
-cv2.destroyAllWindows()
+if not is_headless:
+    try:
+        cv2.destroyAllWindows()
+    except Exception:
+        pass
 sys.exit(0)
