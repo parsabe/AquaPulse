@@ -4,12 +4,33 @@ venv/
 env/
 ENV/
 
-# Massive Data and Processing Folders
-0 - Preprocessing/
+CameraSDK-20250812_192505-2.1.1-win64/
+MediaSDK/
 Datasets/
+*.mp4
+*.lrv
+*.insv
 
 # Cluster / Environment configs
 DGX Clusters/
 
+# Build artifacts & installers
+install/
+*.exe
+*.pkg
+*.pyz
+
+# Python cache & temporary files
+__pycache__/
+*.pyc
+~$*
+
 # Archives
 *.zip
+
+# Massive Folders
+models/
+build/
+dist/
+scratch/
+*.pt

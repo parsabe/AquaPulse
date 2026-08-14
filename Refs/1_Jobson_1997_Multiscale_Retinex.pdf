@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>List of IPOL demos</title>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAICAQAAEABADoAgAAFgAAACgAAAAgAAAAQAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABXChMAYhESAGMOHQAXGBwAdhslAIowRwCfPlIAoD9TAJ5BWwC9aoIAv2yEAMBziADQlakA2J2xAOK6ygAAAAAA//////////8///////////////////8zP//////////////////zMz/3///////////////zMzM/d///////////////MzMzN3f/n///////////MzMzMzd3+a//////////8zMzMzM3gpmf/P//////8zMzMzMzN0S7n83//////zMzMzMzMzREm17d/+////MzMzMzMzM0RLiN3f7v///zMzMzMzMzNECIjdvu7///8zMzMzMzMzQRiI277u////MzMzMzMzMyAYhbu+7v///zMzMzMzMzMSKFW7vu7///8zMzMzMzMxAgVVu77u////MzMzMzMxIiAFVbu+7v///zMzMzMzEiAAVVW7vu7///8zMzMzQiEAVVVVu77u////MzMzNEEQBVVVW7u+7v///zMzN0RAGFVVW7u7vu7///8zM2ZEQIhVVbu7u+7u////M/ZmQpiIVbu7u+7u7v///z/3Zkm4iFu7u77u7u//////93+7mI27u77u7u////////f/qbjdu7vu7u7//////////6r93bvu7u7///////////+f/d2+7u7v//////////////3f7u7v///////////////9/+7u///////////////////u////////////////////7//////////////////////////////////3////x////4b///4E///8AN//8ACf/+AAG/+AABP/AAADfgAAAn4AAAB+AAAAfgAAAH4AAAB+AAAAfgAAAH4AAAB+AAAAfgAAAH4AAAB+AAAAfkAAAH7AAAD/yAAD/9gAB//5AB//+wA///8g////Yf///+f////v///////w==" />
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --link-color: #3498db;
+            --hover-color: #2980b9;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --border-color: #e9ecef;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-top: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            font-size: 1.5rem;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: var(--hover-color);
+            text-decoration: underline;
+        }
+
+        .info-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid var(--link-color);
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+            border-radius: 0 6px 6px 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-box p {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .info-box.warning {
+            background-color: #fff8e1;
+            border-left-color: #ffc107;
+        }
+
+        .info-box.warning p {
+            color: #856404;
+        }
+
+        .demo-group {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .demo-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: baseline;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+        }
+
+        .demo-item:hover,
+        .demo-item.keyboard-focused {
+            background-color: #f8f9fa;
+            transform: translateX(4px);
+            box-shadow: -4px 0 0 var(--link-color);
+            outline: none;
+        }
+
+        .demo-item:focus {
+            outline: none;
+        }
+
+        .demo-item:last-child {
+            border-bottom: none;
+        }
+
+        /* The title text inside the row */
+        .demo-title {
+            color: var(--link-color);
+            font-weight: 500;
+        }
+
+        .demo-id {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            color: #6c757d;
+            font-size: 0.9em;
+            background: #f8f9fa;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .badge {
+            font-size: 0.75em;
+            padding: 0.25em 0.6em;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.private {
+            background-color: #ffe4e6;
+            color: #e11d48;
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            padding-right: 3.5rem;
+            /* Make room for the shortcut visual */
+            font-size: 1.1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 24px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+        }
+
+        .search-input:focus {
+            border-color: var(--link-color);
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.18);
+        }
+
+        .slash-shortcut {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #e9ecef;
+            color: #6c757d;
+            border-radius: 4px;
+            padding: 0.1rem 0.5rem;
+            font-size: 0.85rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            pointer-events: none;
+            border: 1px solid #dee2e6;
+        }
+
+        .search-helper {
+            margin-top: 0.6rem;
+            font-size: 0.85rem;
+            color: #6c757d;
+            opacity: 0.8;
+        }
+
+        .search-helper kbd {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 0.1rem 0.3rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.8em;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #6c757d;
+            padding: 2rem;
+            font-style: italic;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 0.4rem 0.9rem;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.4rem;
+            flex: 1;
+            min-width: 70px;
+        }
+
+        .stats-card .stats-number {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            line-height: 1;
+        }
+
+        .stats-card .stats-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #6c757d;
+        }
+
+        .stats-card.stats-total .stats-number {
+            color: var(--link-color);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>IPOL Demos</h1>
+    <div class="search-container">
+        <div class="search-input-wrapper">
+            <input type="text" id="search-input" class="search-input" autocomplete="off"
+                placeholder="Search by name, ID, or category...">
+            <kbd class="slash-shortcut">/</kbd>
+        </div>
+        <div class="search-helper">
+            Shortcuts: <kbd>/</kbd> focus search, <kbd>↑</kbd> <kbd>↓</kbd> navigate, <kbd>Enter</kbd> open,
+            <kbd>Esc</kbd> clear
+        </div>
+    </div>
+    <div id="info-container"></div>
+    <div class="stats-bar" id="stats-bar"></div>
+    <div id="demos-container"></div>
+
+    <script>
+        const demos = [{"editorsdemoid": 333330060001, "title": "Magentine", "state": "workshop"}, {"editorsdemoid": 333330050001, "title": "Anomaly detection: local pixel detector", "state": "workshop"}, {"editorsdemoid": 333330030003, "title": "Crack detection", "state": "workshop"}, {"editorsdemoid": 333330030002, "title": "Crack demo", "state": "workshop"}, {"editorsdemoid": 333330030001, "title": "Detection of f.", "state": "workshop"}, {"editorsdemoid": 333330020005, "title": "simple color balance", "state": "workshop"}, {"editorsdemoid": 333330020004, "title": "guide generator 4", "state": "workshop"}, {"editorsdemoid": 333330020003, "title": "guide generator 3", "state": "workshop"}, {"editorsdemoid": 333330020002, "title": "guide generator 2", "state": "workshop"}, {"editorsdemoid": 333330020001, "title": "guide generator", "state": "workshop"}, {"editorsdemoid": 333330010011, "title": "Methane detection (temporal)", "state": "workshop"}, {"editorsdemoid": 333330010010, "title": "ESOA -  Comparison of Motion Smoothing Strategies for Video Stabilization using Parametric Models", "state": "workshop"}, {"editorsdemoid": 333330010009, "title": "Methane detection (spatial)", "state": "workshop"}, {"editorsdemoid": 333330010006, "title": "Nimbus SIFT for Planet", "state": "workshop"}, {"editorsdemoid": 333330010005, "title": "Hidden", "state": "workshop"}, {"editorsdemoid": 333330010004, "title": "Nimbus", "state": "workshop"}, {"editorsdemoid": 333330010003, "title": "Robust optical flow2", "state": "workshop"}, {"editorsdemoid": 333330010002, "title": "Novelty", "state": "workshop"}, {"editorsdemoid": 333330010001, "title": "Clouds", "state": "workshop"}, {"editorsdemoid": 77777000570, "title": "Glyph Prototypes", "state": "workshop"}, {"editorsdemoid": 77777000569, "title": "DocTR", "state": "workshop"}, {"editorsdemoid": 77777000568, "title": "metfluxnet demo", "state": "workshop"}, {"editorsdemoid": 77777000567, "title": "A survey of metrics used for image colorization assessment", "state": "workshop"}, {"editorsdemoid": 77777000566, "title": "Inverse Problem solving with GS-framework", "state": "workshop"}, {"editorsdemoid": 77777000565, "title": "Vol Cloud Segmentation", "state": "workshop"}, {"editorsdemoid": 77777000564, "title": "VERNIER: an open-source software pushing marker pose estimation down to the micrometer and nanometer scales", "state": "workshop"}, {"editorsdemoid": 77777000563, "title": "An Implementation and Evaluation of Seam Carving Algorithm", "state": "workshop"}, {"editorsdemoid": 77777000561, "title": "Local Chan-Vese Segmentation Method", "state": "workshop"}, {"editorsdemoid": 77777000560, "title": "An Implementation of Image Retrieval using Scene Graphs", "state": "workshop"}, {"editorsdemoid": 77777000559, "title": "Edge Drawing", "state": "workshop"}, {"editorsdemoid": 77777000558, "title": "Line Segment Detection in the Multiscale Paradigm", "state": "workshop"}, {"editorsdemoid": 77777000557, "title": "SuperAttention-ARTColor", "state": "workshop"}, {"editorsdemoid": 77777000556, "title": "DDColor ARTColor", "state": "workshop"}, {"editorsdemoid": 77777000555, "title": "craftershed", "state": "workshop"}, {"editorsdemoid": 77777000554, "title": "Table Extraction ", "state": "workshop"}, {"editorsdemoid": 77777000553, "title": "CRAFT", "state": "workshop"}, {"editorsdemoid": 77777000551, "title": "UNI-ALIGN: Robust attributed graph matching", "state": "workshop"}, {"editorsdemoid": 77777000550, "title": "iColoriT ARTColor", "state": "workshop"}, {"editorsdemoid": 77777000549, "title": "Salient Image Boundaries Detection", "state": "workshop"}, {"editorsdemoid": 77777000548, "title": "Underwater Video Deflicker", "state": "workshop"}, {"editorsdemoid": 77777000547, "title": "Copy-move detection in documents", "state": "workshop"}, {"editorsdemoid": 77777000546, "title": "Combi-CAM: a novel Grad-CAM approach for geolocalization explainability", "state": "workshop"}, {"editorsdemoid": 77777000544, "title": "Change detection in time series", "state": "workshop"}, {"editorsdemoid": 77777000543, "title": "Document forgery detection based on chromatic analysis", "state": "workshop"}, {"editorsdemoid": 77777000542, "title": "Document forgery detection based on noise analysis", "state": "workshop"}, {"editorsdemoid": 77777000540, "title": "MVA Crosscoder", "state": "workshop"}, {"editorsdemoid": 77777000539, "title": "MVA fluorescent", "state": "workshop"}, {"editorsdemoid": 77777000538, "title": "Docstrum", "state": "workshop"}, {"editorsdemoid": 77777000537, "title": "Image Resampling Detection via Spectral Correlation and False Alarm Control", "state": "workshop"}, {"editorsdemoid": 77777000536, "title": "A Two-Stage Method for Text and Line Detection", "state": "workshop"}, {"editorsdemoid": 77777000535, "title": "Sentinel-2 source identification", "state": "workshop"}, {"editorsdemoid": 77777000534, "title": "Non parametric detection in satellite time series merged approach", "state": "workshop"}, {"editorsdemoid": 77777000533, "title": "Non parametric detection in satellite time series T approach", "state": "workshop"}, {"editorsdemoid": 77777000532, "title": "Non parametric detection in satellite time series JMM approach", "state": "workshop"}, {"editorsdemoid": 77777000531, "title": "Non parametric detection of non periodic changes in satellite time series", "state": "workshop"}, {"editorsdemoid": 77777000530, "title": "Two sample hypothesis testing with AUC maximization", "state": "workshop"}, {"editorsdemoid": 77777000526, "title": "Statistical models for time series forecasting", "state": "workshop"}, {"editorsdemoid": 77777000525, "title": "Demo_2", "state": "workshop"}, {"editorsdemoid": 77777000523, "title": "INBD: Instance Segmentation Model Trained on Pinus taeda Species", "state": "workshop"}, {"editorsdemoid": 77777000522, "title": "Demo_1", "state": "workshop"}, {"editorsdemoid": 77777000521, "title": "A Simple Baseline for Video Restoration with Grouped Spatial-temporal Shift", "state": "workshop"}, {"editorsdemoid": 77777000519, "title": "UruDendro Dataset", "state": "workshop"}, {"editorsdemoid": 77777000518, "title": "MlBriefsDemo_homology_based_algorithm_for_unsupervised_anomaly_detection", "state": "workshop"}, {"editorsdemoid": 77777000517, "title": "Synthbuster: Towards Detection of Diffusion Model Generated Images", "state": "workshop"}, {"editorsdemoid": 77777000516, "title": "Uncertainty Quantification on S2 Super Resolution", "state": "workshop"}, {"editorsdemoid": 77777000514, "title": "Dark Lines Detector", "state": "workshop"}, {"editorsdemoid": 77777000513, "title": "Gretsi 2025 Ipol demo: OT colour transfer", "state": "workshop"}, {"editorsdemoid": 77777000512, "title": "Workshop template", "state": "workshop"}, {"editorsdemoid": 77777000511, "title": "Evaluating Workflows using ControlNet and LORAs with Diffusers", "state": "workshop"}, {"editorsdemoid": 77777000510, "title": "XDoG", "state": "workshop"}, {"editorsdemoid": 77777000509, "title": "statokin", "state": "workshop"}, {"editorsdemoid": 77777000508, "title": "TSIM", "state": "workshop"}, {"editorsdemoid": 77777000507, "title": "Demo on ReMoNet", "state": "workshop"}, {"editorsdemoid": 77777000504, "title": "Seam Carving with Quarto", "state": "workshop"}, {"editorsdemoid": 77777000502, "title": "M2Mnet", "state": "workshop"}, {"editorsdemoid": 77777000501, "title": "Change detection from temporal redundancy", "state": "workshop"}, {"editorsdemoid": 77777000499, "title": "PatchFusion", "state": "workshop"}, {"editorsdemoid": 77777000498, "title": "Metric3D", "state": "workshop"}, {"editorsdemoid": 77777000497, "title": "Depth-Anything", "state": "workshop"}, {"editorsdemoid": 77777000496, "title": "UniDepth", "state": "workshop"}, {"editorsdemoid": 77777000495, "title": "ZoeDepth", "state": "workshop"}, {"editorsdemoid": 77777000494, "title": "Solar panel detection on S2 : abundance approaches", "state": "workshop"}, {"editorsdemoid": 77777000493, "title": "Solar panel detection on S2 : unmixing approaches", "state": "workshop"}, {"editorsdemoid": 77777000492, "title": "Solar panel detection on S2 : growing approaches", "state": "workshop"}, {"editorsdemoid": 77777000491, "title": "Solar panel detection on S2 : Gaussian approaches", "state": "workshop"}, {"editorsdemoid": 77777000490, "title": "Solar panel detection on Sentinel time series", "state": "workshop"}, {"editorsdemoid": 77777000487, "title": "Ordinal Clustering", "state": "workshop"}, {"editorsdemoid": 77777000486, "title": "How to Reduce Anomaly Detection in Images to Anomaly Detection in Noise v1.1", "state": "workshop"}, {"editorsdemoid": 77777000485, "title": "On Anisotropic Optical Flow Inpainting Algorithms (docker)", "state": "workshop"}, {"editorsdemoid": 77777000483, "title": "Locogram: a Visual Tool for Gait Quantification in Routine Neurological Follow-UP", "state": "workshop"}, {"editorsdemoid": 77777000482, "title": "MaskSim: Detection of synthetic images by masked spectrum similarity analysis", "state": "workshop"}, {"editorsdemoid": 77777000481, "title": "Rotagram: a Visual Tool for Gait Quantification in Routine Neurological Follow-Up", "state": "workshop"}, {"editorsdemoid": 77777000480, "title": "TruFor", "state": "workshop"}, {"editorsdemoid": 77777000479, "title": "Automatic U-Turn Detection with IMU: An in-Depth Look at the Algorithm", "state": "workshop"}, {"editorsdemoid": 77777000478, "title": "Routine clinical gait analysis using IMU: a detailed view of the 10 meters protocol with U-Turn", "state": "workshop"}, {"editorsdemoid": 77777000477, "title": "Image Seam Carving", "state": "workshop"}, {"editorsdemoid": 77777000476, "title": "The Reeb Graph of a Bilinear Image", "state": "workshop"}, {"editorsdemoid": 77777000475, "title": "Implementation of point clouds visibility by Biasutti et al.", "state": "workshop"}, {"editorsdemoid": 77777000474, "title": "Morphological super-resolution", "state": "workshop"}, {"editorsdemoid": 77777000472, "title": "MLBRIEF: PITH ESTIMATION ON ROUGH LOG END IMAGES USING LOCALFOURIER SPECTRUM ANALYSIS", "state": "workshop"}, {"editorsdemoid": 77777000471, "title": "L1BSR: Exploiting Detector Overlap for Self-Supervised Single-Image Super-Resolution of Sentinel-2 L1B Imagery", "state": "workshop"}, {"editorsdemoid": 77777000470, "title": "RSDE", "state": "workshop"}, {"editorsdemoid": 77777000466, "title": "Comparing Burst Super-Resolution Networks", "state": "workshop"}, {"editorsdemoid": 77777000465, "title": "Color2Embed", "state": "workshop"}, {"editorsdemoid": 77777000464, "title": "Valery mlbriefs3 demo2", "state": "workshop"}, {"editorsdemoid": 77777000463, "title": "Real-time Streaming Video Denoising with Bidirectional Buffers (DEBUG)", "state": "workshop"}, {"editorsdemoid": 77777000461, "title": "U-Net: Convolutional Networks for Biomedical Image - Brain Tumor Segmentation", "state": "workshop"}, {"editorsdemoid": 77777000459, "title": "Implementation of point clouds visibility by Katz et al.", "state": "workshop"}, {"editorsdemoid": 77777000454, "title": "Val\u00e9ry Dewil's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000452, "title": "RSDE Application MlBriefs3", "state": "workshop"}, {"editorsdemoid": 77777000450, "title": "Bruno Galerne's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000448, "title": "Real-time Streaming Video Denoising with Bidirectional Buffers", "state": "workshop"}, {"editorsdemoid": 77777000446, "title": "Lucas Zoroddu's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000445, "title": "Lucia Robles Diaz's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000441, "title": "Anthea M\u00e9rida's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000432, "title": "Antoine Tadros's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000431, "title": "Structure-based representation of time series", "state": "workshop"}, {"editorsdemoid": 77777000430, "title": "A brief study of a GAN-image generated Detector", "state": "workshop"}, {"editorsdemoid": 77777000429, "title": "Alexandre Bois's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000425, "title": "UNetMobV2: Cloud Detection in Sentinel-2", "state": "workshop"}, {"editorsdemoid": 77777000424, "title": "Comparing SAM and CLIPSeg for zero-shot object segmentation", "state": "workshop"}, {"editorsdemoid": 77777000422, "title": "RVRT", "state": "workshop"}, {"editorsdemoid": 77777000421, "title": "Unified scene-text detection and layout analysis", "state": "workshop"}, {"editorsdemoid": 77777000420, "title": "Fran\u00e7ois Role's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000419, "title": "Coclus-PCA for Data Co-clustering", "state": "workshop"}, {"editorsdemoid": 77777000418, "title": "Anne Zhao's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000416, "title": "Asmaa HADANE-MOUTAKI's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000414, "title": "A review of hyperspectral target detectors", "state": "workshop"}, {"editorsdemoid": 77777000412, "title": "Sylvain COMBETTES's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000406, "title": "Two Deep Learning Solutions for Automatic Blurring of Faces in Videos", "state": "workshop"}, {"editorsdemoid": 77777000405, "title": "Remote sensing portal: Detection and Interpretation of Change in Registered Satellite Image Time Series", "state": "workshop"}, {"editorsdemoid": 77777000404, "title": "Remote sensing portal: Relative Radiometric Normalization for Multi-Sensor Satellite Time Series", "state": "workshop"}, {"editorsdemoid": 77777000403, "title": "Remote sensing portal:  Cloud Detection by Luminance and Inter-band Parallax Analysis for Pushbroom Satellite Imagers", "state": "workshop"}, {"editorsdemoid": 77777000402, "title": "Remote sensing portal: Ground Visibility in Satellite Optical Time Series Based on A Contrario Local Image Matching", "state": "workshop"}, {"editorsdemoid": 77777000401, "title": "Registered time series downloader", "state": "workshop"}, {"editorsdemoid": 77777000400, "title": "Cloud generation", "state": "workshop"}, {"editorsdemoid": 77777000399, "title": "A Contrario Detection of H.264 Video Double Compression", "state": "workshop"}, {"editorsdemoid": 77777000398, "title": "Deep Wiener Deconvolution: Wiener Meets Deep Learning for Image Deblurring", "state": "workshop"}, {"editorsdemoid": 77777000395, "title": "Automatic Gait Events Detection with IMU: An in-Depth Look at the Algorithm", "state": "workshop"}, {"editorsdemoid": 77777000394, "title": "Deblurring and Denoising by Solving Constrained Variational Problems", "state": "workshop"}, {"editorsdemoid": 77777000393, "title": "Improving Large-Scale Speech Recognition Robustness by Language Specialization", "state": "workshop"}, {"editorsdemoid": 77777000392, "title": "Latent Space Oddity", "state": "workshop"}, {"editorsdemoid": 77777000389, "title": "CMFD by multiscale analysis", "state": "workshop"}, {"editorsdemoid": 77777000388, "title": "Double Demosaicing", "state": "workshop"}, {"editorsdemoid": 77777000387, "title": "A multivariate paired-sample test by margin aggregation", "state": "workshop"}, {"editorsdemoid": 77777000386, "title": "Tesseract OCR", "state": "workshop"}, {"editorsdemoid": 77777000383, "title": "R2D2", "state": "workshop"}, {"editorsdemoid": 77777000382, "title": "D2_Net", "state": "workshop"}, {"editorsdemoid": 77777000375, "title": "Jules Tsukahara's MLBriefs2 demo (Multiview Diffusion Maps)", "state": "workshop"}, {"editorsdemoid": 77777000371, "title": "Ioannis Bargiotas's MLBriefs2 demo (Random Forest's Out-of-Bag optimal performance as a proxy for multivariate two-sample hypothesis testing)", "state": "workshop"}, {"editorsdemoid": 77777000369, "title": "Val\u00e9ry DEWIL's MLBriefs2 demo (update later)", "state": "workshop"}, {"editorsdemoid": 77777000368, "title": "Tracking the evolution of ocean waves (MLBriefs)", "state": "workshop"}, {"editorsdemoid": 77777000365, "title": "Global optimization algorithms: statistical analysis", "state": "workshop"}, {"editorsdemoid": 77777000364, "title": "Sylvain JUNG's MLBriefs2 demo", "state": "workshop"}, {"editorsdemoid": 77777000361, "title": "Khoa Nguyen's MLBriefs2 demo", "state": "workshop"}, {"editorsdemoid": 77777000360, "title": "Carlo de Franchis's MLBriefs2 demo", "state": "workshop"}, {"editorsdemoid": 77777000359, "title": "Franco Marchesoni's MLBriefs2 demo (More general splines for color enhancement)", "state": "workshop"}, {"editorsdemoid": 77777000357, "title": "Marie d'Autume's MLBriefs2 demo (Demo of an infrared small target detection network)", "state": "workshop"}, {"editorsdemoid": 77777000355, "title": "Samuel Gruffaz's MLBriefs2 demo (Learning Riemannian Metric for disease progression modeling)", "state": "workshop"}, {"editorsdemoid": 77777000354, "title": "EDTER: Edge Detection with Transformer", "state": "workshop"}, {"editorsdemoid": 77777000353, "title": "Enric MEINHARDT-LLOPIS's MLBriefs3 demo", "state": "workshop"}, {"editorsdemoid": 77777000350, "title": "Arm-CODA : A dataset of upper-limb human movement during routine examination", "state": "workshop"}, {"editorsdemoid": 77777000349, "title": "Temporally Aware Kernel Change-Point Detection with Graph Signal Kernels", "state": "workshop"}, {"editorsdemoid": 77777000348, "title": "Anthea M\u00e9rida's MLBriefs2 demo (Initializing Neural Networks using Decision Trees)", "state": "workshop"}, {"editorsdemoid": 77777000345, "title": "Deep learning model for smoke plume detection", "state": "workshop"}, {"editorsdemoid": 77777000344, "title": "Unsupervised activity detection using rupture detection on egocentric untrimmed video", "state": "workshop"}, {"editorsdemoid": 77777000342, "title": "Anne ZHAO's MLBriefs2 demo", "state": "workshop"}, {"editorsdemoid": 77777000338, "title": "Antoine Tadros's MLBriefs2 demo (Stable Diffusion)", "state": "workshop"}, {"editorsdemoid": 77777000336, "title": "MLBriefs2: MAT: Mask-Aware Transformer for Large Hole Image Inpainting", "state": "workshop"}, {"editorsdemoid": 77777000334, "title": "An analysis of ChromaGAN", "state": "workshop"}, {"editorsdemoid": 77777000333, "title": "Fast Two-step Blind Optical Aberration Correction", "state": "workshop"}, {"editorsdemoid": 77777000329, "title": "Cloud splicing", "state": "workshop"}, {"editorsdemoid": 77777000328, "title": "An analysis of generalizable deepfake detectors", "state": "workshop"}, {"editorsdemoid": 77777000326, "title": "Antoine de Mathelin's MLBriefs2 demo (Weighting Adversarial Neural Network)", "state": "workshop"}, {"editorsdemoid": 77777000323, "title": "Looking at YOLO (You Only Look Once) more than once", "state": "workshop"}, {"editorsdemoid": 77777000321, "title": "Alexandre Bois's MLBriefs2 demo (TDA-based distance between time series)", "state": "workshop"}, {"editorsdemoid": 77777000320, "title": "Shape-from-shading", "state": "workshop"}, {"editorsdemoid": 77777000318, "title": "Vision Toolkit", "state": "workshop"}, {"editorsdemoid": 77777000305, "title": "ASMAGAN", "state": "workshop"}, {"editorsdemoid": 77777000300, "title": "Change detection in image pairs", "state": "workshop"}, {"editorsdemoid": 77777000283, "title": "A maximum likelihood algorithm for size distribution estimation in nanoparticle tracking analysis", "state": "workshop"}, {"editorsdemoid": 77777000282, "title": "DexiNedV1", "state": "workshop"}, {"editorsdemoid": 77777000281, "title": "[Epidria] Test target suitability", "state": "workshop"}, {"editorsdemoid": 77777000280, "title": "Fractal Test Target Generation", "state": "workshop"}, {"editorsdemoid": 77777000278, "title": "PRNU compare two images", "state": "workshop"}, {"editorsdemoid": 77777000277, "title": "A k-means type smooth subspace clustering for time series data", "state": "workshop"}, {"editorsdemoid": 77777000274, "title": "Koopman autoencoder with application to Time series prediction", "state": "workshop"}, {"editorsdemoid": 77777000273, "title": "Wind turbine detection on Planetscope images using PSPNet", "state": "workshop"}, {"editorsdemoid": 77777000270, "title": "Graph node embedding", "state": "workshop"}, {"editorsdemoid": 77777000266, "title": "Text clustering", "state": "workshop"}, {"editorsdemoid": 77777000262, "title": "GPLBM", "state": "workshop"}, {"editorsdemoid": 77777000255, "title": "Contrastive Learning for Segmentation", "state": "workshop"}, {"editorsdemoid": 77777000252, "title": "TDA-based distance between time series", "state": "workshop"}, {"editorsdemoid": 77777000251, "title": "Noiseprint: A CNN-based camera model fingerprint", "state": "workshop"}, {"editorsdemoid": 77777000250, "title": "Learning Self-Consistency for Deepfake Detection", "state": "workshop"}, {"editorsdemoid": 77777000244, "title": "Differentiable Divergences Between Time Series", "state": "workshop"}, {"editorsdemoid": 77777000243, "title": "Representation learning with application to time series prediction: symbolic approaches", "state": "workshop"}, {"editorsdemoid": 77777000239, "title": "Joint Inference of the Topology and Signals over Graphs", "state": "workshop"}, {"editorsdemoid": 77777000234, "title": "PINNs", "state": "workshop"}, {"editorsdemoid": 77777000233, "title": "Event detection (pattern, anomalies) and evaluation in time series", "state": "workshop"}, {"editorsdemoid": 77777000231, "title": "Multivariate two-sample hypothesis testing through AUC Maximization", "state": "workshop"}, {"editorsdemoid": 77777000229, "title": "A Binded VAE for Inorganic Material Generation", "state": "workshop"}, {"editorsdemoid": 77777000225, "title": "Bag Of Patterns", "state": "workshop"}, {"editorsdemoid": 77777000224, "title": "Time Series Bitmap", "state": "workshop"}, {"editorsdemoid": 77777000219, "title": "Neural Random Forests", "state": "workshop"}, {"editorsdemoid": 77777000217, "title": "Previous Tick Lead-Lag Estimation", "state": "workshop"}, {"editorsdemoid": 77777000216, "title": "Hayashi_Yoshida", "state": "workshop"}, {"editorsdemoid": 77777000211, "title": "Density-Ratio Estimation and Sample Bias Correction", "state": "workshop"}, {"editorsdemoid": 77777000208, "title": "Segmentation on low resolution image", "state": "workshop"}, {"editorsdemoid": 77777000203, "title": "image processing with graphs", "state": "workshop"}, {"editorsdemoid": 77777000201, "title": "Deep blur detection and classification", "state": "workshop"}, {"editorsdemoid": 77777000192, "title": "Geodesic Models with Convexity Shape Prior", "state": "workshop"}, {"editorsdemoid": 77777000191, "title": "Globally optimal paths with curvature penalization and obstacles", "state": "workshop"}, {"editorsdemoid": 77777000179, "title": "ByteTrack : Structuring Detection Association for Multi-Object Tracking", "state": "workshop"}, {"editorsdemoid": 77777000177, "title": "s2cloudless (cloud detection in Sentinel-2)", "state": "workshop"}, {"editorsdemoid": 77777000176, "title": "Scale-recurrent Network for Deep Image Deblurring", "state": "workshop"}, {"editorsdemoid": 77777000166, "title": "Towards Flexible Blind JPEG Artifacts Removal", "state": "workshop"}, {"editorsdemoid": 77777000165, "title": "Optimization playground", "state": "workshop"}, {"editorsdemoid": 77777000146, "title": "Meta-analysis", "state": "workshop"}, {"editorsdemoid": 77777000140, "title": "Langevin generative models of the center of pressure trajectory to quantify standing balance", "state": "workshop"}, {"editorsdemoid": 77777000139, "title": "Epilnvert notebook demo", "state": "workshop"}, {"editorsdemoid": 77777000138, "title": "Dynamic Staffing Under Uncertainty", "state": "workshop"}, {"editorsdemoid": 77777000137, "title": "Commonly used variables to quantify standing balance in elderly", "state": "workshop"}, {"editorsdemoid": 77777000136, "title": "The influence of JPEG compression on noise in digital images", "state": "workshop"}, {"editorsdemoid": 77777000134, "title": "Exploring the Space of Patches (with KSVD analysis: code version 6)", "state": "workshop"}, {"editorsdemoid": 77777000133, "title": "Comparison of Face Detection Strategies in the Wild", "state": "workshop"}, {"editorsdemoid": 77777000131, "title": "EpiInvert simulator", "state": "workshop"}, {"editorsdemoid": 77777000125, "title": "OrsaHomography for Envisu4", "state": "workshop"}, {"editorsdemoid": 77777000123, "title": "Flow Redirection to Lower the Outreach of an Epidemic Signal on a Metapopulation with Explicit Movement", "state": "workshop"}, {"editorsdemoid": 77777000121, "title": "An empirical algorithm to forecast the evolution of the number of COVID-19 symptomatic patients after social distancing interventions (extended model)", "state": "workshop"}, {"editorsdemoid": 77777000119, "title": "Change detection using correlation on time series", "state": "workshop"}, {"editorsdemoid": 77777000117, "title": "Image Time Series Registration (ITSR)", "state": "workshop"}, {"editorsdemoid": 77777000116, "title": "Cloud Detectors", "state": "workshop"}, {"editorsdemoid": 77777000115, "title": "Bringing old photos back to life", "state": "workshop"}, {"editorsdemoid": 77777000114, "title": "Relative Radiometric Normalization for Multi-Sensor Satellite Time Series", "state": "workshop"}, {"editorsdemoid": 77777000111, "title": "SARS-CoV-2 Variational Model to Compute the ERN from Hospital Data", "state": "workshop"}, {"editorsdemoid": 77777000110, "title": "ACT restoration", "state": "workshop"}, {"editorsdemoid": 77777000109, "title": "GPM texture synthesis", "state": "workshop"}, {"editorsdemoid": 77777000108, "title": "EpiInvert: computing the daily reproduction number of COVID-19 by inverting  the renewal equation", "state": "workshop"}, {"editorsdemoid": 77777000103, "title": "Another algorithm to compute the ERN", "state": "workshop"}, {"editorsdemoid": 77777000102, "title": "SARS-CoV-2 ERN computation in France from hospitalization data", "state": "workshop"}, {"editorsdemoid": 77777000101, "title": "Comprint - Image Forgery Detection & Localization", "state": "workshop"}, {"editorsdemoid": 77777000100, "title": "Forensic basic tools", "state": "workshop"}, {"editorsdemoid": 77777000099, "title": "Image Forensics DDEM", "state": "workshop"}, {"editorsdemoid": 77777000098, "title": "Self-Supervised Mosaic Consistency Analysis for Image Forgeries Detection", "state": "workshop"}, {"editorsdemoid": 77777000097, "title": "Image Forgeries detection through Mosaic Analysis: the Variance of Colour Difference Algorithm", "state": "workshop"}, {"editorsdemoid": 77777000096, "title": "Image Forgeries detection through Mosaic Analysis: the Double Demosaicing Residual Algorithm", "state": "workshop"}, {"editorsdemoid": 77777000095, "title": "Image Forgeries detection through Mosaic Analysis: Linear Estimation of the Demosaicing Algorithm", "state": "workshop"}, {"editorsdemoid": 77777000094, "title": "Non blind deconvolution (unknown boundaries, saturation, noise)", "state": "workshop"}, {"editorsdemoid": 77777000093, "title": "Dog face detector", "state": "workshop"}, {"editorsdemoid": 77777000092, "title": "ELSDc+", "state": "workshop"}, {"editorsdemoid": 77777000090, "title": "Image Forensics OSN", "state": "workshop"}, {"editorsdemoid": 77777000089, "title": "Enhancement of the disparity map by difussion", "state": "workshop"}, {"editorsdemoid": 77777000088, "title": "Pad temporal change detector", "state": "workshop"}, {"editorsdemoid": 77777000087, "title": "Assessing the Sharpness of Satellite Images: Study of the PlanetScope Constellation", "state": "workshop"}, {"editorsdemoid": 77777000086, "title": "Efficient Blind Deblurring under High Noise Levels", "state": "workshop"}, {"editorsdemoid": 77777000083, "title": "Data Limoges", "state": "workshop"}, {"editorsdemoid": 77777000082, "title": "Signal Segmentation Demonstration", "state": "workshop"}, {"editorsdemoid": 77777000079, "title": "Super resolution with HQx Algorithm", "state": "workshop"}, {"editorsdemoid": 77777000078, "title": "Convolutional Neural Network for subpixel super-resolution", "state": "workshop"}, {"editorsdemoid": 77777000077, "title": "Robust copy-move forgery detection by false alarms control", "state": "workshop"}, {"editorsdemoid": 77777000072, "title": "Iterated Guided Filter", "state": "workshop"}, {"editorsdemoid": 77777000071, "title": "Tinyface + facenet", "state": "workshop"}, {"editorsdemoid": 77777000070, "title": "Tinyface detector", "state": "workshop"}, {"editorsdemoid": 77777000068, "title": "Optical flow interpolation (2)", "state": "workshop"}, {"editorsdemoid": 77777000067, "title": "Optical flow interpolation", "state": "workshop"}, {"editorsdemoid": 77777000065, "title": "Multiscale DnCNN denoising with MATLAB", "state": "workshop"}, {"editorsdemoid": 77777000064, "title": "HBagging: a white box interpretable algorithm to evaluate static balance", "state": "workshop"}, {"editorsdemoid": 77777000063, "title": "Estadeo - Video Stabilization", "state": "workshop"}, {"editorsdemoid": 77777000062, "title": "Simplest JPEG Deblocking", "state": "workshop"}, {"editorsdemoid": 77777000060, "title": "Optical flow interpolation using the geodesic AMLE", "state": "workshop"}, {"editorsdemoid": 77777000059, "title": "Optical flow interpolation using the Laplace Beltrami operator", "state": "workshop"}, {"editorsdemoid": 77777000058, "title": "Image Forgeries detection through Mosaic Analysis: Differential Operators", "state": "workshop"}, {"editorsdemoid": 77777000057, "title": "Locally Gaussian Texture Synthesis Algorithm", "state": "workshop"}, {"editorsdemoid": 77777000055, "title": "Artifact Evaluation Survey", "state": "workshop"}, {"editorsdemoid": 77777000051, "title": "Simplest JPEG Grid Origin Detector (SGOD)", "state": "workshop"}, {"editorsdemoid": 77777000049, "title": "Automatic JPEG grid detector via DCT coefficients [deprecated]", "state": "workshop"}, {"editorsdemoid": 77777000046, "title": "A survey on shift estimation methods for image registration", "state": "workshop"}, {"editorsdemoid": 77777000043, "title": "RGB channel separation", "state": "workshop"}, {"editorsdemoid": 77777000042, "title": "Simulated Exposure Fusion [deprecated]", "state": "workshop"}, {"editorsdemoid": 77777000041, "title": "Anomaly detection using PHOT (Aiger & Talbot)", "state": "workshop"}, {"editorsdemoid": 77777000040, "title": "Image Normalization", "state": "workshop"}, {"editorsdemoid": 77777000039, "title": "JPEG Quantization Table Estimation [deprecated]", "state": "workshop"}, {"editorsdemoid": 77777000037, "title": "Gaussian smoothing", "state": "workshop"}, {"editorsdemoid": 77777000036, "title": "Anomaly generator", "state": "workshop"}, {"editorsdemoid": 77777000035, "title": "Adaptive Local Image Enhancement based on Logarithmic Mappings", "state": "workshop"}, {"editorsdemoid": 77777000032, "title": "EpiInvert testing", "state": "workshop"}, {"editorsdemoid": 77777000031, "title": "Curves interpolation (user input)", "state": "workshop"}, {"editorsdemoid": 77777000030, "title": "Video Denoising DEMO", "state": "workshop"}, {"editorsdemoid": 77777000029, "title": "Simplified Texture Generator Simulation - 10000 Textures", "state": "workshop"}, {"editorsdemoid": 77777000028, "title": "Curves interpolation", "state": "workshop"}, {"editorsdemoid": 77777000027, "title": "Backlit Images Enhancement using Global Tone Mappings and Image Fusion", "state": "workshop"}, {"editorsdemoid": 77777000026, "title": "Smart Image Enhancement Framework (SIEF)", "state": "workshop"}, {"editorsdemoid": 77777000025, "title": "Simplified Texture Generator Simulation", "state": "workshop"}, {"editorsdemoid": 77777000024, "title": "Simplified Texture Generator", "state": "workshop"}, {"editorsdemoid": 77777000023, "title": "LatexToHtmlOnLine", "state": "workshop"}, {"editorsdemoid": 77777000021, "title": "Abstract Shape Generator", "state": "workshop"}, {"editorsdemoid": 77777000019, "title": "Simplified Branched Shape Generator", "state": "workshop"}, {"editorsdemoid": 77777000018, "title": "JPEG grid detector 2 [deprecated]", "state": "workshop"}, {"editorsdemoid": 77777000016, "title": "JPEG Exif Reader", "state": "workshop"}, {"editorsdemoid": 77777000013, "title": "Methods Comparison for Resampling Statokinesigrams", "state": "workshop"}, {"editorsdemoid": 77777000012, "title": "D\u00e9tection d'anomalies dans des etiquettes", "state": "workshop"}, {"editorsdemoid": 77777000010, "title": "Power spectrum estimation", "state": "workshop"}, {"editorsdemoid": 77777000009, "title": "Novelty filter based on self-similarity", "state": "workshop"}, {"editorsdemoid": 77777000008, "title": "Texture generator", "state": "workshop"}, {"editorsdemoid": 77777000007, "title": "Exposure Fusion [deprecated]", "state": "workshop"}, {"editorsdemoid": 77777000006, "title": "Graph Matching", "state": "workshop"}, {"editorsdemoid": 77777000005, "title": "Texture generator - previous version", "state": "workshop"}, {"editorsdemoid": 77777000004, "title": "JPEG grid position detection [deprecated]", "state": "workshop"}, {"editorsdemoid": 77777000002, "title": "Dual-Domain Multiscale Denoising, combining Non-Local Bayes, DA3D and the Multiscale Framework", "state": "workshop"}, {"editorsdemoid": 77777000001, "title": "Single Image Haze Removal Based on Dark Channel Prior", "state": "workshop"}, {"editorsdemoid": 55555000292, "title": "testing the archive exp", "state": "test"}, {"editorsdemoid": 55555000285, "title": "Test_tri", "state": "test"}, {"editorsdemoid": 55555000282, "title": "DexiNedV1--Test", "state": "test"}, {"editorsdemoid": 55555000263, "title": "How to Reduce Anomaly Detection in Images to Anomaly Detection in Noise---New", "state": "test"}, {"editorsdemoid": 55555000255, "title": "Contrastive Learning for Segmentation--Test", "state": "test"}, {"editorsdemoid": 55555000131, "title": "Test 131- An Algorithmic Analysis of Variational Models for Perceptual Local Contrast Enhancement", "state": "test"}, {"editorsdemoid": 55555000104, "title": " An Analysis of the Viola-Jones Face Detection Algorithm", "state": "test"}, {"editorsdemoid": 11111000012, "title": "Virtualenv example - Adding virtualenv from a new build section", "state": "example"}, {"editorsdemoid": 11111000010, "title": "Experiments volumetric file display", "state": "example"}, {"editorsdemoid": 11111000009, "title": "Python Demo Template", "state": "example"}, {"editorsdemoid": 11111000008, "title": "MVA Reproducible Research example", "state": "example"}, {"editorsdemoid": 11111000007, "title": "Video processing (video -> frames)", "state": "example"}, {"editorsdemoid": 11111000006, "title": "Video processing (video -> video)", "state": "example"}, {"editorsdemoid": 11111000005, "title": "Demo Example: Archiving files", "state": "example"}, {"editorsdemoid": 11111000004, "title": "Python Template Demo", "state": "example"}, {"editorsdemoid": 11111000003, "title": "Demo Example: Image Inputs", "state": "example"}, {"editorsdemoid": 11111000002, "title": "Demo Example: Parameters types", "state": "example"}, {"editorsdemoid": 11111000001, "title": "GeoJSON example", "state": "example"}, {"editorsdemoid": 5555500001, "title": "LTR Test", "state": "test"}, {"editorsdemoid": 56002, "title": "Automatic Segmentation of Sign Language into Subtitle-Units", "state": "published"}, {"editorsdemoid": 56001, "title": "Linguistically motivated sign language segmentation", "state": "published"}, {"editorsdemoid": 48108, "title": "DeepLSD: Line Segment Detection and Refinement with Deep Image Gradients", "state": "published"}, {"editorsdemoid": 48107, "title": "ED-Lines", "state": "published"}, {"editorsdemoid": 48106, "title": "AFM: Learning attraction field representation for robust line segment detection", "state": "published"}, {"editorsdemoid": 48105, "title": "ULSD: Unified Line Segment Detection across Pinhole, Fisheye, and Spherical Cameras", "state": "published"}, {"editorsdemoid": 48104, "title": "SOLD2: Self-supervised Occlusion-aware Line Description and Detection", "state": "published"}, {"editorsdemoid": 48103, "title": "M-LSD:Line segment detection with Mobile LSD", "state": "published"}, {"editorsdemoid": 48102, "title": "TP-LSD: Tri-points based line segment detector", "state": "published"}, {"editorsdemoid": 48101, "title": "LETR: Line Segment Detection Using Transformers without Edges", "state": "published"}, {"editorsdemoid": 45905, "title": "Learning to Recover 3D Scene Shape from a Single Image (3DShape method)", "state": "published"}, {"editorsdemoid": 45904, "title": "Global-Local Path Networks for Monocular Depth Estimation with Vertical CutDepth (GLPDepth method)", "state": "published"}, {"editorsdemoid": 45903, "title": "Adabins: Depth Estimation using adaptive bins (Adabins method)", "state": "published"}, {"editorsdemoid": 45902, "title": "Vision Transformers for Dense Prediction (DPT method)", "state": "published"}, {"editorsdemoid": 45901, "title": "Towards Robust Monocular Depth Estimation: Mixing Datasets for Zero-shot Cross-dataset Transfer (MiDaS method)", "state": "published"}, {"editorsdemoid": 662, "title": "Photo Response Non-Uniformity Extraction and Detection", "state": "preprint"}, {"editorsdemoid": 646, "title": "Revisit of JPEG Decompression with Artifact Suppression by Total Variation and its Variants", "state": "preprint"}, {"editorsdemoid": 636, "title": "Image Segmentation using Backward Stochastic Differential Equations", "state": "published"}, {"editorsdemoid": 607, "title": "QMSANet: A Quaternion Multi-Scale Attention Network for Color Image Denoising", "state": "preprint"}, {"editorsdemoid": 602, "title": "A Brief Analysis of the Change Detector by Kervrann et al.", "state": "published"}, {"editorsdemoid": 595, "title": "A Modified Structure of Local Adaptive Hysteresis Smoothing for  Image Denoising", "state": "preprint"}, {"editorsdemoid": 592, "title": "Single Image Super-Resolution Based on Anisotropic Diffusion", "state": "published"}, {"editorsdemoid": 591, "title": "Voronoi Diagrams for Page Segmentation", "state": "published"}, {"editorsdemoid": 587, "title": "Transcribing Lines of Handwritten Text Using TrOCR: An Encoder-Decoder Model Based on Pre-Trained Image and Text Transformers", "state": "preprint"}, {"editorsdemoid": 583, "title": "L1-Norm Redundant Delaunay Phase Unwrapping and Gradient Correction", "state": "published"}, {"editorsdemoid": 580, "title": "Latent Diffusion Approaches for Conditional Generation of Aerial Imagery: A Study", "state": "preprint"}, {"editorsdemoid": 578, "title": "An Implementation of Two-Phase Image Segmentation using the Split Bregman Method", "state": "published"}, {"editorsdemoid": 566, "title": "Gaussian Splatting: An Introduction", "state": "published"}, {"editorsdemoid": 562, "title": "Specularity in NeRFs: A Comparative Study of Ref-NeRF and NRFF", "state": "preprint"}, {"editorsdemoid": 560, "title": "A Brief Review and Analysis of Two Methods for Automatic Sign Language Segmentation", "state": "published"}, {"editorsdemoid": 558, "title": "SiamTE: Siamese Trace Erasing for Camera Trace Extraction", "state": "preprint"}, {"editorsdemoid": 553, "title": "Accelerating NeRF with the Visual Hull", "state": "published"}, {"editorsdemoid": 550, "title": " \tLinear Super-Resolution Through Translational Motion", "state": "preprint"}, {"editorsdemoid": 549, "title": "A Brief Evaluation of InSAR Phase Denoising and Coherence Estimation with Phi-Net", "state": "published"}, {"editorsdemoid": 542, "title": "A Short Analysis of BigColor for Image Colorization", "state": "published"}, {"editorsdemoid": 539, "title": "A Brief Analysis of iColoriT for Interactive Image Colorization", "state": "published"}, {"editorsdemoid": 535, "title": "Semiogram: a Visual Tool for Gait Quantification in Routine Neurological Follow-Up", "state": "published"}, {"editorsdemoid": 533, "title": "Fixed Pattern Noise Reduction: Optimization-Based and Temporal High Pass Filter Methods", "state": "preprint"}, {"editorsdemoid": 532, "title": "A Closed Form Solution to Natural Image Matting", "state": "preprint"}, {"editorsdemoid": 531, "title": "Termite Retinex", "state": "preprint"}, {"editorsdemoid": 530, "title": "Dehazing with Dark Channel Prior: Analysis and Implementation", "state": "published"}, {"editorsdemoid": 528, "title": "A Review of t-SNE", "state": "published"}, {"editorsdemoid": 525, "title": "A Brief Analysis of SLAVC method for Sound Source Localization", "state": "published"}, {"editorsdemoid": 524, "title": "Masked Autoencoders for Anomaly Detection", "state": "published"}, {"editorsdemoid": 523, "title": "Masked Autoencoders for Inpainting", "state": "published"}, {"editorsdemoid": 522, "title": "Non-local Matching of Superpixel-based Deep Features for Color Transfer and Colorization", "state": "published"}, {"editorsdemoid": 514, "title": "An Active Learning Method Based on Bagging and Applied to Surrogate Modelling", "state": "preprint"}, {"editorsdemoid": 499, "title": "On the Domain Generalization Capabilities of Interactive Segmentation Methods", "state": "published"}, {"editorsdemoid": 498, "title": "Comparing Interactive Image Segmentation Models under Different Clicking Procedures", "state": "published"}, {"editorsdemoid": 497, "title": "A Reference Data Set for the Study of Healthy Subject Gait with Inertial Measurements Units", "state": "published"}, {"editorsdemoid": 496, "title": "Localization and image reconstruction in a STORM based super-resolution microscope", "state": "published"}, {"editorsdemoid": 495, "title": "A Brief Analysis of the Generic Framework for the Structured Abstraction of Images", "state": "published"}, {"editorsdemoid": 494, "title": "Arm-CODA: A Data Set of Upper-limb Human Movement During Routine Examination", "state": "published"}, {"editorsdemoid": 485, "title": "CS-TRD: a Tree Ring Detection method for tree cross sections", "state": "published"}, {"editorsdemoid": 481, "title": "Line segment detection: evaluation of the 2022 state of the art", "state": "published"}, {"editorsdemoid": 477, "title": "OpenCCO: An Implementation of Constrained Constructive Optimization for Generating 2D and 3D Vascular Trees", "state": "published"}, {"editorsdemoid": 469, "title": "Experimental Improvements of Global Optimization Algorithms for Lipschitz Functions", "state": "preprint"}, {"editorsdemoid": 467, "title": "Implementation of Image Denoising based on Backward Stochastic Differential Equations", "state": "preprint"}, {"editorsdemoid": 466, "title": "Survival Forest for Left-Truncated Right-Censored Data", "state": "preprint"}, {"editorsdemoid": 464, "title": "An implementation of 'Efficient Multi-Stage Video Denoising Method' and some variants", "state": "preprint"}, {"editorsdemoid": 462, "title": "Image Forgery Detection Based on Noise Inspection: Analysis and Refinement of the Noisesniffer Method", "state": "published"}, {"editorsdemoid": 460, "title": "Implementing Handheld Burst Super-Resolution", "state": "published"}, {"editorsdemoid": 459, "title": "Monocular depth estimation: evaluation of the 2022 state of the art", "state": "published"}, {"editorsdemoid": 451, "title": "Thin-plate Splines on the Sphere for Interpolation, Computing Global Averages, and Solving Inverse Problems", "state": "published"}, {"editorsdemoid": 447, "title": "Semantic Segmentation: A Zoology of Deep Architectures", "state": "published"}, {"editorsdemoid": 446, "title": "An Analysis of Multi-stage Progressive Image Restoration Network (MPRNet)", "state": "published"}, {"editorsdemoid": 443, "title": "Fast Chromatic Aberration Correction With 1D Filters", "state": "published"}, {"editorsdemoid": 441, "title": "An Overview of GANet - Guided Aggregation Net for End-to-end Stereo Matching", "state": "published"}, {"editorsdemoid": 440, "title": "Incidence of the Sample Size Distribution on One-Shot Federated Learning", "state": "published"}, {"editorsdemoid": 439, "title": "A Deep Learning Model for Change Detection on Satellite Images", "state": "published"}, {"editorsdemoid": 438, "title": "Image Unprocessing: A Pipeline to Recover Raw Data from sRGB Images", "state": "published"}, {"editorsdemoid": 437, "title": "Association Rules Discovery of Deviant Events in Multivariate Time Series: An Analysis and Implementation of the SAX-ARM Algorithm", "state": "published"}, {"editorsdemoid": 436, "title": "Fixed Pattern Noise Reduction: Temporal High Pass Filter", "state": "preprint"}, {"editorsdemoid": 435, "title": "Disparity Estimation Networks for Aerial and High-Resolution Satellite Images: A Review", "state": "published"}, {"editorsdemoid": 434, "title": "Reviewing ViBe, a Popular Background Subtraction Algorithm for Real-Time Applications", "state": "published"}, {"editorsdemoid": 433, "title": "A Study of RobustNet, a Domain Generalization Method for Semantic Segmentation", "state": "published"}, {"editorsdemoid": 432, "title": "Image Forgery Detection via Forensic Similarity Graphs", "state": "published"}, {"editorsdemoid": 431, "title": "Analysis and Experimentation on the ManTraNet Image Forgery Detector", "state": "published"}, {"editorsdemoid": 430, "title": "A Brief Analysis of the SwinIR Image Super-Resolution", "state": "published"}, {"editorsdemoid": 429, "title": "Experiments on Deep Single-Image Portrait Relighting", "state": "published"}, {"editorsdemoid": 427, "title": "A Presentation and Short Discussion of rVAD-fast, a Fast Voice Activity Detector", "state": "published"}, {"editorsdemoid": 425, "title": "Phase Unwrapping using a Joint CNN and SQD-LSTM Network", "state": "published"}, {"editorsdemoid": 424, "title": "Forensic Similarity for Source Camera Model Comparison", "state": "published"}, {"editorsdemoid": 423, "title": "A Brief Analysis of the Dense Extreme Inception Network for Edge Detection", "state": "published"}, {"editorsdemoid": 422, "title": " A Brief Analysis of the Holistically-Nested Edge Detector", "state": "published"}, {"editorsdemoid": 420, "title": "Video Signal-dependent Noise Estimation Via Inter-frame Prediction", "state": "published"}, {"editorsdemoid": 418, "title": "Progressive Compression of Triangle Meshes", "state": "preprint"}, {"editorsdemoid": 417, "title": "A Two-Stage Signal Decomposition into Jump,  Oscillation and Trend using ADMM", "state": "published"}, {"editorsdemoid": 416, "title": "Detection and Interpretation of Change in Registered Satellite Image Time Series", "state": "published"}, {"editorsdemoid": 414, "title": "Electron Paramagnetic Resonance Image Reconstruction with Total Variation Regularization", "state": "published"}, {"editorsdemoid": 405, "title": "Breaking down Polyblur: Fast Blind Correction of Small Anisotropic Blurs", "state": "published"}, {"editorsdemoid": 403, "title": "DeOldify: A review and Implementation of an Automatic Colorization method", "state": "published"}, {"editorsdemoid": 401, "title": "Binary Shape Vectorization by Affine Scale-space", "state": "published"}, {"editorsdemoid": 399, "title": "A Reliable JPEG Quantization Table Estimator", "state": "published"}, {"editorsdemoid": 398, "title": "CAEclust: A Consensus of Autoencoders Representations for Clustering", "state": "published"}, {"editorsdemoid": 397, "title": "Adaptive Anisotropic Morphological Filtering Based on Co-Circularity of Local Orientations", "state": "published"}, {"editorsdemoid": 393, "title": "Constrained and Unconstrained Inverse Potts Modelling for Joint Image Super-Resolution and Segmentation", "state": "published"}, {"editorsdemoid": 391, "title": "Center/Surround Retinex: Analysis and Implementation", "state": "published"}, {"editorsdemoid": 390, "title": "ZERO: a Local JPEG Grid Origin Detector Based on the Number of DCT Zeros and its Applications in Image Forensics", "state": "published"}, {"editorsdemoid": 389, "title": "A Data Set for Fall Detection with Smart Floor Sensors", "state": "published"}, {"editorsdemoid": 385, "title": "Spectral Pre-Adaptation for Restoring Real-World Blurred Images using Standard Deconvolution Methods", "state": "published"}, {"editorsdemoid": 384, "title": "Single Date Wind Turbine Detection on Sentinel-2 Optical Images", "state": "published"}, {"editorsdemoid": 373, "title": "Bilateral K-Means for Superpixel Computation (the SLIC Method)", "state": "published"}, {"editorsdemoid": 369, "title": "CNN-based Method for Segmenting Tree Bark Surface Singularites", "state": "published"}, {"editorsdemoid": 358, "title": "A Mathematical Analysis and Implementation of Residual Interpolation Demosaicking Algorithms", "state": "published"}, {"editorsdemoid": 357, "title": "Automatic RANSAC by Likelihood Maximization", "state": "published"}, {"editorsdemoid": 356, "title": "Robust Homography Estimation from Local Affine Maps", "state": "published"}, {"editorsdemoid": 355, "title": "Image Forgeries detection through Mosaic Analysis: the Intermediate Values Algorithm", "state": "published"}, {"editorsdemoid": 352, "title": "A Generic Bundle Adjustment Methodology for Indirect RPC Model Refinement of Satellite Imagery", "state": "published"}, {"editorsdemoid": 346, "title": "Non-Local Means Filters for Full Polarimetric Synthetic Aperture Radar Images with Stochastic Distances", "state": "published"}, {"editorsdemoid": 344, "title": "Automatic 1D Histogram Segmentation and Application to the Computation of Color Palettes", "state": "published"}, {"editorsdemoid": 342, "title": "Ground Visibility in Satellite Optical Time Series Based on A Contrario Local Image Matching", "state": "published"}, {"editorsdemoid": 340, "title": "Implementation of VBM3D and Some Variants", "state": "published"}, {"editorsdemoid": 338, "title": "Ant Colony Optimization for Estimating Pith Position on Images of Tree Log Ends", "state": "published"}, {"editorsdemoid": 336, "title": "An Analysis and Implementation of the HDR+ Burst Denoising Method", "state": "published"}, {"editorsdemoid": 328, "title": "The Polar Epipolar Rectification", "state": "published"}, {"editorsdemoid": 325, "title": "Exploring Patch Similarity in an Image", "state": "published"}, {"editorsdemoid": 324, "title": "The Portilla-Simoncelli Texture Model: towards Understanding the Early Visual Cortex", "state": "published"}, {"editorsdemoid": 323, "title": "A Compartmental Epidemiological Model Applied to the Covid-19 Epidemic", "state": "published"}, {"editorsdemoid": 305, "title": "SEAIR Framework Accounting for a Personalized Risk Prediction Score: Application to the Covid-19 Epidemic", "state": "published"}, {"editorsdemoid": 304, "title": "A Daily Measure of the SARS-CoV-2 Effective Reproduction Number for all Countries", "state": "published"}, {"editorsdemoid": 300, "title": "Local Contrast Enhancement based on Adaptive Logarithmic Mappings", "state": "published"}, {"editorsdemoid": 298, "title": "Segmentation with Active Contours", "state": "published"}, {"editorsdemoid": 296, "title": "Finding the Skeleton of 2D Shape and Contours: Implementation of Hamilton-Jacobi Skeleton", "state": "published"}, {"editorsdemoid": 295, "title": "PALMS Image Partitioning - A New Parallel Algorithm for the Piecewise Affine-Linear Mumford-Shah Model", "state": "published"}, {"editorsdemoid": 293, "title": "Maximal accumulation for mesh segmentation", "state": "published"}, {"editorsdemoid": 292, "title": "An Algorithm for 3D Curve Smoothing", "state": "published"}, {"editorsdemoid": 286, "title": "Image Inpainting using Patch Consensus and DCT Priors", "state": "published"}, {"editorsdemoid": 283, "title": "Local JPEG Grid Detector via Blocking Artifacts, a Forgery Detection Tool", "state": "published"}, {"editorsdemoid": 282, "title": "An 'All Terrain' Crack Detector Obtained by Deep Learning on Available Databases", "state": "published"}, {"editorsdemoid": 281, "title": "On Anisotropic Optical Flow Inpainting Algorithms", "state": "published"}, {"editorsdemoid": 280, "title": "Geometric Total Variation for Image Vectorization, Zooming and Pixel Art Depixelizing", "state": "preprint"}, {"editorsdemoid": 279, "title": "Simulated Exposure Fusion", "state": "published"}, {"editorsdemoid": 278, "title": "Extended Exposure Fusion", "state": "published"}, {"editorsdemoid": 277, "title": "Reversibility Error of Image Interpolation Methods: Definition and Improvements", "state": "published"}, {"editorsdemoid": 274, "title": "A Study of Two CNN Demosaicking Algorithms", "state": "published"}, {"editorsdemoid": 273, "title": "Trigonometric Polynomial Interpolation of Images", "state": "published"}, {"editorsdemoid": 272, "title": "A Contrario Detection of Faces with a Short Cascade of Classifiers", "state": "published"}, {"editorsdemoid": 271, "title": "Cloud Detection by Luminance and Inter-band Parallax Analysis for Pushbroom Satellite Imagers", "state": "published"}, {"editorsdemoid": 270, "title": "The Gradient Product Transform: An Image Filter for Symmetry Detection", "state": "published"}, {"editorsdemoid": 269, "title": "Extraction of the Level Lines of a Bilinear Image", "state": "published"}, {"editorsdemoid": 265, "title": "A Data Set for the Study of Human Locomotion with Inertial Measurements Units", "state": "published"}, {"editorsdemoid": 263, "title": "How to Reduce Anomaly Detection in Images to Anomaly Detection in Noise", "state": "published"}, {"editorsdemoid": 257, "title": "Optimization of Image B-spline Interpolation for GPU Architectures", "state": "published"}, {"editorsdemoid": 255, "title": "An Implementation of the Mean Shift Algorithm", "state": "published"}, {"editorsdemoid": 251, "title": "Local Assessment of Statokinesigram Dynamics in Time: An in-Depth Look at the Scoring Algorithm", "state": "published"}, {"editorsdemoid": 250, "title": "Watervoxels", "state": "published"}, {"editorsdemoid": 248, "title": "The Orthographic Projection Model for Pose Calibration of Long Focal Images", "state": "published"}, {"editorsdemoid": 247, "title": "Matching of Weakly-Localized Features under Different Geometric Models", "state": "published"}, {"editorsdemoid": 245, "title": "Temporal Repetition Detector for Time Series of Spectrally Limited Satellite Imagers", "state": "published"}, {"editorsdemoid": 243, "title": "Blind Image Deblurring using the l0 Gradient Prior", "state": "published"}, {"editorsdemoid": 242, "title": "EPLL: An Image Denoising Method Using a Gaussian Mixture Model Learned on a Large Set of Patches", "state": "published"}, {"editorsdemoid": 238, "title": "An Analysis and Speedup of the FALDOI Method for Optical Flow Estimation", "state": "published"}, {"editorsdemoid": 236, "title": "An Analysis and Implementation of the Shape Preserving Local Histogram  Modification Algorithm", "state": "published"}, {"editorsdemoid": 234, "title": "TriplClust: An Algorithm for Curve Detection in 3D Point Clouds.", "state": "published"}, {"editorsdemoid": 231, "title": "An Analysis and Implementation of the FFDNet Image Denoising Method", "state": "published"}, {"editorsdemoid": 230, "title": "An Implementation of the Exposure Fusion Algorithm", "state": "published"}, {"editorsdemoid": 229, "title": "An Analysis and Implementation of the Harris Corner Detector", "state": "published"}, {"editorsdemoid": 228, "title": "An Analysis and Implementation of Multigrid Poisson Solvers with Verified Linear Complexity", "state": "published"}, {"editorsdemoid": 226, "title": "Implementation of a Denoising Algorithm based on High-Order Singular Value Decomposition of Tensors", "state": "published"}, {"editorsdemoid": 225, "title": "Fast Affine Invariant Image Matching", "state": "published"}, {"editorsdemoid": 224, "title": "Video Denoising with Optical Flow Estimation", "state": "published"}, {"editorsdemoid": 222, "title": "Improvements of the Inverse Compositional Algorithm for Parametric Motion Estimation", "state": "published"}, {"editorsdemoid": 221, "title": "Theory and Practice of Image B-Spline Interpolation", "state": "published"}, {"editorsdemoid": 218, "title": "Contours, Corners and T-Junctions Detection Algorithm", "state": "published"}, {"editorsdemoid": 217, "title": "Comparison of Optical flow Methods under Stereomatching with Short Baselines", "state": "published"}, {"editorsdemoid": 216, "title": "A Sub-Pixel Edge Detector: an Implementation of the Canny/Devernay Algorithm", "state": "published"}, {"editorsdemoid": 215, "title": "A Parallel, O(n) Algorithm for an Unbiased, Thin Watershed", "state": "published"}, {"editorsdemoid": 213, "title": "Automatic Detection of Internal Copy-Move Forgeries in Images", "state": "published"}, {"editorsdemoid": 212, "title": "The Image Curvature Microscope: Accurate Curvature Computation at Subpixel Resolution", "state": "published"}, {"editorsdemoid": 211, "title": "Estimating an Image's Blur Kernel Using Natural Image Statistics, and Deblurring it: An Analysis of the Goldstein-Fattal Method", "state": "published"}, {"editorsdemoid": 209, "title": "Comparison of Motion Smoothing Strategies for Video Stabilization using Parametric Models", "state": "published"}, {"editorsdemoid": 208, "title": "Iterative Hough Transform for Line Detection in 3D Point Clouds", "state": "published"}, {"editorsdemoid": 207, "title": "2D Filtering of Curvilinear Structures by Ranking the Orientation Responses of Path Operators (RORPO)", "state": "published"}, {"editorsdemoid": 205, "title": "Numerical Simulation of Landscape Evolution Models", "state": "published"}, {"editorsdemoid": 204, "title": "Hyperspectral Image Classification Using Graph Clustering Methods", "state": "published"}, {"editorsdemoid": 203, "title": "Data Adaptive Dual Domain Denoising: a Method to Boost State of the Art Denoising Algorithms", "state": "published"}, {"editorsdemoid": 202, "title": "An Affine Invariant Patch Similarity", "state": "published"}, {"editorsdemoid": 201, "title": "Multi-Scale DCT Denoising", "state": "published"}, {"editorsdemoid": 198, "title": "An Algorithm for Gaussian Texture Inpainting", "state": "published"}, {"editorsdemoid": 197, "title": "Local Fourier Burst Accumulation for Video Deblurring", "state": "published"}, {"editorsdemoid": 196, "title": "Structural Similarity Metrics for Quality Image Fusion Assessment: Algorithms", "state": "published"}, {"editorsdemoid": 194, "title": "Gestaltic Grouping of Line Segments", "state": "published"}, {"editorsdemoid": 192, "title": "Realistic Film Grain Rendering", "state": "published"}, {"editorsdemoid": 189, "title": "Non-local patch-based image inpainting", "state": "published"}, {"editorsdemoid": 184, "title": "A Fast Approximation of the Bilateral Filter Using the Discrete Fourier Transform", "state": "published"}, {"editorsdemoid": 181, "title": "Midway Video Equalization", "state": "published"}, {"editorsdemoid": 179, "title": "The Bilateral Filter for Point Clouds", "state": "published"}, {"editorsdemoid": 177, "title": "Generation and detection of alignments in Gabor", "state": "published"}, {"editorsdemoid": 175, "title": " Unsupervised Smooth Contour Detection", "state": "published"}, {"editorsdemoid": 173, "title": "A MATLAB SMO Implementation to Train a SVM Classifier: Application to Multi-Style License Plate Numbers Recognition", "state": "published"}, {"editorsdemoid": 172, "title": "Robust Discontinuity Preserving Optical Flow Methods", "state": "published"}, {"editorsdemoid": 171, "title": " Efros and Freeman Image Quilting Algorithm for Texture Synthesis", "state": "published"}, {"editorsdemoid": 165, "title": " Directional Filters for Cartoon + Texture Image Decomposition", "state": "published"}, {"editorsdemoid": 161, "title": " PARIGI: a Patch-based Approach to Remove Impulse-Gaussian Noise from Images", "state": "published"}, {"editorsdemoid": 158, "title": " A C++ Implementation of Otsu's Image Segmentation Method", "state": "published"}, {"editorsdemoid": 153, "title": " The Inverse Compositional Algorithm for Parametric Registration", "state": "published"}, {"editorsdemoid": 150, "title": " Small neural networks can denoise image textures well: a useful complement to BM3D", "state": "published"}, {"editorsdemoid": 145, "title": "A Demosaicking Algorithm with Adaptive Inter-Channel Correlation", "state": "published"}, {"editorsdemoid": 144, "title": "Micro-Texture Synthesis by Phase Randomization", "state": "published"}, {"editorsdemoid": 143, "title": "Quasi-Euclidean Epipolar Rectification", "state": "published"}, {"editorsdemoid": 142, "title": "Zhang-Wu Directional LMMSE Image Demosaicking", "state": "published"}, {"editorsdemoid": 141, "title": "On the Implementation of Collaborative TV Regularization: Application to Cartoon+Texture Decomposition", "state": "published"}, {"editorsdemoid": 140, "title": " Implementation of the Midway Image Equalization ", "state": "published"}, {"editorsdemoid": 137, "title": "A Fast C++ Implementation of Neural Network Backpropagation Training Algorithm: Application to Bayesian Optimal Image Demosaicking", "state": "published"}, {"editorsdemoid": 136, "title": "Variational Framework for Non-Local Inpainting", "state": "published"}, {"editorsdemoid": 135, "title": "Roussos-Maragos Tensor-Driven Diffusion for Image Interpolation", "state": "published"}, {"editorsdemoid": 130, "title": "An Iterative Optimization Algorithm for Lens Distortion Correction Using Two-Parameter Models", "state": "published"}, {"editorsdemoid": 129, "title": "Non-uniformity Correction of Infrared Images by Midway Equalization", "state": "published"}, {"editorsdemoid": 125, "title": " The Noise Clinic: a Blind Image Denoising Algorithm", "state": "published"}, {"editorsdemoid": 124, "title": "Analysis and Extension of the PCA Method, Estimating a Noise Curve from a Single Image", "state": "published"}, {"editorsdemoid": 123, "title": "Bilaterally Weighted Patches for Disparity Map Computation ", "state": "published"}, {"editorsdemoid": 121, "title": " Image Interpolation with Geometric Contour Stencils", "state": "published"}, {"editorsdemoid": 120, "title": "Parameter-Free Fast Pixelwise Non-Local Means Denoising", "state": "published"}, {"editorsdemoid": 118, "title": "Joint TVL1 Optical Flow and Occlusion Estimation", "state": "published"}, {"editorsdemoid": 117, "title": "Computing an Exact Gaussian Scale-Space", "state": "published"}, {"editorsdemoid": 116, "title": "How to Apply a Filter Defined in the Frequency Domain by a Continuous Function", "state": "published"}, {"editorsdemoid": 112, "title": "A Line Search Multilevel Truncated Newton Algorithm for Computing the Optical Flow", "state": "published"}, {"editorsdemoid": 110, "title": " Image Interpolation with Contour Stencils", "state": "published"}, {"editorsdemoid": 108, "title": "The Flutter Shutter Code Calculator", "state": "published"}, {"editorsdemoid": 107, "title": "Multiscale Retinex", "state": "published"}, {"editorsdemoid": 106, "title": "Automatic Lens Distortion Correction Using One-Parameter Division Models", "state": "published"}, {"editorsdemoid": 103, "title": " Cartoon + Texture Image Decomposition by the TV-L1 Model", "state": "published"}, {"editorsdemoid": 98, "title": "Implementation of Nonlocal Pansharpening Image Fusion", "state": "published"}, {"editorsdemoid": 95, "title": "Image Demosaicking with Contour Stencils", "state": "published"}, {"editorsdemoid": 91, "title": "Retinex Poisson Equation: a Model for Color Perception", "state": "published"}, {"editorsdemoid": 90, "title": "Analysis and Extension of the Percentile Method, Estimating a Noise Curve from a Single Image", "state": "published"}, {"editorsdemoid": 89, "title": "Chan-Vese Segmentation", "state": "published"}, {"editorsdemoid": 88, "title": "Automatic Color Enhancement (ACE) and its Fast Implementation", "state": "published"}, {"editorsdemoid": 86, "title": "An Analysis and Improvement of the BLS-GSM Denoising Method", "state": "published"}, {"editorsdemoid": 84, "title": " Screened Poisson Equation for Image Contrast Enhancement ", "state": "published"}, {"editorsdemoid": 79, "title": "The Heeger & Bergen Pyramid Based Texture Synthesis Algorithm", "state": "published"}, {"editorsdemoid": 78, "title": "Stereo Disparity through Cost Aggregation with Guided Filter", "state": "published"}, {"editorsdemoid": 77, "title": "Recovering the Subpixel PSF from Two Photographs at Different Distances", "state": "published"}, {"editorsdemoid": 76, "title": "Cartoon+Texture Image Decomposition", "state": "published"}, {"editorsdemoid": 75, "title": "Meaningful Scales Detection: an Unsupervised Noise Detection Algorithm for Digital Contours", "state": "published"}, {"editorsdemoid": 73, "title": " Non-parametric Sub-pixel Local Point Spread Function Estimation", "state": "published"}, {"editorsdemoid": 70, "title": "A Near-Linear Time Guaranteed Algorithm for Digital Curve Simplification Under the Fr\u00e9chet Distance", "state": "published"}, {"editorsdemoid": 69, "title": "An Analysis of the SURF Method", "state": "published"}, {"editorsdemoid": 68, "title": "A Streaming Distance Transform Algorithm for Neighborhood-Sequence Distances", "state": "published"}, {"editorsdemoid": 67, "title": "Digital Level Layers for Digital Curve Decomposition and Vectorization", "state": "published"}, {"editorsdemoid": 65, "title": " Malvar-He-Cutler Linear Image Demosaicking", "state": "published"}, {"editorsdemoid": 64, "title": "Automatic Detection and Removal of Impulsive Noise in Audio Signals", "state": "published"}, {"editorsdemoid": 63, "title": "ASIFT: An Algorithm for Fully Affine Invariant Comparison", "state": "published"}, {"editorsdemoid": 61, "title": "Chambolle's Projection Algorithm for Total Variation Denoising", "state": "published"}, {"editorsdemoid": 60, "title": "Automatic Homographic Registration of a Pair of Images, with A Contrario Elimination of Outliers", "state": "published"}, {"editorsdemoid": 59, "title": " Exemplar-based Texture Synthesis: the Efros-Leung Algorithm", "state": "published"}, {"editorsdemoid": 58, "title": "An Implementation and Detailed Analysis of the K-SVD Image Denoising Algorithm", "state": "published"}, {"editorsdemoid": 56, "title": "Gunturk-Altunbasak-Mersereau Alternating Projections Image Demosaicking", "state": "published"}, {"editorsdemoid": 55, "title": "Non-Local Means Denoising", "state": "published"}, {"editorsdemoid": 52, "title": "The Implementation of SURE Guided Piecewise Linear Image Denoising", "state": "published"}, {"editorsdemoid": 51, "title": "Simplest Color Balance", "state": "published"}, {"editorsdemoid": 50, "title": " Self-Similarity Driven Demosaicking", "state": "published"}, {"editorsdemoid": 47, "title": "Study of the Principal Component Analysis Method for the Correction of Images Degraded by Turbulence", "state": "published"}, {"editorsdemoid": 45, "title": "Analysis and Extension of the Ponomarenko et al Method Estimating a Noise Curve from a Single Image", "state": "published"}, {"editorsdemoid": 44, "title": "An Implementation of Combined Local-Global Optical Flow", "state": "published"}, {"editorsdemoid": 43, "title": "Image Color Cube Dimensional Filtering and Visualization", "state": "published"}, {"editorsdemoid": 41, "title": " Selective Contrast Adjustment by Poisson Equation ", "state": "published"}, {"editorsdemoid": 38, "title": "LSD: a Line Segment Detector", "state": "published"}, {"editorsdemoid": 35, "title": " A Review of Classic Edge Detectors", "state": "published"}, {"editorsdemoid": 30, "title": "Local Color Correction", "state": "published"}, {"editorsdemoid": 28, "title": "Rudin-Osher-Fatemi Total Variation Denoising using Split Bregman", "state": "published"}, {"editorsdemoid": 27, "title": " Color and Contrast Enhancement by Controlled Piecewise Affine Histogram Equalization ", "state": "published"}, {"editorsdemoid": 26, "title": "TV-L1 Optical Flow Estimation", "state": "published"}, {"editorsdemoid": 25, "title": "DCT image denoising: a simple and effective image denoising algorithm", "state": "published"}, {"editorsdemoid": 23, "title": "Interpolation of Missing Samples in Audio Signals Based on Autoregressive Modeling", "state": "published"}, {"editorsdemoid": 22, "title": "An analysis and implementation of the BM3D image denoising method", "state": "published"}, {"editorsdemoid": 21, "title": "Robust Optical Flow Estimation", "state": "published"}, {"editorsdemoid": 20, "title": "Horn-Schunck Optical Flow with a Multi-Scale Strategy", "state": "published"}, {"editorsdemoid": 18, "title": " The Flutter Shutter Camera Simulator", "state": "published"}, {"editorsdemoid": 16, "title": "Implementation of the \"Non-Local Bayes\" (NL-Bayes) Image Denoising Algorithm", "state": "published"}];
+        const showInfo = true;
+
+        if (showInfo) {
+            document.getElementById('info-container').innerHTML = `
+                <div class='info-box'>
+                    <p>The demos whose ID begins with <strong>'77777'</strong> are public workshops and those with <strong>'33333'</strong> are private.<br>
+                    Example demos begin with <strong>'11111'</strong>.</p>
+                </div>
+                <div class='info-box warning'>
+                    <p><strong>Note:</strong> Test demos begin with <strong>'55555'</strong>. These are intended for brief usage and evaluation, and will be automatically removed after a period of inactivity.</p>
+                </div>
+            `;
+        }
+
+        const container = document.getElementById('demos-container');
+        const searchInput = document.getElementById('search-input');
+
+        function renderDemos(filterText = '') {
+            container.innerHTML = ''; // Clear container
+            const lowerFilter = filterText.toLowerCase();
+
+            // Group by state
+            const demosByState = {};
+            let matchCount = 0;
+
+            demos.forEach(demo => {
+                const searchStr = `${demo.title} ${demo.editorsdemoid} ${demo.state}`.toLowerCase();
+
+                // If there's a filter and it isn't found in the text, skip it
+                if (lowerFilter && !searchStr.includes(lowerFilter)) {
+                    return;
+                }
+
+                if (!demosByState[demo.state]) {
+                    demosByState[demo.state] = [];
+                }
+                demosByState[demo.state].push(demo);
+                matchCount++;
+            });
+
+
+
+            if (matchCount === 0) {
+                container.innerHTML = '<div class="no-results">No demos found matching your search.</div>';
+                return;
+            }
+
+            // Render each state
+            let htmlChunks = [];
+            Object.keys(demosByState).forEach(state => {
+                const stateDemos = demosByState[state];
+                // Sort by demo ID descending
+                stateDemos.sort((a, b) => {
+                    const idA = parseInt(a.editorsdemoid, 10) || 0;
+                    const idB = parseInt(b.editorsdemoid, 10) || 0;
+                    return idB - idA;
+                });
+
+                let groupHtml = `<h2 id="${state}">${state}</h2><div class="demo-group">`;
+
+                stateDemos.forEach(demo => {
+                    const demoIdStr = String(demo.editorsdemoid);
+                    const isPrivate = demoIdStr.startsWith('33333');
+                    const privateBadge = isPrivate ? " <span class='badge private'>(private)</span>" : "";
+
+                    groupHtml += `
+                        <a class="demo-item" href="/demo/clientApp/demo.html?id=${demo.editorsdemoid}" target="_blank">
+                            <span class="demo-id">Demo #${demo.editorsdemoid}</span>${privateBadge}: 
+                            <span class="demo-title">${demo.title}</span>
+                        </a>
+                    `;
+                });
+
+                groupHtml += `</div>`;
+                htmlChunks.push(groupHtml);
+            });
+
+            container.innerHTML = htmlChunks.join('');
+        }
+
+        function initStatsBar() {
+            const allByState = {};
+            demos.forEach(demo => {
+                if (!allByState[demo.state]) allByState[demo.state] = 0;
+                allByState[demo.state]++;
+            });
+            const statsBar = document.getElementById('stats-bar');
+            let statsHtml = `<div class="stats-card stats-total"><span class="stats-number">${demos.length}</span><span class="stats-label">total</span></div>`;
+            Object.keys(allByState).forEach(state => {
+                statsHtml += `<div class="stats-card"><span class="stats-number">${allByState[state]}</span><span class="stats-label">${state}</span></div>`;
+            });
+            statsBar.innerHTML = statsHtml;
+        }
+
+        // Attach event listener for filtering (debounced)
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                renderDemos(e.target.value);
+                // Reset focus when typing
+                currentFocusIndex = -1;
+                updateFocus();
+            }, 150);
+        });
+
+        // Keyboard navigation state
+        let currentFocusIndex = -1;
+
+        function updateFocus() {
+            const items = Array.from(document.querySelectorAll('.demo-item'));
+            items.forEach((item, index) => {
+                if (index === currentFocusIndex) {
+                    item.classList.add('keyboard-focused');
+                    // Scroll into view if needed
+                    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    item.classList.remove('keyboard-focused');
+                }
+            });
+        }
+
+        // Global hotkey to focus search '/' and handle arrow keys
+        document.addEventListener('keydown', (e) => {
+            const isInputFocused = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
+            const items = Array.from(document.querySelectorAll('.demo-item'));
+
+            if (e.key === '/') {
+                if (isInputFocused) return;
+                e.preventDefault();
+                searchInput.focus();
+                return;
+            }
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    currentFocusIndex = Math.min(currentFocusIndex + 1, items.length - 1);
+                    updateFocus();
+                    // Blur search to prevent input cursor from moving
+                    if (isInputFocused) searchInput.blur();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    currentFocusIndex = Math.max(currentFocusIndex - 1, -1);
+                    if (currentFocusIndex === -1) {
+                        // Focus back onto the search input
+                        updateFocus();
+                        searchInput.focus();
+                        // Put cursor at end of input
+                        const val = searchInput.value;
+                        searchInput.value = '';
+                        searchInput.value = val;
+                    } else {
+                        updateFocus();
+                    }
+                }
+            } else if (e.key === 'Enter') {
+                if (currentFocusIndex >= 0 && currentFocusIndex < items.length) {
+                    e.preventDefault();
+                    items[currentFocusIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                if (isInputFocused) searchInput.blur();
+                searchInput.value = '';
+                currentFocusIndex = -1;
+                renderDemos();
+                updateFocus();
+            }
+        });
+
+        // Initial render
+        initStatsBar();
+        renderDemos();
+    </script>
+</body>
+
+</html>
