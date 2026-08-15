@@ -32,6 +32,19 @@ except Exception:
                 pass
             return "AquaPulse AI system online. Neural telemetry parameters synchronized."
 
+# --- GLOBAL AUDIO & STATE CONTROLS ---
+ACTIVE_COMM = None
+language_mode = "EN"
+
+def play_sound_async(frequency=800, duration=150):
+    def _beep():
+        try:
+            import winsound
+            winsound.Beep(frequency, duration)
+        except Exception:
+            pass
+    threading.Thread(target=_beep, daemon=True).start()
+
 # --- CANCELLABLE AUDIO ENGINE & THREAD-SAFE AUDIO MANAGER ---
 class CancellableAudioEngine:
     def __init__(self):
@@ -40,18 +53,43 @@ class CancellableAudioEngine:
         self.speech_token = 0
         self.is_speaking = False
 
-    def speak(self, text):
+    def speak(self, text, lang="EN"):
         self.stop()
         with self.lock:
             self.speech_token += 1
             token = self.speech_token
             self.is_speaking = True
 
-        def _speak_thread(tok):
+        def _speak_thread(tok, lang_mode):
             try:
                 if HAS_PYTTSX3 and pyttsx3 is not None:
                     eng = pyttsx3.init()
-                    eng.setProperty('rate', 160)
+                    eng.setProperty('rate', 155)
+                    eng.setProperty('volume', 1.0)
+                    
+                    voices = eng.getProperty('voices')
+                    selected_voice = None
+                    
+                    is_german = (lang_mode == "DE" or any(w in text.lower() for w in ['ich', 'der', 'die', 'das', 'ist', 'und', 'nicht', 'fisch', 'wasser', 'deutsch', 'ä', 'ö', 'ü', 'ß']))
+                    
+                    if is_german:
+                        for v in voices:
+                            v_name = v.name.lower()
+                            v_id = v.id.lower()
+                            if 'hedda' in v_name or 'german' in v_name or 'de-de' in v_id or 'de_de' in v_id or 'stefan' in v_name or 'katja' in v_name:
+                                selected_voice = v.id
+                                break
+                    else:
+                        for v in voices:
+                            v_name = v.name.lower()
+                            v_id = v.id.lower()
+                            if 'david' in v_name or 'en-us' in v_id or 'zira' in v_name:
+                                selected_voice = v.id
+                                break
+
+                    if selected_voice:
+                        eng.setProperty('voice', selected_voice)
+
                     with self.lock:
                         if self.speech_token != tok:
                             return
@@ -66,7 +104,7 @@ class CancellableAudioEngine:
                         self.is_speaking = False
                         self.engine = None
 
-        threading.Thread(target=_speak_thread, args=(token,), daemon=True).start()
+        threading.Thread(target=_speak_thread, args=(token, lang), daemon=True).start()
 
     def stop(self):
         with self.lock:
@@ -81,8 +119,10 @@ class CancellableAudioEngine:
 
 audio_manager = CancellableAudioEngine()
 
-def speak_tts_async(text):
-    audio_manager.speak(text)
+def speak_tts_async(text, lang=None):
+    if lang is None:
+        lang = language_mode
+    audio_manager.speak(text, lang=lang)
 
 pauly_llm = OllamaLLM(model="llama3")
 pauly_lock = threading.Lock()
@@ -152,6 +192,28 @@ def update_pauly_fade_state_machine():
         if pauly_ui_alpha <= 0.0:
             pauly_fade_state = "IDLE"
 
+def clean_pauly_response(text):
+    if not text:
+        return ""
+    text = text.replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ')
+    while '  ' in text:
+        text = text.replace('  ', ' ')
+    
+    meta_phrases = [
+        "The language of the user's question is English, so I'll respond in English.",
+        "The language of the user's question is German, so I'll respond in German.",
+        "The language of the user's question is English.",
+        "The language of the user's question is German.",
+        "As Dr. Daniel Pauly,",
+        "As Dr. Pauly,"
+    ]
+    for p in meta_phrases:
+        if text.startswith(p):
+            text = text[len(p):].strip()
+        text = text.replace(p, "").strip()
+        
+    return text.strip()
+
 def trigger_pauly_call(species_name, user_question=None, target_specimen_info=None, hud_notifs=None, force=False):
     global pauly_active_dialogue, pauly_ui_alpha, pauly_fade_state, pauly_reading_timer, language_mode
     
@@ -168,23 +230,25 @@ def trigger_pauly_call(species_name, user_question=None, target_specimen_info=No
     specimen_context = f" Target details: {target_specimen_info}." if target_specimen_info else ""
     
     if user_question:
-        pauly_active_dialogue = f"Dr. Pauly analyzing query regarding {species_name}..."
+        pauly_active_dialogue = f"Dr. Pauly analyzing: '{user_question}'..."
         prompt = (f"You are Dr. Daniel Pauly, world-renowned marine biologist. "
-                  f"A technician asked: '{user_question}' regarding specimen '{species_name}'.{specimen_context} "
-                  f"Detect the language of the user's question (English or German). If the question is in German, respond entirely in fluent German. "
-                  f"If the question is in English, respond in English. Provide a concise 2-sentence expert scientific response.")
+                  f"Directly answer the user's question without any introductory meta-talk or language declarations. "
+                  f"Question: '{user_question}' regarding specimen '{species_name}'.{specimen_context} "
+                  f"Language rule: If the question is in German, answer in German. Otherwise answer in English. "
+                  f"Provide a direct 2-sentence expert marine biology answer.")
     else:
         lang_instruction = "Respond in German." if language_mode == "DE" else "Respond in English."
         pauly_active_dialogue = f"Dr. Pauly analyzing selected specimen {species_name}..."
         prompt = (f"You are Dr. Daniel Pauly, world-renowned marine biologist. {lang_instruction} "
-                  f"Provide a 2-sentence fascinating scientific insight about '{species_name}' ecology.{specimen_context}")
+                  f"Directly provide a 2-sentence fascinating scientific insight about '{species_name}' ecology.{specimen_context}")
 
     tok = audio_manager.speech_token
 
     def _worker(current_tok):
         global pauly_active_dialogue, pauly_fade_state, pauly_reading_timer
         try:
-            response = pauly_llm.invoke(prompt).strip()
+            raw_res = pauly_llm.invoke(prompt).strip()
+            response = clean_pauly_response(raw_res)
             if audio_manager.speech_token != current_tok:
                 return
             pauly_active_dialogue = response

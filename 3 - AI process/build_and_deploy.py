@@ -3,6 +3,20 @@ import sys
 import shutil
 import subprocess
 
+def force_remove_dir(dir_path):
+    if not os.path.exists(dir_path):
+        return
+    def _onerror(func, path, exc_info):
+        try:
+            os.chmod(path, 0o777)
+            func(path)
+        except Exception:
+            pass
+    try:
+        shutil.rmtree(dir_path, onerror=_onerror)
+    except Exception:
+        pass
+
 def main():
     script_dir = os.path.abspath(r"C:\Users\parsa\Desktop\Code\3 - AI process")
     install_win_dir = r"C:\Users\parsa\Desktop\Install\WIN"
@@ -16,12 +30,14 @@ def main():
     print(" [Build] AquaPulse Windows Setup & Bundle Build Pipeline")
     print("==========================================================")
 
+    dist_app = os.path.join(script_dir, "dist", "AquaPulse_App")
+    force_remove_dir(dist_app)
+
     # 1. Build AquaPulse_App
     print("\n[Step 1/3] Building AquaPulse Application package (AquaPulse_App)...")
     spec_app = os.path.join(script_dir, "AquaPulse.spec")
     subprocess.run([pyinstaller_exe, spec_app, "--noconfirm"], cwd=script_dir, check=True)
 
-    dist_app = os.path.join(script_dir, "dist", "AquaPulse_App")
     if not os.path.exists(dist_app):
         print(f"[ERROR] Compiled application bundle not found at {dist_app}")
         sys.exit(1)
@@ -39,13 +55,11 @@ def main():
 
     # Copy AquaPulse_App into C:\Users\parsa\Desktop\Install\WIN\AquaPulse_App and script_dir
     dest_win_app = os.path.join(install_win_dir, "AquaPulse_App")
-    if os.path.exists(dest_win_app):
-        shutil.rmtree(dest_win_app, ignore_errors=True)
+    force_remove_dir(dest_win_app)
     shutil.copytree(dist_app, dest_win_app)
 
     setup_app_src = os.path.join(script_dir, "AquaPulse_App")
-    if os.path.exists(setup_app_src):
-        shutil.rmtree(setup_app_src, ignore_errors=True)
+    force_remove_dir(setup_app_src)
     shutil.copytree(dist_app, setup_app_src)
 
     # 3. Build AquaPulse_Setup.exe directly into C:\Users\parsa\Desktop\Install\WIN

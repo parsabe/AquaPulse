@@ -63,6 +63,9 @@ hud_notifs = HUDNotificationEngine()
 def clean_text_for_opencv(text):
     if not text:
         return ""
+    text = text.replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ')
+    while '  ' in text:
+        text = text.replace('  ', ' ')
     replacements = {
         'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'Ä': 'Ae', 'Ö': 'Oe', 'Ü': 'Ue', 'ß': 'ss',
         '’': "'", '‘': "'", '“': '"', '”': '"', '–': '-', '—': '-', '…': '...'
@@ -71,13 +74,12 @@ def clean_text_for_opencv(text):
         text = text.replace(k, v)
     return text.encode('ascii', 'ignore').decode('ascii')
 
-def draw_wrapped_text(panel, text, start_x, start_y, max_w=340, max_lines=8, font_scale=0.35, text_color=(31, 29, 29)):
+def get_wrapped_text_lines(text, max_w=340, font_scale=0.35):
     font = cv2.FONT_HERSHEY_SIMPLEX
     clean_str = clean_text_for_opencv(text)
     words = clean_str.split(' ')
     lines = []
     curr_line = ""
-    
     for w in words:
         if not w:
             continue
@@ -89,16 +91,15 @@ def draw_wrapped_text(panel, text, start_x, start_y, max_w=340, max_lines=8, fon
             if curr_line:
                 lines.append(curr_line)
             curr_line = w
-            
     if curr_line:
         lines.append(curr_line)
+    return lines
 
+def draw_wrapped_text(panel, text, start_x, start_y, max_w=340, max_lines=12, font_scale=0.35, text_color=(31, 29, 29)):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    lines = get_wrapped_text_lines(text, max_w=max_w, font_scale=font_scale)
     line_h = int(18 * (font_scale / 0.35))
     
-    # If text exceeds max_lines, reduce font scale slightly so ALL text fits without truncation!
-    if len(lines) > max_lines and font_scale > 0.28:
-        return draw_wrapped_text(panel, text, start_x, start_y, max_w=max_w, max_lines=max_lines + 2, font_scale=font_scale - 0.03, text_color=text_color)
-        
     for i, line_str in enumerate(lines[:max_lines]):
         ly = start_y + i * line_h
         if ly + line_h <= panel.shape[0]:

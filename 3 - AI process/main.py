@@ -720,7 +720,13 @@ while cap.isOpened():
     p4_y += 128
 
     comm.update_pauly_fade_state_machine()
-    pauly_card_h = 160
+    
+    if comm.pauly_active_dialogue:
+        text_lines = ui.get_wrapped_text_lines(comm.pauly_active_dialogue, max_w=right_panel_w - 36, font_scale=0.35)
+        pauly_card_h = max(140, len(text_lines) * 18 + 48)
+    else:
+        pauly_card_h = 90
+
     cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + pauly_card_h), (250, 250, 252), -1)
     cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + pauly_card_h), (89, 199, 52) if comm.is_pauly_speaking() else (204, 199, 199), 1)
 
@@ -728,7 +734,7 @@ while cap.isOpened():
                 cv2.FONT_HERSHEY_SIMPLEX, 0.38, (89, 199, 52), 1, cv2.LINE_AA)
 
     if comm.pauly_active_dialogue:
-        ui.draw_wrapped_text(pane4, comm.pauly_active_dialogue, 18, p4_y + 40, max_w=right_panel_w - 36, max_lines=7, font_scale=0.35, text_color=(31, 29, 29))
+        ui.draw_wrapped_text(pane4, comm.pauly_active_dialogue, 18, p4_y + 40, max_w=right_panel_w - 36, max_lines=12, font_scale=0.35, text_color=(31, 29, 29))
     else:
         cv2.putText(pane4, "Press [C] or click fish to trigger Dr. Pauly audio", (18, p4_y + 55),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.34, (142, 142, 147), 1)
