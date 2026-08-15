@@ -384,25 +384,54 @@ class AquaPulseSetupWizard:
         self._log(f"📂 Installation Target Directory: {target_dir}")
         self._set_status("Deploying application files...", 10)
         
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        app_source = os.path.join(script_dir, "AquaPulse_App")
-        uninstaller_source = os.path.join(script_dir, "Uninstall.exe")
+        if getattr(sys, 'frozen', False):
+            exe_dir = os.path.dirname(sys.executable)
+        else:
+            exe_dir = os.path.dirname(os.path.abspath(__file__))
+            
+        base_dir = getattr(sys, '_MEIPASS', exe_dir)
         
+        possible_app_sources = [
+            os.path.join(exe_dir, "AquaPulse_App"),
+            os.path.join(base_dir, "AquaPulse_App"),
+            r"C:\Users\parsa\Desktop\Install\WIN\AquaPulse_App",
+            os.path.join(exe_dir, "dist", "AquaPulse_App")
+        ]
+        
+        app_source = None
+        for p in possible_app_sources:
+            if os.path.exists(p):
+                app_source = p
+                break
+                
+        possible_uninstallers = [
+            os.path.join(base_dir, "Uninstall.exe"),
+            os.path.join(exe_dir, "Uninstall.exe"),
+            os.path.join(exe_dir, "AquaPulse_App", "Uninstall.exe"),
+            r"C:\Users\parsa\Desktop\Install\WIN\AquaPulse_App\Uninstall.exe"
+        ]
+        
+        uninstaller_source = None
+        for u in possible_uninstallers:
+            if os.path.exists(u):
+                uninstaller_source = u
+                break
+
         try:
             os.makedirs(target_dir, exist_ok=True)
-            if os.path.exists(app_source):
-                self._log("  📦 Copying application binaries, models, and assets...")
+            if app_source:
+                self._log(f"  📦 Deploying application binaries from {app_source}...")
                 shutil.copytree(app_source, target_dir, dirs_exist_ok=True)
-                self._log("  ✅ Application files copied successfully!")
+                self._log("  ✅ Application binaries deployed to C:\\AquaPulse!")
             else:
-                self._log(f"  ℹ️ Source app directory merged into installation.")
+                self._log("  ⚠️ Warning: Source AquaPulse_App directory not found.")
                 
-            if os.path.exists(uninstaller_source):
+            if uninstaller_source:
                 dest_uninstaller = os.path.join(target_dir, "Uninstall.exe")
                 shutil.copy2(uninstaller_source, dest_uninstaller)
-                self._log("  ✅ Installed Uninstaller executable (Uninstall.exe)")
+                self._log("  ✅ Installed Control Panel Uninstaller (Uninstall.exe)")
         except Exception as e:
-            self._log(f"  ⚠️ Error copying files: {e}")
+            self._log(f"  ⚠️ Notice during deployment: {e}")
 
         self._set_status("Configuring Control Panel & Shortcuts...", 50)
         register_control_panel_uninstaller(target_dir, log_callback=self._log)

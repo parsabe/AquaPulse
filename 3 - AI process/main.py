@@ -41,6 +41,10 @@ def select_video_file_dialog():
         x = (screen_w - 540) // 2
         y = (screen_h - 260) // 2
         root.geometry(f"540x260+{x}+{y}")
+        root.lift()
+        root.focus_force()
+        root.attributes('-topmost', True)
+        root.after(100, lambda: root.attributes('-topmost', False))
         
         bg_color = "#1e222d"
         card_bg = "#2a2e3d"
@@ -716,18 +720,19 @@ while cap.isOpened():
     p4_y += 128
 
     comm.update_pauly_fade_state_machine()
-    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 140), (250, 250, 252), -1)
-    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 140), (89, 199, 52) if comm.is_pauly_speaking() else (204, 199, 199), 1)
+    pauly_card_h = 160
+    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + pauly_card_h), (250, 250, 252), -1)
+    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + pauly_card_h), (89, 199, 52) if comm.is_pauly_speaking() else (204, 199, 199), 1)
 
     cv2.putText(pane4, "DR. PAULY NEURAL VOICE TELEMETRY", (18, p4_y + 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.38, (89, 199, 52), 1, cv2.LINE_AA)
 
     if comm.pauly_active_dialogue:
-        ui.draw_wrapped_text(pane4, comm.pauly_active_dialogue, 18, p4_y + 42, max_w=right_panel_w - 36, max_lines=5, font_scale=0.35, text_color=(31, 29, 29))
+        ui.draw_wrapped_text(pane4, comm.pauly_active_dialogue, 18, p4_y + 40, max_w=right_panel_w - 36, max_lines=7, font_scale=0.35, text_color=(31, 29, 29))
     else:
         cv2.putText(pane4, "Press [C] or click fish to trigger Dr. Pauly audio", (18, p4_y + 55),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.34, (142, 142, 147), 1)
-    p4_y += 150
+    p4_y += pauly_card_h + 10
 
     comm.johnny_relic.update_and_render(canvas, pane4_x, right_panel_w, start_y=p4_y, draw_text_fn=ui.draw_wrapped_text)
 
@@ -856,11 +861,10 @@ while cap.isOpened():
             elif c_key == 13:
                 if user_chat_buffer.strip():
                     if comm.ACTIVE_COMM == "JOHNNY":
-                        ui.hud_notifs.add("⛔ COMM LINK LOCKED: JOHNNY RELIC ACTIVE", (48, 59, 255), 2.5)
-                    else:
-                        target_species = locked_target["species"] if locked_target is not None else ("Salmo trutta" if len(recent_gbif_species)==0 else recent_gbif_species[-1])
-                        target_spec_info = f"Specimen ID #{locked_target['id']} ({locked_target['species']}, Conf: {locked_target['conf']*100:.0f}%)" if locked_target is not None else None
-                        comm.trigger_pauly_call(target_species, user_question=user_chat_buffer, target_specimen_info=target_spec_info, hud_notifs=ui.hud_notifs)
+                        comm.johnny_relic.cancel(ui.hud_notifs)
+                    target_species = locked_target["species"] if locked_target is not None else ("Salmo trutta" if len(recent_gbif_species)==0 else recent_gbif_species[-1])
+                    target_spec_info = f"Specimen ID #{locked_target['id']} ({locked_target['species']}, Conf: {locked_target['conf']*100:.0f}%)" if locked_target is not None else None
+                    comm.trigger_pauly_call(target_species, user_question=user_chat_buffer, target_specimen_info=target_spec_info, hud_notifs=ui.hud_notifs, force=True)
                 chat_mode_active = False
             elif c_key == 27:
                 chat_mode_active = False

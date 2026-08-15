@@ -32,30 +32,57 @@ except Exception:
                 pass
             return "AquaPulse AI system online. Neural telemetry parameters synchronized."
 
-# --- GLOBAL AUDIO & STATE CONTROLS ---
-ACTIVE_COMM = None
-language_mode = "EN"
+# --- CANCELLABLE AUDIO ENGINE & THREAD-SAFE AUDIO MANAGER ---
+class CancellableAudioEngine:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.engine = None
+        self.speech_token = 0
+        self.is_speaking = False
 
-def play_sound_async(frequency=800, duration=150):
-    def _beep():
-        try:
-            import winsound
-            winsound.Beep(frequency, duration)
-        except Exception:
-            pass
-    threading.Thread(target=_beep, daemon=True).start()
+    def speak(self, text):
+        self.stop()
+        with self.lock:
+            self.speech_token += 1
+            token = self.speech_token
+            self.is_speaking = True
+
+        def _speak_thread(tok):
+            try:
+                if HAS_PYTTSX3 and pyttsx3 is not None:
+                    eng = pyttsx3.init()
+                    eng.setProperty('rate', 160)
+                    with self.lock:
+                        if self.speech_token != tok:
+                            return
+                        self.engine = eng
+                    eng.say(text)
+                    eng.runAndWait()
+            except Exception:
+                pass
+            finally:
+                with self.lock:
+                    if self.speech_token == tok:
+                        self.is_speaking = False
+                        self.engine = None
+
+        threading.Thread(target=_speak_thread, args=(token,), daemon=True).start()
+
+    def stop(self):
+        with self.lock:
+            self.speech_token += 1
+            self.is_speaking = False
+            if self.engine is not None:
+                try:
+                    self.engine.stop()
+                except Exception:
+                    pass
+                self.engine = None
+
+audio_manager = CancellableAudioEngine()
 
 def speak_tts_async(text):
-    def _speak():
-        try:
-            if HAS_PYTTSX3 and pyttsx3 is not None:
-                engine = pyttsx3.init()
-                engine.setProperty('rate', 160)
-                engine.say(text)
-                engine.runAndWait()
-        except Exception:
-            pass
-    threading.Thread(target=_speak, daemon=True).start()
+    audio_manager.speak(text)
 
 pauly_llm = OllamaLLM(model="llama3")
 pauly_lock = threading.Lock()
@@ -63,7 +90,7 @@ pauly_speech_active = False
 
 def is_pauly_speaking():
     with pauly_lock:
-        return pauly_speech_active
+        return pauly_speech_active or audio_manager.is_speaking
 
 def set_pauly_speaking(val):
     global pauly_speech_active, ACTIVE_COMM
@@ -75,7 +102,13 @@ def set_pauly_speaking(val):
             ACTIVE_COMM = None
 
 def stop_pauly_audio():
-    set_pauly_speaking(False)
+    global pauly_speech_active, ACTIVE_COMM, pauly_fade_state
+    audio_manager.stop()
+    with pauly_lock:
+        pauly_speech_active = False
+        if ACTIVE_COMM == "PAULY":
+            ACTIVE_COMM = None
+    pauly_fade_state = "FADE_OUT"
 
 GLOBAL_SPECIES_IMAGES = {}
 def fetch_gbif_species_image(species_name):
@@ -119,11 +152,15 @@ def update_pauly_fade_state_machine():
         if pauly_ui_alpha <= 0.0:
             pauly_fade_state = "IDLE"
 
-def trigger_pauly_call(species_name, user_question=None, target_specimen_info=None, hud_notifs=None):
+def trigger_pauly_call(species_name, user_question=None, target_specimen_info=None, hud_notifs=None, force=False):
     global pauly_active_dialogue, pauly_ui_alpha, pauly_fade_state, pauly_reading_timer, language_mode
-    if is_pauly_speaking() or johnny_relic.is_active:
-        return
-
+    
+    # Interrupt any ongoing audio/speech before starting new query or forced call
+    if force or user_question or is_pauly_speaking() or johnny_relic.is_active:
+        audio_manager.stop()
+        if johnny_relic.is_active:
+            johnny_relic.cancel(hud_notifs)
+            
     set_pauly_speaking(True)
     pauly_fade_state = "FADE_IN"
     pauly_reading_timer = time.time()
@@ -135,29 +172,35 @@ def trigger_pauly_call(species_name, user_question=None, target_specimen_info=No
         prompt = (f"You are Dr. Daniel Pauly, world-renowned marine biologist. "
                   f"A technician asked: '{user_question}' regarding specimen '{species_name}'.{specimen_context} "
                   f"Detect the language of the user's question (English or German). If the question is in German, respond entirely in fluent German. "
-                  f"If the question is in English, respond in English. Provide a brilliant 2-sentence expert scientific response.")
+                  f"If the question is in English, respond in English. Provide a concise 2-sentence expert scientific response.")
     else:
         lang_instruction = "Respond in German." if language_mode == "DE" else "Respond in English."
         pauly_active_dialogue = f"Dr. Pauly analyzing selected specimen {species_name}..."
         prompt = (f"You are Dr. Daniel Pauly, world-renowned marine biologist. {lang_instruction} "
                   f"Provide a 2-sentence fascinating scientific insight about '{species_name}' ecology.{specimen_context}")
 
-    def _worker():
+    tok = audio_manager.speech_token
+
+    def _worker(current_tok):
         global pauly_active_dialogue, pauly_fade_state, pauly_reading_timer
         try:
             response = pauly_llm.invoke(prompt).strip()
+            if audio_manager.speech_token != current_tok:
+                return
             pauly_active_dialogue = response
             pauly_reading_timer = time.time()
             play_sound_async(900, 200)
             speak_tts_async(response)
         except Exception:
-            pauly_active_dialogue = f"Dr. Pauly: Specimen {species_name} exhibits remarkable ecological traits."
+            if audio_manager.speech_token == current_tok:
+                pauly_active_dialogue = f"Dr. Pauly: Specimen {species_name} exhibits remarkable ecological traits."
         finally:
-            time.sleep(6)
-            set_pauly_speaking(False)
-            pauly_fade_state = "FADE_OUT"
+            time.sleep(7)
+            if audio_manager.speech_token == current_tok:
+                set_pauly_speaking(False)
+                pauly_fade_state = "FADE_OUT"
 
-    threading.Thread(target=_worker, daemon=True).start()
+    threading.Thread(target=_worker, args=(tok,), daemon=True).start()
 
 # --- JOHNNY SILVERHAND RELIC SUB-SYSTEM [J] ---
 class JohnnySilverhandRelic:
@@ -175,9 +218,7 @@ class JohnnySilverhandRelic:
 
     def trigger(self, hud_notifs):
         global ACTIVE_COMM
-        if is_pauly_speaking():
-            hud_notifs.add("COMM LINK BUSY: DR. PAULY AUDIO ACTIVE", (255, 59, 48), 2.5)
-            return
+        stop_pauly_audio()
         self.is_active = True
         ACTIVE_COMM = "JOHNNY"
         self.dialogue = random.choice(self.quotes)
@@ -187,12 +228,14 @@ class JohnnySilverhandRelic:
         speak_tts_async(self.dialogue)
         hud_notifs.add("JOHNNY SILVERHAND RELIC MODE ACTIVE [J]", (222, 82, 175), 3.0)
 
-    def cancel(self, hud_notifs):
+    def cancel(self, hud_notifs=None):
         global ACTIVE_COMM
+        audio_manager.stop()
         self.is_active = False
         if ACTIVE_COMM == "JOHNNY":
             ACTIVE_COMM = None
-        hud_notifs.add("JOHNNY RELIC MODE DISCONNECTED", (142, 142, 147), 2.0)
+        if hud_notifs:
+            hud_notifs.add("JOHNNY RELIC MODE DISCONNECTED", (142, 142, 147), 2.0)
 
     def update_and_render(self, canvas, sidebar_x, sidebar_w, start_y=640, draw_text_fn=None):
         global ACTIVE_COMM

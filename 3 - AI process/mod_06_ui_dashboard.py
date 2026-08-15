@@ -60,13 +60,27 @@ class HUDNotificationEngine:
 
 hud_notifs = HUDNotificationEngine()
 
-def draw_wrapped_text(panel, text, start_x, start_y, max_w=340, max_lines=3, font_scale=0.36, text_color=(31, 29, 29)):
+def clean_text_for_opencv(text):
+    if not text:
+        return ""
+    replacements = {
+        'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'Ä': 'Ae', 'Ö': 'Oe', 'Ü': 'Ue', 'ß': 'ss',
+        '’': "'", '‘': "'", '“': '"', '”': '"', '–': '-', '—': '-', '…': '...'
+    }
+    for k, v in replacements.items():
+        text = text.replace(k, v)
+    return text.encode('ascii', 'ignore').decode('ascii')
+
+def draw_wrapped_text(panel, text, start_x, start_y, max_w=340, max_lines=8, font_scale=0.35, text_color=(31, 29, 29)):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    clean_text = text.encode('ascii', 'ignore').decode('ascii')
-    words = clean_text.split(' ')
+    clean_str = clean_text_for_opencv(text)
+    words = clean_str.split(' ')
     lines = []
     curr_line = ""
+    
     for w in words:
+        if not w:
+            continue
         test_line = curr_line + (" " if curr_line else "") + w
         w_px = cv2.getTextSize(test_line, font, font_scale, 1)[0][0]
         if w_px <= max_w:
@@ -75,15 +89,21 @@ def draw_wrapped_text(panel, text, start_x, start_y, max_w=340, max_lines=3, fon
             if curr_line:
                 lines.append(curr_line)
             curr_line = w
-        if len(lines) >= max_lines:
-            break
-    if curr_line and len(lines) < max_lines:
+            
+    if curr_line:
         lines.append(curr_line)
+
+    line_h = int(18 * (font_scale / 0.35))
+    
+    # If text exceeds max_lines, reduce font scale slightly so ALL text fits without truncation!
+    if len(lines) > max_lines and font_scale > 0.28:
+        return draw_wrapped_text(panel, text, start_x, start_y, max_w=max_w, max_lines=max_lines + 2, font_scale=font_scale - 0.03, text_color=text_color)
         
-    line_h = 16
     for i, line_str in enumerate(lines[:max_lines]):
         ly = start_y + i * line_h
-        cv2.putText(panel, line_str, (start_x, ly), font, font_scale, text_color, 1, cv2.LINE_AA)
+        if ly + line_h <= panel.shape[0]:
+            cv2.putText(panel, line_str, (start_x, ly), font, font_scale, text_color, 1, cv2.LINE_AA)
+            
     return start_y + len(lines[:max_lines]) * line_h
 
 def display_on_screen_data_assimilation_prompt(window_name, canvas_w, canvas_h, video_path):

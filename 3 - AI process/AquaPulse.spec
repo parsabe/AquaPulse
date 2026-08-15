@@ -15,7 +15,6 @@ datas = [
     (os.path.join(script_dir, "aquapulse_system_architecture_documentation.tex"), "."),
 ]
 
-# Add ultralytics data files (yaml configs, default weights, etc.)
 datas += collect_data_files('ultralytics')
 
 hiddenimports = [
