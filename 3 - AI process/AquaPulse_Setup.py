@@ -215,7 +215,7 @@ class AquaPulseSetupWizard:
                " • Control Panel Uninstaller Integration & Desktop Shortcuts\n\n"
                "Click Next to choose installation directory and begin.")
         
-        lbl_body = tk.Label(page, text=txt, font=("Segoe UI", 9.5), fg="#334155", bg="#f8fafc", justify="left", wraplength=580)
+        lbl_body = tk.Label(page, text=txt, font=("Segoe UI", 10), fg="#334155", bg="#f8fafc", justify="left", wraplength=580)
         lbl_body.pack(anchor="w", padx=25, pady=10)
         
         self.pages.append(page)
@@ -226,7 +226,7 @@ class AquaPulseSetupWizard:
         lbl_h = tk.Label(page, text="Select Destination Directory", font=("Segoe UI", 13, "bold"), fg="#0f172a", bg="#f8fafc")
         lbl_h.pack(anchor="w", padx=25, pady=(20, 5))
         
-        lbl_sub = tk.Label(page, text="Where should AquaPulse be installed?", font=("Segoe UI", 9.5), fg="#64748b", bg="#f8fafc")
+        lbl_sub = tk.Label(page, text="Where should AquaPulse be installed?", font=("Segoe UI", 10), fg="#64748b", bg="#f8fafc")
         lbl_sub.pack(anchor="w", padx=25, pady=(0, 15))
         
         box = tk.LabelFrame(page, text=" Destination Folder (Drive C) ", font=("Segoe UI", 9, "bold"), fg="#0f172a", bg="#f8fafc", padx=15, pady=15)
@@ -257,19 +257,19 @@ class AquaPulseSetupWizard:
         lbl_h = tk.Label(page, text="Select Components & Prerequisites", font=("Segoe UI", 13, "bold"), fg="#0f172a", bg="#f8fafc")
         lbl_h.pack(anchor="w", padx=25, pady=(20, 5))
         
-        lbl_sub = tk.Label(page, text="Configure component verification and shortcuts:", font=("Segoe UI", 9.5), fg="#64748b", bg="#f8fafc")
+        lbl_sub = tk.Label(page, text="Configure component verification and shortcuts:", font=("Segoe UI", 10), fg="#64748b", bg="#f8fafc")
         lbl_sub.pack(anchor="w", padx=25, pady=(0, 15))
         
         box = tk.LabelFrame(page, text=" Setup Options ", font=("Segoe UI", 9, "bold"), fg="#0f172a", bg="#f8fafc", padx=15, pady=15)
         box.pack(fill="x", padx=25, pady=10)
         
-        cb1 = tk.Checkbutton(box, text="Install / Verify Ollama AI Engine & llama3 model weights", variable=self.opt_ollama_var, font=("Segoe UI", 9.5), bg="#f8fafc", activebackground="#f8fafc")
+        cb1 = tk.Checkbutton(box, text="Install / Verify Ollama AI Engine & llama3 model weights", variable=self.opt_ollama_var, font=("Segoe UI", 10), bg="#f8fafc", activebackground="#f8fafc")
         cb1.pack(anchor="w", pady=5)
         
-        cb2 = tk.Checkbutton(box, text="Install / Verify MiKTeX LaTeX PDF report exporter compiler", variable=self.opt_latex_var, font=("Segoe UI", 9.5), bg="#f8fafc", activebackground="#f8fafc")
+        cb2 = tk.Checkbutton(box, text="Install / Verify MiKTeX LaTeX PDF report exporter compiler", variable=self.opt_latex_var, font=("Segoe UI", 10), bg="#f8fafc", activebackground="#f8fafc")
         cb2.pack(anchor="w", pady=5)
         
-        cb3 = tk.Checkbutton(box, text="Create Desktop & Start Menu Shortcuts (AquaPulse AI Vision)", variable=self.opt_shortcut_var, font=("Segoe UI", 9.5), bg="#f8fafc", activebackground="#f8fafc")
+        cb3 = tk.Checkbutton(box, text="Create Desktop & Start Menu Shortcuts (AquaPulse AI Vision)", variable=self.opt_shortcut_var, font=("Segoe UI", 10), bg="#f8fafc", activebackground="#f8fafc")
         cb3.pack(anchor="w", pady=5)
         
         lbl_cp = tk.Label(page, text="✔ AquaPulse will automatically register with Windows Control Panel (Add or Remove Programs) for clean uninstallation.", font=("Segoe UI", 9), fg="#16a34a", bg="#f8fafc", justify="left", wraplength=580)
@@ -283,7 +283,7 @@ class AquaPulseSetupWizard:
         lbl_h = tk.Label(page, text="Installing AquaPulse System...", font=("Segoe UI", 13, "bold"), fg="#0f172a", bg="#f8fafc")
         lbl_h.pack(anchor="w", padx=25, pady=(20, 5))
         
-        self.install_status_lbl = tk.Label(page, text="Preparing installation...", font=("Segoe UI", 9.5), fg="#0284c7", bg="#f8fafc")
+        self.install_status_lbl = tk.Label(page, text="Preparing installation...", font=("Segoe UI", 10), fg="#0284c7", bg="#f8fafc")
         self.install_status_lbl.pack(anchor="w", padx=25, pady=(0, 10))
         
         self.progress_bar = ttk.Progressbar(page, mode="determinate", length=590)
@@ -292,7 +292,7 @@ class AquaPulseSetupWizard:
         log_frame = tk.Frame(page, bg="#0f172a", bd=1, relief="solid")
         log_frame.pack(fill="both", expand=True, padx=25, pady=(10, 20))
         
-        self.log_text = tk.Text(log_frame, bg="#0f172a", fg="#38bdf8", font=("Consolas", 8.5), state="disabled", wrap="word")
+        self.log_text = tk.Text(log_frame, bg="#0f172a", fg="#38bdf8", font=("Consolas", 9), state="disabled", wrap="word")
         self.log_text.pack(fill="both", expand=True, side="left")
         
         sb = tk.Scrollbar(log_frame, command=self.log_text.yview)

@@ -59,7 +59,7 @@ def select_video_file_dialog():
         card = tk.Frame(root, bg=card_bg, highlightbackground="#3b4252", highlightthickness=1)
         card.pack(fill="both", expand=True, padx=20, pady=10)
         
-        selected_lbl = tk.Label(card, text="Please select a video file to begin telemetry analysis", font=("Segoe UI", 9.5), fg="#cbd5e1", bg=card_bg)
+        selected_lbl = tk.Label(card, text="Please select a video file to begin telemetry analysis", font=("Segoe UI", 10), fg="#cbd5e1", bg=card_bg)
         selected_lbl.pack(pady=12)
         
         def browse_file():
@@ -73,7 +73,7 @@ def select_video_file_dialog():
             )
             if filepath and os.path.exists(filepath):
                 result_path["path"] = filepath
-                selected_lbl.config(text=f"Selected: {os.path.basename(filepath)}", font=("Segoe UI", 9.5, "bold"), fg="#4ade80")
+                selected_lbl.config(text=f"Selected: {os.path.basename(filepath)}", font=("Segoe UI", 10, "bold"), fg="#4ade80")
                 root.after(300, root.destroy)
 
         def use_default():
