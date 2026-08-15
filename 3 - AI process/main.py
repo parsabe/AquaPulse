@@ -21,22 +21,88 @@ import manual_botsort as botsort
 
 # --- VIDEO FILE PICKER DIALOG ---
 def select_video_file_dialog():
-    """Opens a native OS file dialog to select any video file."""
+    """Opens a native modal dialog window allowing the user to pick a video file or launch default sample."""
     try:
         import tkinter as tk
         from tkinter import filedialog
+        
+        result_path = {"path": None}
+        
         root = tk.Tk()
-        root.withdraw()
+        root.title("AquaPulse AI Vision - Select Video Source")
+        root.geometry("540x260")
+        root.resizable(False, False)
         root.attributes('-topmost', True)
-        selected_file = filedialog.askopenfilename(
-            title="Select Video File for AquaPulse Neural Tracking",
-            filetypes=[("Video Files", "*.mp4 *.avi *.mov *.mkv *.wmv *.flv *.webm"), ("All Files", "*.*")]
+        
+        # Center window on screen
+        root.update_idletasks()
+        screen_w = root.winfo_screenwidth()
+        screen_h = root.winfo_screenheight()
+        x = (screen_w - 540) // 2
+        y = (screen_h - 260) // 2
+        root.geometry(f"540x260+{x}+{y}")
+        
+        bg_color = "#1e222d"
+        card_bg = "#2a2e3d"
+        
+        root.configure(bg=bg_color)
+        
+        header_frame = tk.Frame(root, bg=bg_color)
+        header_frame.pack(fill="x", padx=20, pady=(15, 5))
+        
+        title_label = tk.Label(header_frame, text="🌊 AquaPulse AI Neural Vision", font=("Segoe UI", 16, "bold"), fg="#38bdf8", bg=bg_color)
+        title_label.pack(anchor="w")
+        
+        sub_label = tk.Label(header_frame, text="Select an underwater video file for real-time tracking & data assimilation", font=("Segoe UI", 9), fg="#94a3b8", bg=bg_color)
+        sub_label.pack(anchor="w", pady=(2, 0))
+        
+        card = tk.Frame(root, bg=card_bg, highlightbackground="#3b4252", highlightthickness=1)
+        card.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        selected_lbl = tk.Label(card, text="Please select a video file to begin telemetry analysis", font=("Segoe UI", 9.5), fg="#cbd5e1", bg=card_bg)
+        selected_lbl.pack(pady=12)
+        
+        def browse_file():
+            filepath = filedialog.askopenfilename(
+                parent=root,
+                title="Select Video File for AquaPulse Neural Tracking",
+                filetypes=[
+                    ("Video Files", "*.mp4 *.avi *.mov *.mkv *.wmv *.flv *.webm"),
+                    ("All Files", "*.*")
+                ]
+            )
+            if filepath and os.path.exists(filepath):
+                result_path["path"] = filepath
+                selected_lbl.config(text=f"Selected: {os.path.basename(filepath)}", font=("Segoe UI", 9.5, "bold"), fg="#4ade80")
+                root.after(300, root.destroy)
+
+        def use_default():
+            result_path["path"] = "DEFAULT"
+            root.destroy()
+
+        btn_frame = tk.Frame(card, bg=card_bg)
+        btn_frame.pack(pady=5)
+        
+        browse_btn = tk.Button(
+            btn_frame, text="📁 Browse Video File...", font=("Segoe UI", 10, "bold"),
+            bg="#0284c7", fg="white", activebackground="#0369a1", activeforeground="white",
+            relief="flat", padx=15, pady=6, cursor="hand2", command=browse_file
         )
-        root.destroy()
-        if selected_file and os.path.exists(selected_file):
-            return selected_file
+        browse_btn.pack(side="left", padx=10)
+        
+        default_btn = tk.Button(
+            btn_frame, text="🌊 Use Sample Video", font=("Segoe UI", 10),
+            bg="#334155", fg="white", activebackground="#475569", activeforeground="white",
+            relief="flat", padx=15, pady=6, cursor="hand2", command=use_default
+        )
+        default_btn.pack(side="left", padx=10)
+        
+        root.mainloop()
+        
+        if result_path["path"] and result_path["path"] != "DEFAULT" and os.path.exists(result_path["path"]):
+            return result_path["path"]
     except Exception as e:
-        print(f"Notice: File dialog notice ({e}).")
+        print(f"Notice: Video selection dialog notice ({e}).")
     return None
 
 # --- PARSE INPUT VIDEO & RUNTIME OPTIONS ---
@@ -46,8 +112,11 @@ parser.add_argument("--video", "-v", type=str, default=None, help="Path to input
 parser.add_argument("--headless", action="store_true", help="Run without opening OpenCV GUI window (ideal for Docker / headless servers)")
 args, _ = parser.parse_known_args()
 
-# Determine headless runtime mode
-is_headless = args.headless or os.environ.get("HEADLESS", "0") == "1" or not os.environ.get("DISPLAY")
+# Determine headless runtime mode (only check DISPLAY on non-Windows platforms)
+if sys.platform == "win32":
+    is_headless = args.headless or os.environ.get("HEADLESS", "0") == "1"
+else:
+    is_headless = args.headless or os.environ.get("HEADLESS", "0") == "1" or not os.environ.get("DISPLAY")
 
 video_path = args.video or args.video_pos
 
@@ -60,7 +129,6 @@ if video_path:
 
 if not video_path and not is_headless:
     video_path = select_video_file_dialog()
-
 
 if not video_path:
     for f in os.listdir(cfg.script_dir):

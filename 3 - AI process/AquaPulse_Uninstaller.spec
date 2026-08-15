@@ -6,18 +6,12 @@ import sys
 block_cipher = None
 script_dir = os.path.abspath(r"C:\Users\parsa\Desktop\Code\3 - AI process")
 
-datas = []
-# Include Uninstall.exe if built in script_dir or dist
-uninstaller_path = os.path.join(script_dir, "Uninstall.exe")
-if os.path.exists(uninstaller_path):
-    datas.append((uninstaller_path, "."))
-
 a = Analysis(
-    [os.path.join(script_dir, 'AquaPulse_Setup.py')],
+    [os.path.join(script_dir, 'AquaPulse_Uninstaller.py')],
     pathex=[script_dir],
     binaries=[],
-    datas=datas,
-    hiddenimports=['urllib.request', 'subprocess', 'shutil', 'os', 'sys', 'time', 'winreg', 'tkinter', 'tkinter.ttk', 'tkinter.filedialog', 'tkinter.messagebox'],
+    datas=[],
+    hiddenimports=['winreg', 'subprocess', 'shutil', 'os', 'sys', 'time', 'tkinter'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -37,7 +31,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='AquaPulse_Setup',
+    name='Uninstall',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
