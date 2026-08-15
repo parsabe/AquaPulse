@@ -6,10 +6,11 @@
 [![Ollama Llama3](https://img.shields.io/badge/Ollama-Llama--3-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.com/)
 [![LaTeX Export](https://img.shields.io/badge/LaTeX-PDF%20Engine-008080?style=for-the-badge&logo=latex&logoColor=white)](https://www.miktex.org/)
 [![Windows Installer](https://img.shields.io/badge/Windows-Executable%20Setup-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/parsabe/AquaPulse)
+[![Docker Container](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 **AquaPulse** is an enterprise-grade, non-invasive artificial intelligence and computer vision framework for real-time aquatic ecosystem telemetry, multi-species fish detection, target tracking, stochastic population estimation, and automated scientific report generation.
 
-Designed for turbid underwater environments (such as the Spreewald river network), AquaPulse fuses deep neural computer vision with stochastic nonlinear data assimilation (Ensemble Kalman Filtering) and local LLM intelligence into a unified real-time dashboard and automated Windows installation suite.
+Designed for turbid underwater environments (such as the Spreewald river network), AquaPulse fuses deep neural computer vision with stochastic nonlinear data assimilation (Ensemble Kalman Filtering) and local LLM intelligence into a unified real-time dashboard, containerized Docker platform, and automated Windows installation suite.
 
 ---
 
@@ -47,9 +48,10 @@ Designed for turbid underwater environments (such as the Spreewald river network
 
 - **Automated Scientific Reports**: Generates 20 high-resolution analytical figures, specimen image crop galleries, and tabular census statistics, injecting them into a standalone LaTeX template (`report_template.tex`) and compiling publication-grade PDF reports via `pdflatex`.
 
-### 6. 📦 Single-Click Windows Setup Installer
+### 6. 📦 Multi-Platform Deployment Options
 
-- **Unified Installer (`AquaPulse_Setup.exe`)**: Deploys application binaries, models, and assets, while automatically auditing and setting up external system prerequisites (**Ollama AI**, `llama3` weights, and **MiKTeX / LaTeX** runtime).
+- **Automated Windows Setup Installer (`AquaPulse_Setup.exe`)**: Deploys application binaries, models, and assets while auditing external prerequisites (**Ollama AI**, `llama3` weights, and **MiKTeX / LaTeX** runtime).
+- **Containerized Docker Environment**: Includes Docker container specification for headless execution on GPU clusters or Linux servers.
 
 ---
 
@@ -57,6 +59,7 @@ Designed for turbid underwater environments (such as the Spreewald river network
 
 ```
 C:\Users\parsa\Desktop\Code\
+├── Dockerfile                          # Production PyTorch CUDA + LaTeX Docker container build recipe
 ├── 0 - Preprocessing/                  # Raw Video & Image Preprocessing Pipeline
 │   ├── 0 - Source Codes/
 │   │   ├── Extract Frames/             # Frame extraction & 512x512 resolution filters
@@ -84,9 +87,72 @@ C:\Users\parsa\Desktop\Code\
 
 ---
 
-## ⚡ Quick Start & Running AquaPulse
+## ⚡ Quick Start & Deployment Options
 
-### Option A: Running from Source (Developer Mode)
+AquaPulse supports three primary execution modes: **Standalone Windows Setup Installer**, **Containerized Docker Deployment**, and **Developer Mode (Source Execution)**.
+
+---
+
+### Option A: Standalone Windows Setup Installer
+
+The compiled production bundle and automated installer executable are located in:
+`C:\Users\parsa\Desktop\New folder`
+
+- **AquaPulse Setup Installer**: [`AquaPulse_Setup.exe`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_Setup.exe)
+- **Standalone Application Folder**: [`AquaPulse_App/`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_App)
+
+#### Running the Setup Installer:
+
+Double-click `AquaPulse_Setup.exe` to launch the automated setup wizard. The installer will:
+
+1. Audit and install **Ollama AI Engine** (if not present) and pull the `llama3` neural weights.
+2. Audit and install **MiKTeX / LaTeX** (if `pdflatex` is missing) to enable native PDF report compiling.
+3. Deploy the application to `C:\AquaPulse` and register a Desktop Shortcut.
+
+---
+
+### Option B: Docker Container Deployment (Headless & GPU Server Setup)
+
+AquaPulse includes a production Docker container configuration for headless GPU clusters, cloud instances, and Linux servers.
+
+#### 1. Build the Docker Image
+
+Build the Docker image locally from the project root:
+
+```bash
+docker build -t aquapulse:latest .
+```
+
+#### 2. Run Container with NVIDIA GPU Acceleration (Recommended)
+
+Execute with full CUDA acceleration and mount local video and session directories:
+
+```bash
+docker run --gpus all -it --rm \
+  -v /path/to/videos:/app/data \
+  -v /path/to/sessions:/app/video_analysis_sessions \
+  -e HEADLESS=1 \
+  aquapulse:latest --video /app/data/underwater_stream.mp4
+```
+
+#### 3. Run Container in Headless / CPU Mode
+
+For headless servers or CPU execution without GUI display windows:
+
+```bash
+docker run -it --rm \
+  -v /path/to/videos:/app/data \
+  -v /path/to/sessions:/app/video_analysis_sessions \
+  aquapulse:latest --video /app/data/underwater_stream.mp4 --headless
+```
+
+> [!NOTE]
+> - The `--headless` flag or `-e HEADLESS=1` environment variable disables OpenCV GUI display windows, ensuring smooth unattended execution on headless servers.
+> - Analysis artifacts (telemetry plots, EnKF state summaries, and compiled LaTeX PDF reports) are written to `/app/video_analysis_sessions/` inside the container and saved directly to the host volume mount.
+
+---
+
+### Option C: Running from Source (Developer Mode)
 
 1. **Activate Virtual Environment**:
 
@@ -100,30 +166,19 @@ C:\Users\parsa\Desktop\Code\
    python "3 - AI process\main.py"
    ```
 
-   _If no video parameter is passed, a native file dialog will prompt you to select an underwater video file._
+   _If no video parameter is passed, a native GUI file picker dialog will prompt you to select an underwater video file._
 
 3. **Pass Video Directly via Command Line**:
+
    ```powershell
    python "3 - AI process\main.py" --video "C:\path\to\underwater_stream.mp4"
    ```
 
----
+4. **Run in Headless Mode**:
 
-### Option B: Standalone Windows Setup Installer
-
-The compiled production bundle and automated installer executable are located in:
-`C:\Users\parsa\Desktop\New folder`
-
-- **AquaPulse Setup Installer**: [`AquaPulse_Setup.exe`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_Setup.exe)
-- **Standalone Application Folder**: [`AquaPulse_App/`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_App)
-
-#### Running the Setup Installer:
-
-Double-click `AquaPulse_Setup.exe` to launch the automated wizard. The installer will:
-
-1. Audit and install **Ollama AI Engine** (if not present) and pull the `llama3` neural weights.
-2. Audit and install **MiKTeX / LaTeX** (if `pdflatex` is missing) to enable native PDF report compiling.
-3. Deploy the application to `C:\AquaPulse` and register a Desktop Shortcut.
+   ```powershell
+   python "3 - AI process\main.py" --video "C:\path\to\underwater_stream.mp4" --headless
+   ```
 
 ---
 
@@ -133,7 +188,7 @@ Each video analysis session generates an isolated, timestamped output bundle und
 
 ```
 video_analysis_sessions/<video_name>_<timestamp>/
-├── output/           # Processed MP4 video with target reticles &EnKF HUD overlays
+├── output/           # Processed MP4 video with target reticles & EnKF HUD overlays
 ├── csv/              # Raw specimen counts and track data per frame
 ├── plots/            # 20 high-resolution analytical PNG telemetry plots
 └── analysis/         # Ollama AI narrative report (.md), generated .tex file, and compiled PDF report
@@ -156,4 +211,5 @@ For exhaustive mathematical details, system design diagrams, and empirical resul
 - **Deep Learning**: PyTorch, Ultralytics YOLOv8, Vision Transformers (ViT), OpenCV, SciPy, NumPy
 - **Data Assimilation**: Ensemble Kalman Filter (EnKF), Euler-Maruyama Stochastic Differential Equations
 - **Generative AI & LLM**: Ollama, Llama-3, LangChain, pyttsx3 (SAPI5 Speech API)
-- **Publishing & UI**: Native OpenCV 4-Pane Splitter Engine, Matplotlib, LaTeX (`pdflatex`), PyInstaller
+- **Deployment & Packaging**: Standalone Windows Executable Setup (`AquaPulse_Setup.exe`), Docker (PyTorch CUDA + LaTeX Container), PyInstaller
+- **Publishing & UI**: Native OpenCV 4-Pane Splitter Engine, Matplotlib, LaTeX (`pdflatex`)
