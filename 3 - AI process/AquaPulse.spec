@@ -9,7 +9,7 @@ block_cipher = None
 script_dir = os.path.abspath(r"C:\Users\parsa\Desktop\Code\3 - AI process")
 
 datas = [
-    (os.path.join(script_dir, "models", "*.pt"), "models"),
+    (os.path.join(script_dir, "models", "*"), "models"),
     (os.path.join(script_dir, "johnny.gif"), "."),
     (os.path.join(script_dir, "report_template.tex"), "."),
     (os.path.join(script_dir, "aquapulse_system_architecture_documentation.tex"), "."),
