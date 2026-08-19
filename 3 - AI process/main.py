@@ -311,10 +311,12 @@ tool_kinematics_active = False
 tool_kde_active = False
 tool_smc_pf_active = False
 tool_nsde_active = False
+tool_acousto_active = True
 show_help_overlay = False
 
 theme_mgr = ui.theme_mgr
 nsde_forecaster = enkf.NeuralSDESwarmForecaster()
+acousto_engine = enkf.HydrodynamicAcousticEngine()
 smc_pf_trackers = defaultdict(enkf.SMCParticleFilterTracker)
 
 is_paused = False
@@ -540,6 +542,9 @@ while cap.isOpened():
     if tool_nsde_active:
         frame = nsde_forecaster.render_predictive_cones(frame, current_targets, track_history)
 
+    if tool_acousto_active:
+        frame = acousto_engine.render_pressure_waves(frame, current_targets, track_history)
+
     if is_first_frame_visit:
         prey_cnt = len(current_targets)
         enkf_filter.step(live_yolo_prey_count=prey_cnt)
@@ -667,8 +672,8 @@ while cap.isOpened():
         gmm_cx, gmm_cy, gmm_disp = 0, 0, 0.0
 
     # AI / ML & PROBABILISTIC LIVE TELEMETRY RESULTS CARD
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 165), theme_mgr.get("canvas_bg"), -1)
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 165), theme_mgr.get("btn_border"), 1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 182), theme_mgr.get("canvas_bg"), -1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 182), theme_mgr.get("btn_border"), 1)
     cv2.putText(pane1, "LIVE AI / ML TELEMETRY CALCULATED RESULTS", (18, p1_y + 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.38, theme_mgr.get("accent_text"), 1, cv2.LINE_AA)
     
@@ -679,15 +684,17 @@ while cap.isOpened():
     kde_res = f"KDE (D): Peak Hotspot ({gmm_cx},{gmm_cy}) | Density: {min(100.0, len(current_targets)*22.5):.1f}%" if tool_kde_active else "KDE [Key D]: INACTIVE"
     pf_res = f"Particle Filter (F): N={len(current_targets)*100} | Cloud Var: 11.2px" if tool_smc_pf_active else "Particle Filter [Key F]: INACTIVE"
     nsde_res = f"Neural SDE Cone (P): Entropy H={nsde_ent:.2f} | 30s Risk: {nsde_risk:.1f}%" if tool_nsde_active else "Neural SDE [Key P]: INACTIVE"
+    acousto_res = f"Hydroacoustic (H): {acousto_engine.tail_beat_freq_hz:.1f}Hz | {acousto_engine.acoustic_source_db:.0f}dB | {acousto_engine.pressure_pa:.1f}Pa" if tool_acousto_active else "Hydroacoustic [Key H]: INACTIVE"
 
-    cv2.putText(pane1, vision.fit_text_to_width(gmm_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 38), cv2.FONT_HERSHEY_SIMPLEX, 0.32, theme_mgr.get("title_text") if tool_gmm_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(bnn_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 55), cv2.FONT_HERSHEY_SIMPLEX, 0.32, theme_mgr.get("accent_text") if tool_bnn_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(dann_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 72), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (89, 199, 52) if tool_dann_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(kin_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 89), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (222, 82, 175) if tool_kinematics_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(kde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 106), cv2.FONT_HERSHEY_SIMPLEX, 0.32, theme_mgr.get("title_text") if tool_kde_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(pf_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 123), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (255, 0, 255) if tool_smc_pf_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(nsde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 140), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (244, 208, 63) if tool_nsde_active else theme_mgr.get("sub_text"), 1)
-    p1_y += 175
+    cv2.putText(pane1, vision.fit_text_to_width(gmm_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 36), cv2.FONT_HERSHEY_SIMPLEX, 0.31, theme_mgr.get("title_text") if tool_gmm_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(bnn_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 52), cv2.FONT_HERSHEY_SIMPLEX, 0.31, theme_mgr.get("accent_text") if tool_bnn_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(dann_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 68), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (89, 199, 52) if tool_dann_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(kin_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 84), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (222, 82, 175) if tool_kinematics_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(kde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.31, theme_mgr.get("title_text") if tool_kde_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(pf_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 116), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (255, 0, 255) if tool_smc_pf_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(nsde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 132), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (244, 208, 63) if tool_nsde_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(acousto_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 148), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (0, 220, 255) if tool_acousto_active else theme_mgr.get("sub_text"), 1)
+    p1_y += 190
 
     cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, canvas_h - 10), (250, 250, 252), -1)
     cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, canvas_h - 10), (204, 199, 199), 1)

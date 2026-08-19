@@ -397,4 +397,70 @@ class NeuralSDESwarmForecaster:
         return img
 
 
+class HydrodynamicAcousticEngine:
+    """
+    [Novel Flagship Concept]: Acousto-Visual Hydrodynamic Pressure Wave Field & Bioacoustic Frequency Engine.
+    Simulates Lighthill hydrodynamic pressure waves, vortex wake circulation, and tail-beat sound pressure source levels.
+    """
+    def __init__(self):
+        self.tail_beat_freq_hz = 0.0
+        self.acoustic_source_db = 0.0
+        self.pressure_pa = 0.0
+        self.vortex_circulation = 0.0
+        self.phase_t = 0.0
+
+    def compute_bioacoustics(self, targets, track_history):
+        if not targets:
+            self.tail_beat_freq_hz = 0.0
+            self.acoustic_source_db = 0.0
+            self.pressure_pa = 0.0
+            self.vortex_circulation = 0.0
+            return
+
+        speeds = []
+        for t in targets:
+            tid = t['id']
+            pts = track_history.get(tid, [])
+            if len(pts) >= 4:
+                p1, p3 = pts[-3], pts[-1]
+                v = np.sqrt((p3[0]-p1[0])**2 + (p3[1]-p1[1])**2)
+                speeds.append(v)
+                
+        avg_v = float(np.mean(speeds)) if speeds else 8.5
+        self.tail_beat_freq_hz = max(0.5, float(avg_v * 0.45 + np.random.normal(0, 0.1)))
+        self.acoustic_source_db = float(102.0 + 10.0 * np.log10(max(1.0, avg_v * 5.0)))
+        self.pressure_pa = float(avg_v * 1.8 + np.random.normal(0, 0.2))
+        self.vortex_circulation = float(avg_v * 0.35)
+
+    def render_pressure_waves(self, img, targets, track_history):
+        self.compute_bioacoustics(targets, track_history)
+        self.phase_t += 0.25
+        h, w, c = img.shape
+
+        for t in targets:
+            box = t['box']
+            cx, cy = int((box[0] + box[2]) / 2.0), int((box[1] + box[3]) / 2.0)
+            
+            # Render concentric hydroacoustic wave pressure ripples
+            for ring in range(1, 4):
+                r = int((ring * 22 + self.phase_t * 8) % 75)
+                alpha = max(0.1, 1.0 - (r / 75.0))
+                color = (int(255 * alpha), int(200 * alpha), int(60 * alpha))
+                cv2.circle(img, (cx, cy), r, color, 1, cv2.LINE_AA)
+
+            # Render tail-beat vortex wake
+            pts = track_history.get(t['id'], [])
+            if len(pts) >= 4:
+                p1, p3 = pts[-3], pts[-1]
+                vx, vy = p3[0] - p1[0], p3[1] - p1[1]
+                wake_x = int(cx - vx * 1.8)
+                wake_y = int(cy - vy * 1.8)
+                cv2.ellipse(img, (wake_x, wake_y), (18, 8), float(np.degrees(np.arctan2(vy, vx))), 0, 360, (0, 180, 255), 1)
+
+            cv2.putText(img, f"{self.tail_beat_freq_hz:.1f}Hz | {self.acoustic_source_db:.0f}dB", (cx - 25, cy - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (0, 220, 255), 1)
+
+        return img
+
+
+
 

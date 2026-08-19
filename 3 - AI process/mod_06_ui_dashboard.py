@@ -1,3 +1,8 @@
+import time
+import cv2
+import numpy as np
+from mod_04_vision_engine import fit_text_to_width
+
 class ThemeManager:
     """
     Manages full-application UI color palettes and styling tokens for Cyber Dark Mode vs Modern Light Mode.
