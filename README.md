@@ -1,4 +1,4 @@
-# 🌊 AquaPulse: AI Neural Vision & Stochastic EnKF Telemetry System
+# 🌊 AquaPulse: Robust Computer Vision and Uncertainty Estimation for Aquatic Ecosystems
 
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch CUDA](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
