@@ -10,16 +10,19 @@
 \definecolor{navyblue}{RGB}{0, 51, 102}
 \definecolor{linkblue}{RGB}{0, 102, 204}
 
+\usepackage[colorlinks=true, linkcolor=linkblue, citecolor=linkblue, urlcolor=linkblue]{hyperref}
+
 % --- CUSTOM STYLING MACROS FOR LINKS, CITATIONS & REFERENCES ---
-\newcommand{\urltext}[1]{{\color{linkblue}\underline{\texttt{#1}}}}
-\newcommand{\citeblue}[1]{{\color{linkblue}\cite{#1}}}
-\newcommand{\refblue}[1]{{\color{linkblue}\ref{#1}}}
+\newcommand{\urltext}[1]{\href{#1}{{\color{linkblue}\underline{\texttt{#1}}}}}
+\newcommand{\emailtext}[1]{\href{mailto:#1}{{\color{linkblue}\underline{\texttt{#1}}}}}
+\newcommand{\citeblue}[1]{\cite{#1}}
+\newcommand{\refblue}[1]{\ref{#1}}
 
 % --- TITLE & AUTHOR ---
 \title{\vspace{-0.5cm}\textbf{\huge AquaPulse: Robust Computer Vision and Uncertainty Estimation for Aquatic Ecosystems}}
 
 \author{\textbf{\large PARSA BESHARAT}, \textit{Technische Universität Bergakademie Freiberg, Germany}\\[0.15cm]
-\urltext{parsabe99@gmail.com}\\[0.05cm]
+\emailtext{parsabe99@gmail.com}\\[0.05cm]
 \urltext{https://parsabe.com/aquapulse}}
 
 \date{}
@@ -45,7 +48,7 @@ In recent years, non-invasive video-based optical telemetry has emerged as a pro
     \item \textbf{Environmental Volatility:} Aquatic dynamics are governed by non-linear interactions and environmental turbulence, requiring stochastic modeling rather than deterministic extrapolation.
 \end{enumerate}
 
-To overcome these challenges, we present \textbf{AquaPulse}, a multi-stage software architecture and mathematical framework for real-time aquatic vision tracking, stochastic population estimation, and generative intelligence. As detailed in the codebase inventory in Appendix~\refblue{sec:app_codebase} (Table~\refblue{tab:codebase_structure}) and complete directory tree layout in Appendix~\refblue{sec:app_tree}, AquaPulse integrates decoupled processing modules spanning optical preprocessing, neural computer vision, biological census tracking, stochastic Ensemble Kalman Filtering (EnKF), live graphical rendering, Ollama LLM voice dialogue, and multi-format document exporting. To streamline field deployment, production build artifacts are provided as a containerized Linux Docker server image and a standalone Windows setup installer executable that automatically audits system dependencies.
+To overcome these challenges, we present \textbf{AquaPulse}, a multi-stage software architecture and mathematical framework for real-time aquatic vision tracking, stochastic population estimation, and generative intelligence. As detailed in the codebase inventory in Appendix~\refblue{sec:app_codebase} (Table~\refblue{tab:codebase_structure}), AquaPulse integrates decoupled processing modules spanning optical preprocessing, neural computer vision, biological census tracking, stochastic Ensemble Kalman Filtering (EnKF), live graphical rendering, Ollama LLM voice dialogue, and multi-format document exporting. To streamline field deployment, production build artifacts are provided as a containerized Linux Docker server image and a standalone Windows setup installer executable that automatically audits system dependencies.
 
 The key contributions of the AquaPulse framework are summarized as follows:
 \begin{itemize}
@@ -292,7 +295,7 @@ Future work will explore Domain-Adversarial Neural Networks (DANN) \citeblue{gan
 \appendix
 \section{Appendix: Mathematical Formulations, Codebase Architecture \& Directory Structure}
 
-This appendix provides supplementary mathematical details for GBIF REST taxonomy integration, information-theoretic diversity indices, the core subsystem architecture directory, and the complete workspace directory tree structure.
+This appendix provides supplementary mathematical details for GBIF REST taxonomy integration, information-theoretic diversity indices, and the core subsystem architecture directory.
 
 \subsection{GBIF REST Taxonomy Mapping \& Disk Caching}
 \label{sec:app_gbif}
@@ -348,33 +351,5 @@ As summarized in Table~\refblue{tab:codebase_structure}, AquaPulse is structured
 \end{tabular}
 \end{table*}
 
-\subsection{Complete Workspace Directory Tree \& Layout}
-\label{sec:app_tree}
-The overall physical directory structure of the AquaPulse codebase repository is detailed below:
-
-\begin{verbatim}
-AquaPulse/
-|-- 0 - Preprocessing/
-|   |-- 0 - Source Codes/         # CUDA MSRCR dehazing & LAB CLAHE functions
-|   +-- 1 - Insta 360 Process/    # PyTorch 3D ray warping
-|-- 1 - Insta 360 Process/        # Secondary wide-angle camera conversion scripts
-|-- 3 - AI process/               # Core application runtime codebase
-|   |-- models/                   # Prioritized YOLOv8 weight repository (.pt files)
-|   |-- assets/                   # UI mascot icons, fonts, and reticle graphics
-|   |-- species_snapshots/        # Cropped fish reticle images & wiki_cache/ JSONs
-|   |-- session_outputs/          # Timestamped CSV logs, Matplotlib plots, PDF reports
-|   |-- mod_00_config_and_assets.py
-|   |-- mod_01_eco_census.py
-|   |-- mod_02_stochastic_enkf.py
-|   |-- mod_03_chart_renderer.py
-|   |-- mod_04_vision_engine.py
-|   |-- mod_05_dialogue_and_ollama.py
-|   |-- mod_06_ui_dashboard.py
-|   +-- mod_07_pdf_exporter.py
-|-- 4 - Documentation/            # Academic LaTeX paper sources & BibTeX databases
-|-- Dockerfile                    # Server container build specification
-|-- AquaPulse_Setup.py            # Windows standalone setup installer wizard
-+-- README.md                     # Architecture overview & installation guide
-\end{verbatim}
 
 \end{document}
