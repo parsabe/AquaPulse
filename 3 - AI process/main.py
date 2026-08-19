@@ -303,6 +303,16 @@ conf_threshold = 0.35
 active_tracker_cfg = "botsort.yaml"
 iou_threshold = 0.5
 
+# Advanced AI / ML / Probabilistic Tool Flags
+tool_gmm_active = False
+tool_bnn_active = False
+tool_dann_active = False
+tool_kinematics_active = False
+tool_kde_active = False
+tool_smc_pf_active = False
+
+smc_pf_trackers = defaultdict(enkf.SMCParticleFilterTracker)
+
 is_paused = False
 is_stopped = False
 seek_request = 0
@@ -384,7 +394,12 @@ while cap.isOpened():
         water_bg = vision.generate_water_gif_frame(video_h, video_w, time.time())
         frame = cv2.addWeighted(frame, 0.85, water_bg, 0.15, 0)
 
-    inference_input = vision.adaptive_underwater_enhance(frame) if use_adaptive_clahe else frame
+    if tool_dann_active:
+        inference_input = vision.apply_domain_adaptation_filter(frame)
+    elif use_adaptive_clahe:
+        inference_input = vision.adaptive_underwater_enhance(frame)
+    else:
+        inference_input = frame
 
     # YOLO Multi-Algorithm Persistent Tracking (BoT-SORT / ByteTrack @ 640x640)
     if not (is_paused or is_stopped) or 'results' not in locals():
@@ -412,6 +427,7 @@ while cap.isOpened():
             )
 
     current_targets = []
+    raw_targets = []
     best_target_crop = None
     best_target_info = None
 
@@ -423,6 +439,16 @@ while cap.isOpened():
 
         for box, tid, cls_idx, conf_val in zip(boxes, track_ids, clss, confs):
             sp_name = model.names.get(cls_idx, f"Specimen_{cls_idx}")
+            raw_targets.append({'track_id': tid, 'box': box, 'cls_name': sp_name, 'conf': conf_val})
+
+        # Process detections through Feature Re-ID Track Stitcher
+        stitched_targets = reid_stitcher.process_frame_tracks(frame_counter, raw_targets, frame)
+
+        for tgt in stitched_targets:
+            tid = tgt['track_id']
+            box = tgt['box']
+            sp_name = tgt['cls_name']
+            conf_val = tgt['conf']
             
             active_filter = selectable_filters[current_filter_idx]
             if active_filter == "FISH ONLY" and "fish" not in sp_name.lower():
@@ -487,11 +513,25 @@ while cap.isOpened():
                 if crop_x2 > crop_x1 and crop_y2 > crop_y1:
                     best_target_crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
 
-            vision.draw_target_box(frame, smooth_b, tid, sp_name, conf_val, custom_color=sp_color, is_selected=is_this_locked)
+            prompt_query = user_chat_buffer if chat_mode_active else None
+            vision.draw_target_box(frame, smooth_b, tid, sp_name, conf_val, custom_color=sp_color, is_selected=is_this_locked, prompt_query=prompt_query, show_bnn_uncertainty=tool_bnn_active)
+
+            if tool_smc_pf_active:
+                smc_pf_trackers[tid].render_particle_cloud(frame, center_x, center_y)
 
             if show_motion_vectors and len(track_history[tid]) > 1:
                 pts = np.array(track_history[tid], np.int32).reshape((-1, 1, 2))
                 cv2.polylines(frame, [pts], False, sp_color, 1, cv2.LINE_AA)
+
+    # Render Active AI / ML / Probabilistic Overlay Tools
+    if tool_gmm_active:
+        enkf.render_gmm_spatial_clusters(frame, current_targets, n_clusters=3)
+
+    if tool_kde_active:
+        frame = enkf.render_kde_density_heatmap(frame, current_targets)
+
+    if tool_kinematics_active:
+        enkf.render_kalman_kinematic_vectors(frame, track_history)
 
     if is_first_frame_visit:
         prey_cnt = len(current_targets)
@@ -550,33 +590,42 @@ while cap.isOpened():
                 cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 122, 0), 1, cv2.LINE_AA)
     p1_y += 46
 
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 110), (250, 250, 252), -1)
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 110), (204, 199, 199), 1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 130), (250, 250, 252), -1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 130), (204, 199, 199), 1)
     
-    cv2.putText(pane1, "EULER-MARUYAMA EnKF ESTIMATIONS", (18, p1_y + 20),
+    cv2.putText(pane1, "DUAL 6D EnKF & BIFURCATION TELEMETRY", (18, p1_y + 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.38, (255, 122, 0), 1, cv2.LINE_AA)
     
     est_prey = enkf_filter.x[0, 0]
     est_pred = enkf_filter.x[1, 0]
+    est_alpha = enkf_filter.x[2, 0]
+    est_beta = enkf_filter.x[3, 0]
     risk_pct = enkf_filter.risk_history[-1] if enkf_filter.risk_history else 0.0
+    bif_pct = enkf_filter.bifurcation_history[-1] if enkf_filter.bifurcation_history else 0.0
+    active_shock = enkf_filter.active_shock_name
+    reid_cache_cnt = len(reid_stitcher.gallery)
     
-    cv2.putText(pane1, f"Prey Pop (X): {est_prey:.2f} | Pred (Y): {est_pred:.2f}",
-                (18, p1_y + 40), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (31, 29, 29), 1)
+    cv2.putText(pane1, f"Prey (X): {est_prey:.2f} | Pred (Y): {est_pred:.2f}",
+                (18, p1_y + 38), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (31, 29, 29), 1)
+    cv2.putText(pane1, f"Est alpha: {est_alpha:.3f} | Est beta: {est_beta:.3f}",
+                (18, p1_y + 54), cv2.FONT_HERSHEY_SIMPLEX, 0.34, (255, 122, 0), 1)
+    cv2.putText(pane1, f"Re-ID Cache: {reid_cache_cnt} tracks | Shock: {active_shock}",
+                (18, p1_y + 70), cv2.FONT_HERSHEY_SIMPLEX, 0.33, (142, 142, 147), 1)
     
-    risk_color = (48, 59, 255) if risk_pct > 35 else ((0, 149, 255) if risk_pct >= 15 else (89, 199, 52))
-    cv2.putText(pane1, f"Extinction Risk: {risk_pct:.1f}%", (18, p1_y + 60),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.38, risk_color, 1, cv2.LINE_AA)
+    risk_color = (48, 59, 255) if (risk_pct > 35 or bif_pct > 50) else ((0, 149, 255) if risk_pct >= 15 else (89, 199, 52))
+    cv2.putText(pane1, f"Extinction: {risk_pct:.1f}% | Bifurcation: {bif_pct:.1f}%", (18, p1_y + 88),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.35, risk_color, 1, cv2.LINE_AA)
     
     risk_bar_w = int((left_panel_w - 36) * (min(100.0, risk_pct) / 100.0))
-    cv2.rectangle(pane1, (18, p1_y + 75), (left_panel_w - 18, p1_y + 88), (235, 233, 233), -1)
-    cv2.rectangle(pane1, (18, p1_y + 75), (left_panel_w - 18, p1_y + 88), (204, 199, 199), 1)
+    cv2.rectangle(pane1, (18, p1_y + 98), (left_panel_w - 18, p1_y + 110), (235, 233, 233), -1)
+    cv2.rectangle(pane1, (18, p1_y + 98), (left_panel_w - 18, p1_y + 110), (204, 199, 199), 1)
     if risk_bar_w > 0:
-        cv2.rectangle(pane1, (18, p1_y + 75), (18 + risk_bar_w, p1_y + 88), risk_color, -1)
-    p1_y += 122
+        cv2.rectangle(pane1, (18, p1_y + 98), (18 + risk_bar_w, p1_y + 110), risk_color, -1)
+        
+    cv2.putText(pane1, "Hotkeys: [E] Heatwave  [P] Pollution  [I] Invasive", (18, p1_y + 124),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.30, (89, 199, 52), 1)
+    p1_y += 140
 
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 115), (250, 250, 252), -1)
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 115), (204, 199, 199), 1)
-    
     census_summary = census.get_census_summary()
     cv2.putText(pane1, "TOP 4 SPECIES CENSUS COUNTS", (18, p1_y + 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.38, (255, 122, 0), 1, cv2.LINE_AA)
@@ -589,7 +638,19 @@ while cap.isOpened():
     else:
         cv2.putText(pane1, "Scanning for species census data...", (18, p1_y + 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.36, (142, 142, 147), 1)
-    p1_y += 128
+    p1_y += 125
+
+    # AI / ML & PROBABILISTIC TOOL SUITE HOTKEYS CARD
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 115), (250, 250, 252), -1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 115), (204, 199, 199), 1)
+    cv2.putText(pane1, "AI / ML & PROBABILISTIC TOOL SUITE", (18, p1_y + 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 149, 255), 1, cv2.LINE_AA)
+    
+    cv2.putText(pane1, f"[M] GMM Cluster: {'ON' if tool_gmm_active else 'OFF'} | [B] BNN Bounds: {'ON' if tool_bnn_active else 'OFF'}", (18, p1_y + 42), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (31, 29, 29), 1)
+    cv2.putText(pane1, f"[G] DANN Filter: {'ON' if tool_dann_active else 'OFF'} | [K] Kinematics: {'ON' if tool_kinematics_active else 'OFF'}", (18, p1_y + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (31, 29, 29), 1)
+    cv2.putText(pane1, f"[D] KDE Heatmap: {'ON' if tool_kde_active else 'OFF'} | [F] ParticleFilter: {'ON' if tool_smc_pf_active else 'OFF'}", (18, p1_y + 78), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (31, 29, 29), 1)
+    cv2.putText(pane1, "Press M, B, G, K, D, F live to toggle tools", (18, p1_y + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.30, (89, 199, 52), 1)
+    p1_y += 125
 
     cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, canvas_h - 10), (250, 250, 252), -1)
     cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, canvas_h - 10), (204, 199, 199), 1)
@@ -612,36 +673,54 @@ while cap.isOpened():
     pane3[:] = (255, 255, 255)
     cv2.rectangle(pane3, (2, 2), (pane3_w - 2, pane3_h - 2), (229, 235, 234), 1)
 
-    cv2.putText(pane3, "PANE 3: CONTROL PANEL & TOOLS", (15, 24),
+    cv2.putText(pane3, "PANE 3: CONTROL PANEL & KEYBOARD SHORTCUT DOCK", (15, 24),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 122, 0), 1, cv2.LINE_AA)
 
     btn_start_y = pane3_y + 35
-    btn_w = max(90, (video_w - 50) // 3)
+    btn_w = max(90, (video_w - 60) // 4)
+    bh = 28
 
-    play_btn_lbl = "[SPACE] PLAY / PAUSE"
+    c0 = pane3_x + 12
+    c1 = pane3_x + 22 + btn_w
+    c2 = pane3_x + 32 + 2*btn_w
+    c3 = pane3_x + 42 + 3*btn_w
+
+    play_btn_lbl = "[SPACE] PAUSE" if not is_paused else "[SPACE] PLAY"
     repeat_btn_lbl = "[R] LOOP: ON" if repeat_infinitely else "[R] LOOP: OFF"
 
     buttons = [
-        ui.ControlButton(pane3_x + 15, btn_start_y, btn_w, 30, f"[S] FILTER: {selectable_filters[current_filter_idx]}", "toggle_filter", (255, 122, 0)),
-        ui.ControlButton(pane3_x + 25 + btn_w, btn_start_y, btn_w, 30, f"[F] FX: {vision_fx_names[current_fx_idx]}", "toggle_fx", (222, 82, 175)),
-        ui.ControlButton(pane3_x + 35 + 2*btn_w, btn_start_y, btn_w, 30, f"[V] VECTORS: {'ON' if show_motion_vectors else 'OFF'}", "toggle_vec", (89, 199, 52)),
+        # Row 1: Core Playback & Seek
+        ui.ControlButton(c0, btn_start_y, btn_w, bh, play_btn_lbl, "toggle_pause", (255, 122, 0)),
+        ui.ControlButton(c1, btn_start_y, btn_w, bh, "[<-] -10s SEEK", "seek_back", (89, 199, 52)),
+        ui.ControlButton(c2, btn_start_y, btn_w, bh, "[->] +10s SEEK", "seek_fwd", (89, 199, 52)),
+        ui.ControlButton(c3, btn_start_y, btn_w, bh, "[X] STOP VIDEO", "stop_video", (48, 59, 255)),
 
-        ui.ControlButton(pane3_x + 15, btn_start_y + 38, btn_w, 30, play_btn_lbl, "toggle_pause", (255, 122, 0)),
-        ui.ControlButton(pane3_x + 25 + btn_w, btn_start_y + 38, btn_w, 30, "[<-] -10s SEEK", "seek_back", (89, 199, 52)),
-        ui.ControlButton(pane3_x + 35 + 2*btn_w, btn_start_y + 38, btn_w, 30, "[->] +10s SEEK", "seek_fwd", (89, 199, 52)),
+        # Row 2: Optical & Neural AI
+        ui.ControlButton(c0, btn_start_y + 33, btn_w, bh, f"[A] CLAHE: {'ON' if use_adaptive_clahe else 'OFF'}", "toggle_clahe", (89, 199, 52)),
+        ui.ControlButton(c1, btn_start_y + 33, btn_w, bh, f"[G] DANN: {'ON' if tool_dann_active else 'OFF'}", "toggle_dann", (89, 199, 52)),
+        ui.ControlButton(c2, btn_start_y + 33, btn_w, bh, f"[V] FX: {vision_fx_names[current_fx_idx]}", "toggle_fx", (222, 82, 175)),
+        ui.ControlButton(c3, btn_start_y + 33, btn_w, bh, f"[W] WATER: {'ON' if show_water_gif else 'OFF'}", "toggle_gif", (255, 122, 0)),
 
-        ui.ControlButton(pane3_x + 15, btn_start_y + 76, btn_w, 30, repeat_btn_lbl, "toggle_repeat", (0, 149, 255)),
-        ui.ControlButton(pane3_x + 25 + btn_w, btn_start_y + 76, btn_w, 30, "[X] STOP", "stop_video", (48, 59, 255)),
-        ui.ControlButton(pane3_x + 35 + 2*btn_w, btn_start_y + 76, btn_w, 30, f"[L] LANG: {comm.language_mode}", "toggle_lang", (255, 122, 0)),
+        # Row 3: ML & Probabilistic Tools
+        ui.ControlButton(c0, btn_start_y + 66, btn_w, bh, f"[M] GMM: {'ON' if tool_gmm_active else 'OFF'}", "toggle_gmm", (255, 122, 0)),
+        ui.ControlButton(c1, btn_start_y + 66, btn_w, bh, f"[B] BNN: {'ON' if tool_bnn_active else 'OFF'}", "toggle_bnn", (0, 149, 255)),
+        ui.ControlButton(c2, btn_start_y + 66, btn_w, bh, f"[K] KINEMATICS: {'ON' if tool_kinematics_active else 'OFF'}", "toggle_kinematics", (222, 82, 175)),
+        ui.ControlButton(c3, btn_start_y + 66, btn_w, bh, f"[D] KDE: {'ON' if tool_kde_active else 'OFF'}", "toggle_kde", (255, 122, 0)),
 
-        ui.ControlButton(pane3_x + 15, btn_start_y + 114, btn_w, 30, f"[A] CLAHE: {'ON' if use_adaptive_clahe else 'OFF'}", "toggle_clahe", (89, 199, 52)),
-        ui.ControlButton(pane3_x + 25 + btn_w, btn_start_y + 114, btn_w, 30, f"[W] WATER LAYER: {'ON' if show_water_gif else 'OFF'}", "toggle_gif", (255, 122, 0)),
-        ui.ControlButton(pane3_x + 35 + 2*btn_w, btn_start_y + 114, btn_w, 30, f"[M] STATS: {'ON' if show_stats_analyzer else 'OFF'}", "toggle_stats", (222, 82, 175)),
+        # Row 4: Tracking & Stress Testing
+        ui.ControlButton(c0, btn_start_y + 99, btn_w, bh, f"[T] TRACKER: {'BOT' if 'botsort' in active_tracker_cfg else 'BYTE'}", "toggle_tracker", (0, 149, 255)),
+        ui.ControlButton(c1, btn_start_y + 99, btn_w, bh, f"[F] PARTICLE: {'ON' if tool_smc_pf_active else 'OFF'}", "toggle_smc_pf", (255, 0, 255)),
+        ui.ControlButton(c2, btn_start_y + 99, btn_w, bh, "[E] HEATWAVE SHOCK", "shock_heatwave", (48, 59, 255)),
+        ui.ControlButton(c3, btn_start_y + 99, btn_w, bh, "[P] POLLUTION SHOCK", "shock_pollution", (48, 59, 255)),
 
-        ui.ControlButton(pane3_x + 15, btn_start_y + 152, btn_w, 32, f"[T] TRACKER: {'BOTSORT' if 'botsort' in active_tracker_cfg else 'BYTETRACK'}", "toggle_tracker", (0, 149, 255)),
-        ui.ControlButton(pane3_x + 25 + btn_w, btn_start_y + 152, btn_w, 32, "[C] DR. PAULY", "call_pauly", (89, 199, 52)),
-        ui.ControlButton(pane3_x + 35 + 2*btn_w, btn_start_y + 152, btn_w, 32, "[J] JOHNNY RELIC", "trigger_johnny", (222, 82, 175)),
-        ui.ControlButton(pane3_x + 15, btn_start_y + 190, video_w - 30, 32, "💬 [TAB / CTRL+T / CTRL+C] OPEN LIVE CHAT PORTAL", "trigger_chat", (255, 122, 0))
+        # Row 5: Voice AI & Controls
+        ui.ControlButton(c0, btn_start_y + 132, btn_w, bh, "[C] DR. PAULY", "call_pauly", (89, 199, 52)),
+        ui.ControlButton(c1, btn_start_y + 132, btn_w, bh, "[J] JOHNNY RELIC", "trigger_johnny", (222, 82, 175)),
+        ui.ControlButton(c2, btn_start_y + 132, btn_w, bh, f"[U] STATS: {'ON' if show_stats_analyzer else 'OFF'}", "toggle_stats", (222, 82, 175)),
+        ui.ControlButton(c3, btn_start_y + 132, btn_w, bh, "[N] RESET STRESS", "shock_reset", (89, 199, 52)),
+
+        # Row 6: Live Chat & Full Dock
+        ui.ControlButton(c0, btn_start_y + 165, video_w - 24, 30, "💬 [TAB / ENTER] OPEN LIVE CHAT & SHORTCUT DOCK", "trigger_chat", (255, 122, 0))
     ]
 
     mouse_cb_param['buttons'] = buttons
@@ -804,6 +883,36 @@ while cap.isOpened():
         elif action_trigger == "toggle_clahe":
             use_adaptive_clahe = not use_adaptive_clahe
             ui.hud_notifs.add(f"🧪 ADAPTIVE CLAHE BOOST: {'ACTIVE' if use_adaptive_clahe else 'DISABLED'}", (89, 199, 52), 2.5)
+        elif action_trigger == "toggle_dann":
+            tool_dann_active = not tool_dann_active
+            ui.hud_notifs.add(f"🧪 [KEY G] DANN DOMAIN GRADIENT FILTER: {'ACTIVE' if tool_dann_active else 'OFF'}", (89, 199, 52), 2.5)
+        elif action_trigger == "toggle_gmm":
+            tool_gmm_active = not tool_gmm_active
+            ui.hud_notifs.add(f"📊 [KEY M] GMM SPATIAL CLUSTERING: {'ACTIVE' if tool_gmm_active else 'OFF'}", (255, 122, 0), 2.5)
+        elif action_trigger == "toggle_bnn":
+            tool_bnn_active = not tool_bnn_active
+            ui.hud_notifs.add(f"🎲 [KEY B] BNN EPISTEMIC UNCERTAINTY: {'ACTIVE' if tool_bnn_active else 'OFF'}", (0, 149, 255), 2.5)
+        elif action_trigger == "toggle_kinematics":
+            tool_kinematics_active = not tool_kinematics_active
+            ui.hud_notifs.add(f"🚀 [KEY K] KALMAN KINEMATICS VECTORS: {'ACTIVE' if tool_kinematics_active else 'OFF'}", (222, 82, 175), 2.5)
+        elif action_trigger == "toggle_kde":
+            tool_kde_active = not tool_kde_active
+            ui.hud_notifs.add(f"🗺️ [KEY D] 2D KDE OCCUPANCY HEATMAP: {'ACTIVE' if tool_kde_active else 'OFF'}", (255, 122, 0), 2.5)
+        elif action_trigger == "toggle_smc_pf":
+            tool_smc_pf_active = not tool_smc_pf_active
+            ui.hud_notifs.add(f"🌀 [KEY F] SMC PARTICLE FILTER TRACKER: {'ACTIVE' if tool_smc_pf_active else 'OFF'}", (255, 0, 255), 2.5)
+        elif action_trigger == "shock_heatwave":
+            enkf_filter.inject_environmental_shock('heatwave')
+            ui.hud_notifs.add("🔥 [KEY E] HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
+        elif action_trigger == "shock_pollution":
+            enkf_filter.inject_environmental_shock('pollution')
+            ui.hud_notifs.add("☣️ [KEY P] POLLUTION SPILL INJECTED", (48, 59, 255), 3.0)
+        elif action_trigger == "shock_invasive":
+            enkf_filter.inject_environmental_shock('invasive_predator')
+            ui.hud_notifs.add("🦈 [KEY I] INVASIVE PREDATOR INJECTED", (48, 59, 255), 3.0)
+        elif action_trigger == "shock_reset":
+            enkf_filter.active_shock_name = "NORMAL"
+            ui.hud_notifs.add("🌿 [KEY N] ENVIRONMENTAL STRESS RESET TO NORMAL", (89, 199, 52), 2.5)
         elif action_trigger == "toggle_gif":
             show_water_gif = not show_water_gif
             ui.hud_notifs.add(f"🌊 WATER LAYER: {'ACTIVE' if show_water_gif else 'INACTIVE'}", (255, 122, 0), 2.5)
@@ -959,31 +1068,49 @@ while cap.isOpened():
         current_filter_idx = (current_filter_idx + 1) % len(selectable_filters)
         active_f = selectable_filters[current_filter_idx]
         ui.hud_notifs.add(f"🎯 TARGET FILTER: {active_f.upper()}", (255, 122, 0), 2.5)
-    elif key == ord('f') or key == ord('F'):
+    elif key == ord('v') or key == ord('V'):
         current_fx_idx = (current_fx_idx + 1) % len(vision_fx_names)
         fx_name = vision_fx_names[current_fx_idx]
         ui.hud_notifs.add(f"👁️ VISION FX MODE: {fx_name}", (222, 82, 175), 2.5)
-    elif key == ord('v') or key == ord('V'):
+    elif key == ord('m') or key == ord('M'):
+        tool_gmm_active = not tool_gmm_active
+        ui.hud_notifs.add(f"📊 [KEY M] GMM SPATIAL CLUSTERING: {'ACTIVE' if tool_gmm_active else 'OFF'}", (255, 122, 0), 2.5)
+    elif key == ord('b') or key == ord('B'):
+        tool_bnn_active = not tool_bnn_active
+        ui.hud_notifs.add(f"🎲 [KEY B] BNN EPISTEMIC UNCERTAINTY: {'ACTIVE' if tool_bnn_active else 'OFF'}", (0, 149, 255), 2.5)
+    elif key == ord('g') or key == ord('G'):
+        tool_dann_active = not tool_dann_active
+        ui.hud_notifs.add(f"🧪 [KEY G] DANN DOMAIN GRADIENT FILTER: {'ACTIVE' if tool_dann_active else 'OFF'}", (89, 199, 52), 2.5)
+    elif key == ord('k') or key == ord('K'):
+        tool_kinematics_active = not tool_kinematics_active
+        ui.hud_notifs.add(f"🚀 [KEY K] KALMAN KINEMATICS VECTORS: {'ACTIVE' if tool_kinematics_active else 'OFF'}", (222, 82, 175), 2.5)
+    elif key == ord('d') or key == ord('D'):
+        tool_kde_active = not tool_kde_active
+        ui.hud_notifs.add(f"🗺️ [KEY D] 2D KDE OCCUPANCY HEATMAP: {'ACTIVE' if tool_kde_active else 'OFF'}", (255, 122, 0), 2.5)
+    elif key == ord('f') or key == ord('F'):
+        tool_smc_pf_active = not tool_smc_pf_active
+        ui.hud_notifs.add(f"🌀 [KEY F] SMC PARTICLE FILTER TRACKER: {'ACTIVE' if tool_smc_pf_active else 'OFF'}", (255, 0, 255), 2.5)
+    elif key == ord('u') or key == ord('U'):
+        show_stats_analyzer = not show_stats_analyzer
+        ui.hud_notifs.add(f"📊 [KEY U] ECOLOGICAL STATS ANALYZER: {'ACTIVE' if show_stats_analyzer else 'OFF'}", (222, 82, 175), 2.5)
+    elif key == ord('y') or key == ord('Y'):
         show_motion_vectors = not show_motion_vectors
-        ui.hud_notifs.add(f"🚀 MOTION VECTORS: {'ENABLED' if show_motion_vectors else 'DISABLED'}", (89, 199, 52), 2.5)
+        ui.hud_notifs.add(f"🚀 [KEY Y] TRAJECTORY MOTION VECTORS: {'ENABLED' if show_motion_vectors else 'DISABLED'}", (89, 199, 52), 2.5)
     elif key == ord('z') or key == ord('Z'):
         show_pip_zoom = not show_pip_zoom
-        ui.hud_notifs.add(f"🔍 MAGNIFIER PiP ZOOM: {'ENABLED' if show_pip_zoom else 'DISABLED'}", (222, 82, 175), 2.5)
-    elif key == ord('t') or key == ord('T'):
-        if "botsort" in active_tracker_cfg:
-            active_tracker_cfg = "bytetrack.yaml"
-        else:
-            active_tracker_cfg = "botsort.yaml"
-        ui.hud_notifs.add(f"🤖 TRACKER ENGINE: {active_tracker_cfg.upper()}", (0, 149, 255), 2.5)
+        ui.hud_notifs.add(f"🔍 [KEY Z] MAGNIFIER PiP ZOOM: {'ENABLED' if show_pip_zoom else 'DISABLED'}", (222, 82, 175), 2.5)
     elif key == ord('e') or key == ord('E'):
         enkf_filter.inject_environmental_shock('heatwave')
-        ui.hud_notifs.add("🔥 STRESS TEST: HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
+        ui.hud_notifs.add("🔥 [KEY E] HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
     elif key == ord('p') or key == ord('P'):
         enkf_filter.inject_environmental_shock('pollution')
-        ui.hud_notifs.add("☣️ STRESS TEST: POLLUTION SPILL INJECTED", (48, 59, 255), 3.0)
+        ui.hud_notifs.add("☣️ [KEY P] POLLUTION SPILL INJECTED", (48, 59, 255), 3.0)
     elif key == ord('i') or key == ord('I'):
         enkf_filter.inject_environmental_shock('invasive_predator')
-        ui.hud_notifs.add("🦈 STRESS TEST: INVASIVE PREDATOR INJECTED", (48, 59, 255), 3.0)
+        ui.hud_notifs.add("🦈 [KEY I] INVASIVE PREDATOR INJECTED", (48, 59, 255), 3.0)
+    elif key == ord('n') or key == ord('N'):
+        enkf_filter.active_shock_name = "NORMAL"
+        ui.hud_notifs.add("🌿 [KEY N] ENVIRONMENTAL STRESS RESET TO NORMAL", (89, 199, 52), 2.5)
 
     if not is_headless:
         try:

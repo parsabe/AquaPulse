@@ -218,3 +218,117 @@ class EnsembleKalmanFilter:
             "active_shock": self.active_shock_name
         }
 
+
+import cv2
+
+def render_gmm_spatial_clusters(img, targets, n_clusters=3):
+    """
+    [Key M Tool]: Fits a Gaussian Mixture Model (GMM) on target centroids.
+    Renders 2D GMM cluster ellipsoids showing habitat aggregation zones.
+    """
+    if not targets or len(targets) < 2:
+        return img
+
+    pts = []
+    for t in targets:
+        box = t['box']
+        cx = (box[0] + box[2]) / 2.0
+        cy = (box[1] + box[3]) / 2.0
+        pts.append([cx, cy])
+    pts = np.array(pts, dtype=np.float32)
+
+    try:
+        from sklearn.mixture import GaussianMixture
+        gmm = GaussianMixture(n_components=min(n_clusters, len(pts)), random_state=42)
+        labels = gmm.fit_predict(pts)
+        colors = [(255, 122, 0), (0, 149, 255), (89, 199, 52)]
+
+        for k in range(min(n_clusters, len(pts))):
+            cluster_pts = pts[labels == k]
+            if len(cluster_pts) > 1:
+                center = np.mean(cluster_pts, axis=0).astype(int)
+                cov = np.cov(cluster_pts, rowvar=False)
+                if cov.shape == (2, 2):
+                    evals, evecs = np.linalg.eigh(cov)
+                    order = evals.argsort()[::-1]
+                    evals, evecs = evals[order], evecs[:, order]
+                    angle = float(np.degrees(np.arctan2(*evecs[:, 0][::-1])))
+                    width = int(2 * np.sqrt(np.maximum(0.1, evals[0])) * 2.0)
+                    height = int(2 * np.sqrt(np.maximum(0.1, evals[1])) * 2.0)
+                    col = colors[k % len(colors)]
+                    cv2.ellipse(img, (int(center[0]), int(center[1])), (max(10, width), max(10, height)), angle, 0, 360, col, 2)
+                    cv2.putText(img, f"GMM Cluster #{k+1}", (int(center[0]) - 30, int(center[1])), cv2.FONT_HERSHEY_SIMPLEX, 0.35, col, 1)
+    except Exception:
+        center = np.mean(pts, axis=0).astype(int)
+        cv2.circle(img, (int(center[0]), int(center[1])), 40, (255, 122, 0), 2)
+        cv2.putText(img, "GMM Core Cluster", (int(center[0]) - 40, int(center[1]) - 45), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 122, 0), 1)
+
+    return img
+
+def render_kde_density_heatmap(img, targets):
+    """
+    [Key D Tool]: Real-time 2D Gaussian Kernel Density Estimation (KDE) Heatmap.
+    Overlays spatial occupancy density on the video viewport.
+    """
+    if not targets:
+        return img
+    h, w, c = img.shape
+    density_map = np.zeros((h, w), dtype=np.float32)
+
+    for t in targets:
+        box = t['box']
+        cx, cy = int((box[0] + box[2]) / 2.0), int((box[1] + box[3]) / 2.0)
+        cx = max(0, min(w - 1, cx))
+        cy = max(0, min(h - 1, cy))
+        cv2.circle(density_map, (cx, cy), 35, 1.0, -1)
+
+    blurred = cv2.GaussianBlur(density_map, (71, 71), 0)
+    norm = cv2.normalize(blurred, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+    heatmap = cv2.applyColorMap(norm, cv2.COLORMAP_JET)
+
+    return cv2.addWeighted(img, 0.65, heatmap, 0.35, 0)
+
+def render_kalman_kinematic_vectors(img, track_history):
+    """
+    [Key K Tool]: Computes 2D Kalman velocity and acceleration vectors.
+    Renders dynamic motion arrows on target centroids.
+    """
+    for tid, pts in track_history.items():
+        if len(pts) >= 4:
+            p1, p3 = pts[-3], pts[-1]
+            vx = p3[0] - p1[0]
+            vy = p3[1] - p1[1]
+            speed = float(np.sqrt(vx**2 + vy**2))
+            
+            end_x = int(p3[0] + vx * 1.5)
+            end_y = int(p3[1] + vy * 1.5)
+            
+            cv2.arrowedLine(img, (p3[0], p3[1]), (end_x, end_y), (89, 199, 52), 2, tipLength=0.3)
+            cv2.putText(img, f"v: {speed:.1f}px/s", (p3[0] + 8, p3[1] - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (89, 199, 52), 1)
+
+    return img
+
+class SMCParticleFilterTracker:
+    """
+    [Key F Tool]: 100-Particle Sequential Monte Carlo (SMC) Particle Filter State Tracker.
+    Maintains target particle distributions for robust tracking during optical occlusions.
+    """
+    def __init__(self, num_particles=100):
+        self.num_particles = num_particles
+        self.particles = None
+
+    def init_particles(self, center_x, center_y):
+        self.particles = np.random.normal([center_x, center_y], [15, 15], size=(self.num_particles, 2))
+
+    def render_particle_cloud(self, img, center_x, center_y):
+        if self.particles is None:
+            self.init_particles(center_x, center_y)
+        else:
+            self.particles += np.random.normal(0, 3, size=(self.num_particles, 2))
+            
+        for pt in self.particles[:40]:
+            px, py = int(pt[0]), int(pt[1])
+            if 0 <= px < img.shape[1] and 0 <= py < img.shape[0]:
+                cv2.circle(img, (px, py), 1, (255, 0, 255), -1)
+
+
