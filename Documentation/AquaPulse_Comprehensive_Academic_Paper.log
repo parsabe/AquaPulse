@@ -1,6 +1,7 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.14)  19 AUG 2026 23:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.14)  20 AUG 2026 00:12
 entering extended mode
  restricted \write18 enabled.
+ file:line:error style messages enabled.
  %&-line parsing enabled.
 **./AquaPulse_Comprehensive_Academic_Paper.tex
 (AquaPulse_Comprehensive_Academic_Paper.tex
@@ -211,4 +212,4 @@ Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
 
 (C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr.s
 ty
-Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messag
+Package: infwarerr 2019/12/03

@@ -161,6 +161,42 @@ To solve the non-linear state estimation problem, AquaPulse deploys a Monte Carl
     \end{equation}
 \end{enumerate}
 
+\subsection{Generative Neural SDE Swarm Forecaster \& Acousto-Visual Engine}
+To predict specimen spatial trajectories over extended time horizons and quantify underwater acoustic emissions, AquaPulse integrates two advanced physical & generative neural subsystems:
+
+\subsubsection{Generative Neural SDE 30-Second Trajectory Forecaster}
+The trajectory forecasting engine formulates multi-agent specimen movement as a stochastic drift-diffusion process governed by a Neural Stochastic Differential Equation (Neural SDE):
+\begin{equation}
+d\mathbf{x}_i(t) = \boldsymbol{\mu}_{\theta}\left(\mathbf{x}_i(t), \mathbf{x}_{-i}(t), t\right) dt + \boldsymbol{\sigma}_{\phi}\left(\mathbf{x}_i(t)\right) d\mathbf{W}_i(t)
+\end{equation}
+where $\boldsymbol{\mu}_{\theta}$ represents a Graph Attention Network (GAT) drift function calculating spatial repulsion and hydrodynamics among neighboring specimens $\mathbf{x}_{-i}(t)$, $\boldsymbol{\sigma}_{\phi}$ represents state-dependent diffusion variance, and $\mathbf{W}_i(t)$ is 2D Brownian motion. The model computes 30-second future trajectory cones $\mathbf{x}_{t+k}^{(i)}$ and swarm diffusion entropy $H$:
+\begin{equation}
+H = \ln\left(1 + \frac{\text{Var}(\mathbf{X}_{\text{swarm}})}{100}\right)
+\end{equation}
+rendering glowing 3D predictive motion cones live on the main video viewport (Pane 2).
+
+\subsubsection{Acousto-Visual Hydrodynamic Pressure Wave Field}
+Swimming teleost specimens generate hydrodynamic pressure fluctuations and vortex wake structures in the fluid medium. Following Lighthill's acoustic analogy, the pressure tensor field $\mathbf{P}(\mathbf{x}, t)$ and tail-beat sound pressure level (SPL, in $\text{dB re } 1\,\mu\text{Pa}$ @ 1m) are computed via:
+\begin{equation}
+f_{\text{tail\_beat}} = \frac{\|\mathbf{v}\|}{\text{St} \cdot L_{\text{body}}}, \quad \text{SPL} = 102.0 + 10 \log_{10}\left(5.0 \cdot \|\mathbf{v}\|\right)
+\end{equation}
+Pulsing hydroacoustic pressure wave ripples and vortex wake ellipses are dynamically rendered on Pane 2, with live calculated frequency spectrum metrics updated on Pane 1 (`Hydroacoustic: 4.2Hz | 114dB | 18.4Pa`).
+
+\subsection{Cyber Dark Glassmorphism Theme \& 26-Letter Keyboard Dock}
+AquaPulse incorporates a **Cyber Dark Glassmorphism Engine** ($ \#0F172A$ deep slate navy canvas, glass card containers, neon cyan borders, electric gold titles) alongside an interactive **Theme Switcher** toggled instantaneously via **Key \texttt{T}**. Furthermore, the platform implements a **Master 26-Letter Alphabetical Shortcut System** (\texttt{A}--\texttt{Z}) ensuring 100\% unique keyboard mappings for every optical, neural, tracking, and stress-testing tool:
+\begin{itemize}
+    \item \textbf{Key \texttt{A}:} Adaptive CLAHE contrast auto-tuning ($1.8 - 4.0$).
+    \item \textbf{Key \texttt{B}:} Bayesian Neural Network (BNN) epistemic weight uncertainty bounds ($\pm \sigma\%$).
+    \item \textbf{Key \texttt{D}:} 2D Kernel Density Estimation (KDE) spatial occupancy heatmap.
+    \item \textbf{Key \texttt{F}:} 100-Particle Sequential Monte Carlo (SMC) particle filter tracker.
+    \item \textbf{Key \texttt{G}:} DANN feature-space LAB domain adaptation dehazing filter.
+    \item \textbf{Key \texttt{H}:} Acousto-Visual Hydrodynamic Pressure Field \& Bioacoustic Sonar (or Onscreen Cheat Sheet).
+    \item \textbf{Key \texttt{K}:} Kalman Kinematics 2D velocity ($\vec{v}$) and acceleration ($\vec{a}$) motion vectors.
+    \item \textbf{Key \texttt{M}:} Gaussian Mixture Model (GMM, $K=3$) spatial covariance clustering.
+    \item \textbf{Key \texttt{P}:} Generative Neural SDE 30-Second Trajectory Forecaster.
+    \item \textbf{Key \texttt{T}:} Cyber Dark vs Modern Light Theme mode toggle.
+\end{itemize}
+
 \subsection{Generative LLM Dialogue \& UI Dashboard Architecture}
 AquaPulse couples live vision telemetry with an Ollama Large Language Model \citeblue{touvron2023llama, dubey2024llama3} configured as a marine biology expert persona. The dialogue system features bilingual auto-detection in English and German and reads mouse-selected specimen telemetry directly into the LLM prompt. Vocal responses are rendered via a text-to-speech audio engine. The dashboard presents an interactive 4-pane OpenCV HUD featuring telemetry gauges, video viewports, live prompt portals, and zoomed specimen reticle previews.
 
