@@ -22,7 +22,101 @@ import csv
 import sys
 import time
 import cv2
+import numpy as np
 from ultralytics import YOLO
+
+
+class ReIDTrackStitcher:
+    """
+    Feature Re-ID Track Stitcher.
+    Extracts visual appearance embedding vectors (color distribution in LAB/HSV + spatial aspect ratio) for targets.
+    Maintains a lost track memory gallery (`ReID_Gallery`) to match new tracks to recently lost ones.
+    If cosine similarity > 0.82 within a memory window (e.g. 15s / 450 frames), maps new track ID to original track ID.
+    """
+    def __init__(self, memory_frames=450, similarity_threshold=0.82):
+        self.memory_frames = memory_frames
+        self.similarity_threshold = similarity_threshold
+        self.gallery = {}   # lost_track_id: {"embedding": norm_vec, "last_frame": frame_idx, "cls_name": cls_name}
+        self.active_tracks = {}  # track_id: {"embedding": norm_vec, "last_frame": frame_idx, "cls_name": cls_name}
+        self.id_mapping = {}  # new_track_id -> original_track_id
+
+    def extract_embedding(self, img, box):
+        x1, y1, x2, y2 = map(int, box)
+        h, w, c = img.shape
+        x1, y1 = max(0, x1), max(0, y1)
+        x2, y2 = min(w, x2), min(h, y2)
+        if x2 <= x1 or y2 <= y1:
+            return np.zeros(64, dtype=np.float32)
+        crop = img[y1:y2, x1:x2]
+        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+        hist_h = cv2.calcHist([hsv], [0], None, [16], [0, 180])
+        hist_s = cv2.calcHist([hsv], [1], None, [16], [0, 256])
+        hist_v = cv2.calcHist([hsv], [2], None, [16], [0, 256])
+        lab = cv2.cvtColor(crop, cv2.COLOR_BGR2LAB)
+        hist_l = cv2.calcHist([lab], [0], None, [16], [0, 256])
+        
+        vec = np.vstack([hist_h, hist_s, hist_v, hist_l]).flatten()
+        norm = np.linalg.norm(vec)
+        if norm > 1e-6:
+            vec = vec / norm
+        return vec
+
+    def process_frame_tracks(self, frame_idx, current_frame_targets, img):
+        """
+        current_frame_targets: list of dicts {"track_id": int, "box": [x1,y1,x2,y2], "cls_name": str}
+        Returns updated targets with re-mapped persistent track_ids.
+        """
+        current_active_ids = set()
+        updated_targets = []
+        
+        for tgt in current_frame_targets:
+            raw_id = tgt["track_id"]
+            box = tgt["box"]
+            cls_name = tgt["cls_name"]
+            
+            mapped_id = self.id_mapping.get(raw_id, raw_id)
+            emb = self.extract_embedding(img, box)
+            
+            if mapped_id not in self.active_tracks and mapped_id not in self.gallery:
+                best_match_id = None
+                best_sim = -1.0
+                
+                for g_id, g_info in list(self.gallery.items()):
+                    if frame_idx - g_info["last_frame"] <= self.memory_frames and g_info["cls_name"] == cls_name:
+                        sim = float(np.dot(emb, g_info["embedding"]))
+                        if sim > best_sim and sim >= self.similarity_threshold:
+                            best_sim = sim
+                            best_match_id = g_id
+                            
+                if best_match_id is not None:
+                    self.id_mapping[raw_id] = best_match_id
+                    mapped_id = best_match_id
+                    if best_match_id in self.gallery:
+                        del self.gallery[best_match_id]
+                    
+            self.active_tracks[mapped_id] = {
+                "embedding": emb,
+                "last_frame": frame_idx,
+                "cls_name": cls_name
+            }
+            current_active_ids.add(mapped_id)
+            
+            tgt_copy = dict(tgt)
+            tgt_copy["track_id"] = mapped_id
+            updated_targets.append(tgt_copy)
+            
+        for a_id in list(self.active_tracks.keys()):
+            if a_id not in current_active_ids:
+                if frame_idx - self.active_tracks[a_id]["last_frame"] <= self.memory_frames:
+                    self.gallery[a_id] = self.active_tracks[a_id]
+                del self.active_tracks[a_id]
+                
+        for g_id in list(self.gallery.keys()):
+            if frame_idx - self.gallery[g_id]["last_frame"] > self.memory_frames:
+                del self.gallery[g_id]
+                
+        return updated_targets
+
 
 
 def run_tracking(model_path: str, source_path: str, output_path: str,

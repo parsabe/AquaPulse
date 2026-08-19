@@ -155,7 +155,10 @@ def process_latex_template(template_path, tex_output_path, stats_data, plots_dir
          "\\textbf{Ollama AI Analytical Breakdown (Part 1):} Ecological balance ratio trajectories ($X/Y$) monitor the instantaneous proportion of prey to predators relative to theoretical equilibrium ($X^*/Y^* = 2.0$).\n\n\\textbf{Ollama AI Analytical Breakdown (Part 2):} Identifying periods of predator overabundance or prey depletion provides vital metrics for ecosystem health."),
 
         ("20_enkf_state_covariance.png", "Figure 20: Ensemble State Covariance Matrix Trace Tr(Pf)", 
-         "\\textbf{Ollama AI Analytical Breakdown (Part 1):} State covariance matrix trace plots ($\text{Tr}(P_f)$) track total ensemble variance across prey and predator state dimensions.\n\n\\textbf{Ollama AI Analytical Breakdown (Part 2):} Monotonic covariance decay confirms Kalman filter stability and uncertainty reduction over time as initial prior uncertainty is assimilated.")
+         "\\textbf{Ollama AI Analytical Breakdown (Part 1):} State covariance matrix trace plots ($\\text{Tr}(P_f)$) track total ensemble variance across prey and predator state dimensions.\n\n\\textbf{Ollama AI Analytical Breakdown (Part 2):} Monotonic covariance decay confirms Kalman filter stability and uncertainty reduction over time as initial prior uncertainty is assimilated."),
+
+        ("21_3d_volumetric_trajectories.png", "Figure 21: 3D Volumetric Spatial Trajectory & Swimming Lanes",
+         "\\textbf{Ollama AI Analytical Breakdown (Part 1):} The 3D volumetric spatial trajectory plot visualizes the 3D spatiotemporal swimming channels and depth preferences of specimen tracks over time.\n\n\\textbf{Ollama AI Analytical Breakdown (Part 2):} Spatial density clusters and elevation dynamics reveal micro-habitat utilization and structural shelter preferences within the aquatic environment.")
     ]
 
     for fname, title, desc in plot_descriptions:

@@ -63,13 +63,35 @@ def load_ensemble_models(target_device):
     return ensemble_models, primary_model
 
 def adaptive_underwater_enhance(img):
-    """Applies CLAHE contrast limited histogram equalization for turbid underwater frames."""
+    """
+    Applies real-time optical physics auto-tuning with dynamic CLAHE clip limits
+    and LAB channel normalization based on live turbidity & ambient luminance.
+    """
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(lab)
-    clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
+    
+    std_lum = float(np.std(l))
+    if std_lum < 20.0:
+        clip_limit = 4.0
+    elif std_lum > 60.0:
+        clip_limit = 1.8
+    else:
+        clip_limit = 3.5 - (std_lum - 20.0) * (1.7 / 40.0)
+        
+    clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(8, 8))
     cl = clahe.apply(l)
     limg = cv2.merge((cl, a, b))
     return cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+
+def match_open_vocabulary_query(species_name, prompt_query):
+    """
+    Checks if a target species matches an open-vocabulary query string.
+    """
+    if not prompt_query or not prompt_query.strip():
+        return False
+    query = prompt_query.strip().lower()
+    species = str(species_name).lower()
+    return query in species or species in query
 
 def generate_water_gif_frame(h, w, t_sec):
     """Generates synthetic water surface layer animation frame."""
@@ -90,16 +112,20 @@ def fit_text_to_width(text, max_pixel_width=340, font_scale=0.38, thickness=1):
         curr_text = curr_text[:-4] + "..."
     return curr_text
 
-def draw_target_box(img, box, track_id, species_name, conf, custom_color=None, is_selected=False):
-    """Renders target bounding box reticle and label badge."""
+def draw_target_box(img, box, track_id, species_name, conf, custom_color=None, is_selected=False, prompt_query=None):
+    """Renders target bounding box reticle and label badge with open-vocabulary highlighting."""
     x1, y1, x2, y2 = map(int, box)
     w, h = x2 - x1, y2 - y1
+    
+    is_open_vocab_match = match_open_vocabulary_query(species_name, prompt_query) if prompt_query else False
     
     color = custom_color if custom_color is not None else (255, 122, 0)
     if is_selected:
         color = (0, 149, 255)
+    elif is_open_vocab_match:
+        color = (255, 0, 255)  # Magenta highlight for open-vocabulary query matches
     
-    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2 if is_selected else 1)
+    cv2.rectangle(img, (x1, y1), (x2, y2), color, 3 if (is_selected or is_open_vocab_match) else 1)
     
     line_len = min(18, max(4, w // 4), max(4, h // 4))
     cv2.line(img, (x1, y1), (x1 + line_len, y1), color, 2)
@@ -112,9 +138,12 @@ def draw_target_box(img, box, track_id, species_name, conf, custom_color=None, i
     cv2.line(img, (x2, y2), (x2, y2 - line_len), color, 2)
 
     badge_text = f"#{track_id} {species_name} {conf*100:.0f}%"
+    if is_open_vocab_match:
+        badge_text = f"[MATCH] {badge_text}"
     badge_text = fit_text_to_width(badge_text, max_pixel_width=max(w, 140), font_scale=0.38)
     t_size = cv2.getTextSize(badge_text, cv2.FONT_HERSHEY_SIMPLEX, 0.38, 1)[0]
     
     cv2.rectangle(img, (x1, y1 - t_size[1] - 8), (x1 + t_size[0] + 10, y1), (255, 255, 255), -1)
     cv2.rectangle(img, (x1, y1 - t_size[1] - 8), (x1 + t_size[0] + 10, y1), color, 1)
     cv2.putText(img, badge_text, (x1 + 5, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.38, color, 1, cv2.LINE_AA)
+

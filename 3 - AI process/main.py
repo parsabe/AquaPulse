@@ -196,8 +196,9 @@ else:
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, fps, (canvas_w, canvas_h))
 
-# Initialize EnKF Filter & RealTime Chart Renderer
+# Initialize EnKF Filter, Re-ID Stitcher & RealTime Chart Renderer
 enkf_filter = enkf.EnsembleKalmanFilter(num_members=50, R_noise=4.0)
+reid_stitcher = botsort.ReIDTrackStitcher(memory_frames=450, similarity_threshold=0.82)
 chart_renderer = chart.RealTimeChartRenderer(width=360, height=230, update_interval=15)
 
 # --- INTERACTIVE PANEL RESIZING SPLITTER DIVIDERS STATE ---
@@ -974,6 +975,15 @@ while cap.isOpened():
         else:
             active_tracker_cfg = "botsort.yaml"
         ui.hud_notifs.add(f"🤖 TRACKER ENGINE: {active_tracker_cfg.upper()}", (0, 149, 255), 2.5)
+    elif key == ord('e') or key == ord('E'):
+        enkf_filter.inject_environmental_shock('heatwave')
+        ui.hud_notifs.add("🔥 STRESS TEST: HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
+    elif key == ord('p') or key == ord('P'):
+        enkf_filter.inject_environmental_shock('pollution')
+        ui.hud_notifs.add("☣️ STRESS TEST: POLLUTION SPILL INJECTED", (48, 59, 255), 3.0)
+    elif key == ord('i') or key == ord('I'):
+        enkf_filter.inject_environmental_shock('invasive_predator')
+        ui.hud_notifs.add("🦈 STRESS TEST: INVASIVE PREDATOR INJECTED", (48, 59, 255), 3.0)
 
     if not is_headless:
         try:
