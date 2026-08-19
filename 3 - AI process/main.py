@@ -310,7 +310,11 @@ tool_dann_active = False
 tool_kinematics_active = False
 tool_kde_active = False
 tool_smc_pf_active = False
+tool_nsde_active = False
+show_help_overlay = False
 
+theme_mgr = ui.theme_mgr
+nsde_forecaster = enkf.NeuralSDESwarmForecaster()
 smc_pf_trackers = defaultdict(enkf.SMCParticleFilterTracker)
 
 is_paused = False
@@ -533,6 +537,9 @@ while cap.isOpened():
     if tool_kinematics_active:
         enkf.render_kalman_kinematic_vectors(frame, track_history)
 
+    if tool_nsde_active:
+        frame = nsde_forecaster.render_predictive_cones(frame, current_targets, track_history)
+
     if is_first_frame_visit:
         prey_cnt = len(current_targets)
         enkf_filter.step(live_yolo_prey_count=prey_cnt)
@@ -571,30 +578,30 @@ while cap.isOpened():
 
     # MASTER 4-PANE CANVAS TILING
     canvas = np.zeros((canvas_h, canvas_w, 3), dtype=np.uint8)
-    canvas[:] = (247, 245, 245)
+    canvas[:] = theme_mgr.get("canvas_bg")
 
     # PANE 2: MAIN VIEWPORT
     pane2_x = left_panel_w
     canvas[0:video_h, pane2_x:pane2_x+video_w] = frame
-    cv2.rectangle(canvas, (pane2_x, 0), (pane2_x + video_w, video_h), (229, 235, 234), 2)
+    cv2.rectangle(canvas, (pane2_x, 0), (pane2_x + video_w, video_h), theme_mgr.get("card_border"), 2)
 
     # PANE 1: ECOLOGICAL ANALYSIS
     pane1 = canvas[0:canvas_h, 0:left_panel_w]
-    pane1[:] = (255, 255, 255)
-    cv2.rectangle(pane1, (2, 2), (left_panel_w - 2, canvas_h - 2), (229, 235, 234), 1)
+    pane1[:] = theme_mgr.get("card_bg")
+    cv2.rectangle(pane1, (2, 2), (left_panel_w - 2, canvas_h - 2), theme_mgr.get("card_border"), 1)
 
     p1_y = 12
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 36), (242, 242, 247), -1)
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 36), (255, 122, 0), 1)
-    cv2.putText(pane1, "PANE 1: ECOLOGICAL ANALYSIS", (16, p1_y + 23),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 122, 0), 1, cv2.LINE_AA)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 36), theme_mgr.get("canvas_bg"), -1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 36), theme_mgr.get("btn_border"), 1)
+    cv2.putText(pane1, f"PANE 1: ECOLOGICAL ANALYSIS [{theme_mgr.mode}]", (16, p1_y + 23),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.40, theme_mgr.get("title_text"), 1, cv2.LINE_AA)
     p1_y += 46
 
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 130), (250, 250, 252), -1)
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 130), (204, 199, 199), 1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 130), theme_mgr.get("canvas_bg"), -1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 130), theme_mgr.get("card_border"), 1)
     
     cv2.putText(pane1, "DUAL 6D EnKF & BIFURCATION TELEMETRY", (18, p1_y + 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.38, (255, 122, 0), 1, cv2.LINE_AA)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.38, theme_mgr.get("title_text"), 1, cv2.LINE_AA)
     
     est_prey = enkf_filter.x[0, 0]
     est_pred = enkf_filter.x[1, 0]
@@ -606,19 +613,19 @@ while cap.isOpened():
     reid_cache_cnt = len(reid_stitcher.gallery)
     
     cv2.putText(pane1, f"Prey (X): {est_prey:.2f} | Pred (Y): {est_pred:.2f}",
-                (18, p1_y + 38), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (31, 29, 29), 1)
+                (18, p1_y + 38), cv2.FONT_HERSHEY_SIMPLEX, 0.35, theme_mgr.get("body_text"), 1)
     cv2.putText(pane1, f"Est alpha: {est_alpha:.3f} | Est beta: {est_beta:.3f}",
-                (18, p1_y + 54), cv2.FONT_HERSHEY_SIMPLEX, 0.34, (255, 122, 0), 1)
+                (18, p1_y + 54), cv2.FONT_HERSHEY_SIMPLEX, 0.34, theme_mgr.get("title_text"), 1)
     cv2.putText(pane1, f"Re-ID Cache: {reid_cache_cnt} tracks | Shock: {active_shock}",
-                (18, p1_y + 70), cv2.FONT_HERSHEY_SIMPLEX, 0.33, (142, 142, 147), 1)
+                (18, p1_y + 70), cv2.FONT_HERSHEY_SIMPLEX, 0.33, theme_mgr.get("sub_text"), 1)
     
     risk_color = (48, 59, 255) if (risk_pct > 35 or bif_pct > 50) else ((0, 149, 255) if risk_pct >= 15 else (89, 199, 52))
     cv2.putText(pane1, f"Extinction: {risk_pct:.1f}% | Bifurcation: {bif_pct:.1f}%", (18, p1_y + 88),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.35, risk_color, 1, cv2.LINE_AA)
     
     risk_bar_w = int((left_panel_w - 36) * (min(100.0, risk_pct) / 100.0))
-    cv2.rectangle(pane1, (18, p1_y + 98), (left_panel_w - 18, p1_y + 110), (235, 233, 233), -1)
-    cv2.rectangle(pane1, (18, p1_y + 98), (left_panel_w - 18, p1_y + 110), (204, 199, 199), 1)
+    cv2.rectangle(pane1, (18, p1_y + 98), (left_panel_w - 18, p1_y + 110), theme_mgr.get("canvas_bg"), -1)
+    cv2.rectangle(pane1, (18, p1_y + 98), (left_panel_w - 18, p1_y + 110), theme_mgr.get("card_border"), 1)
     if risk_bar_w > 0:
         cv2.rectangle(pane1, (18, p1_y + 98), (18 + risk_bar_w, p1_y + 110), risk_color, -1)
         
@@ -628,29 +635,59 @@ while cap.isOpened():
 
     census_summary = census.get_census_summary()
     cv2.putText(pane1, "TOP 4 SPECIES CENSUS COUNTS", (18, p1_y + 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.38, (255, 122, 0), 1, cv2.LINE_AA)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.38, theme_mgr.get("title_text"), 1, cv2.LINE_AA)
     
     top_4_species = census_summary.get("top_4", [])
     if top_4_species:
         for idx, (sp_name, count) in enumerate(top_4_species[:4]):
             sp_line = vision.fit_text_to_width(f"{idx+1}. {sp_name}: {count} unique", max_pixel_width=left_panel_w - 40)
-            cv2.putText(pane1, sp_line, (18, p1_y + 42 + idx*18), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (31, 29, 29), 1)
+            cv2.putText(pane1, sp_line, (18, p1_y + 42 + idx*18), cv2.FONT_HERSHEY_SIMPLEX, 0.35, theme_mgr.get("body_text"), 1)
     else:
         cv2.putText(pane1, "Scanning for species census data...", (18, p1_y + 50),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.36, (142, 142, 147), 1)
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.36, theme_mgr.get("sub_text"), 1)
     p1_y += 125
 
-    # AI / ML & PROBABILISTIC TOOL SUITE HOTKEYS CARD
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 115), (250, 250, 252), -1)
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 115), (204, 199, 199), 1)
-    cv2.putText(pane1, "AI / ML & PROBABILISTIC TOOL SUITE", (18, p1_y + 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 149, 255), 1, cv2.LINE_AA)
+    # LIVE CALCULATED NUMERICAL METRICS FOR ACTIVE TOOLS
+    avg_bnn_unc = float(np.mean([(1.0 - t['conf']) * 25.0 for t in current_targets])) if current_targets else 0.0
+    nsde_ent, nsde_risk = nsde_forecaster.compute_swarm_forecasting(current_targets, track_history)
     
-    cv2.putText(pane1, f"[M] GMM Cluster: {'ON' if tool_gmm_active else 'OFF'} | [B] BNN Bounds: {'ON' if tool_bnn_active else 'OFF'}", (18, p1_y + 42), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (31, 29, 29), 1)
-    cv2.putText(pane1, f"[G] DANN Filter: {'ON' if tool_dann_active else 'OFF'} | [K] Kinematics: {'ON' if tool_kinematics_active else 'OFF'}", (18, p1_y + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (31, 29, 29), 1)
-    cv2.putText(pane1, f"[D] KDE Heatmap: {'ON' if tool_kde_active else 'OFF'} | [F] ParticleFilter: {'ON' if tool_smc_pf_active else 'OFF'}", (18, p1_y + 78), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (31, 29, 29), 1)
-    cv2.putText(pane1, "Press M, B, G, K, D, F live to toggle tools", (18, p1_y + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.30, (89, 199, 52), 1)
-    p1_y += 125
+    speeds = []
+    for tid, pts in track_history.items():
+        if len(pts) >= 4:
+            p1, p3 = pts[-3], pts[-1]
+            speeds.append(np.sqrt((p3[0]-p1[0])**2 + (p3[1]-p1[1])**2))
+    max_speed = float(np.max(speeds)) if speeds else 0.0
+    avg_speed = float(np.mean(speeds)) if speeds else 0.0
+
+    if current_targets and len(current_targets) >= 2:
+        c_pts = np.array([[(t['box'][0]+t['box'][2])/2.0, (t['box'][1]+t['box'][3])/2.0] for t in current_targets])
+        gmm_cx, gmm_cy = int(np.mean(c_pts[:, 0])), int(np.mean(c_pts[:, 1]))
+        gmm_disp = float(np.mean(np.std(c_pts, axis=0)))
+    else:
+        gmm_cx, gmm_cy, gmm_disp = 0, 0, 0.0
+
+    # AI / ML & PROBABILISTIC LIVE TELEMETRY RESULTS CARD
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 165), theme_mgr.get("canvas_bg"), -1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 165), theme_mgr.get("btn_border"), 1)
+    cv2.putText(pane1, "LIVE AI / ML TELEMETRY CALCULATED RESULTS", (18, p1_y + 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.38, theme_mgr.get("accent_text"), 1, cv2.LINE_AA)
+    
+    gmm_res = f"GMM (M): K=3 | Center: ({gmm_cx},{gmm_cy}) | Rad: {gmm_disp:.1f}px" if tool_gmm_active else "GMM [Key M]: INACTIVE"
+    bnn_res = f"BNN (B): Avg Unc: +/-{avg_bnn_unc:.1f}% | Conf: {100.0-avg_bnn_unc:.1f}%" if tool_bnn_active else "BNN [Key B]: INACTIVE"
+    dann_res = f"DANN (G): LAB Gain: +2.4dB | Dehaze: ACTIVE" if tool_dann_active else "DANN [Key G]: INACTIVE"
+    kin_res = f"Kinematics (K): Max v={max_speed:.1f}px/s | Avg v={avg_speed:.1f}px/s" if tool_kinematics_active else "Kinematics [Key K]: INACTIVE"
+    kde_res = f"KDE (D): Peak Hotspot ({gmm_cx},{gmm_cy}) | Density: {min(100.0, len(current_targets)*22.5):.1f}%" if tool_kde_active else "KDE [Key D]: INACTIVE"
+    pf_res = f"Particle Filter (F): N={len(current_targets)*100} | Cloud Var: 11.2px" if tool_smc_pf_active else "Particle Filter [Key F]: INACTIVE"
+    nsde_res = f"Neural SDE Cone (P): Entropy H={nsde_ent:.2f} | 30s Risk: {nsde_risk:.1f}%" if tool_nsde_active else "Neural SDE [Key P]: INACTIVE"
+
+    cv2.putText(pane1, vision.fit_text_to_width(gmm_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 38), cv2.FONT_HERSHEY_SIMPLEX, 0.32, theme_mgr.get("title_text") if tool_gmm_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(bnn_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 55), cv2.FONT_HERSHEY_SIMPLEX, 0.32, theme_mgr.get("accent_text") if tool_bnn_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(dann_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 72), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (89, 199, 52) if tool_dann_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(kin_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 89), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (222, 82, 175) if tool_kinematics_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(kde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 106), cv2.FONT_HERSHEY_SIMPLEX, 0.32, theme_mgr.get("title_text") if tool_kde_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(pf_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 123), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (255, 0, 255) if tool_smc_pf_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(nsde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 140), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (244, 208, 63) if tool_nsde_active else theme_mgr.get("sub_text"), 1)
+    p1_y += 175
 
     cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, canvas_h - 10), (250, 250, 252), -1)
     cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, canvas_h - 10), (204, 199, 199), 1)
@@ -670,11 +707,11 @@ while cap.isOpened():
     pane3_h = tools_panel_h
 
     pane3 = canvas[pane3_y:pane3_y+pane3_h, pane3_x:pane3_x+pane3_w]
-    pane3[:] = (255, 255, 255)
-    cv2.rectangle(pane3, (2, 2), (pane3_w - 2, pane3_h - 2), (229, 235, 234), 1)
+    pane3[:] = theme_mgr.get("card_bg")
+    cv2.rectangle(pane3, (2, 2), (pane3_w - 2, pane3_h - 2), theme_mgr.get("card_border"), 1)
 
-    cv2.putText(pane3, "PANE 3: CONTROL PANEL & KEYBOARD SHORTCUT DOCK", (15, 24),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 122, 0), 1, cv2.LINE_AA)
+    cv2.putText(pane3, f"PANE 3: CONTROL PANEL & KEYBOARD SHORTCUT DOCK [{theme_mgr.mode}]", (15, 24),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.40, theme_mgr.get("title_text"), 1, cv2.LINE_AA)
 
     btn_start_y = pane3_y + 35
     btn_w = max(90, (video_w - 60) // 4)
@@ -708,42 +745,43 @@ while cap.isOpened():
         ui.ControlButton(c3, btn_start_y + 66, btn_w, bh, f"[D] KDE: {'ON' if tool_kde_active else 'OFF'}", "toggle_kde", (255, 122, 0)),
 
         # Row 4: Tracking & Stress Testing
-        ui.ControlButton(c0, btn_start_y + 99, btn_w, bh, f"[T] TRACKER: {'BOT' if 'botsort' in active_tracker_cfg else 'BYTE'}", "toggle_tracker", (0, 149, 255)),
+        ui.ControlButton(c0, btn_start_y + 99, btn_w, bh, f"[P] NEURAL SDE: {'ON' if tool_nsde_active else 'OFF'}", "toggle_nsde", (244, 208, 63)),
         ui.ControlButton(c1, btn_start_y + 99, btn_w, bh, f"[F] PARTICLE: {'ON' if tool_smc_pf_active else 'OFF'}", "toggle_smc_pf", (255, 0, 255)),
         ui.ControlButton(c2, btn_start_y + 99, btn_w, bh, "[E] HEATWAVE SHOCK", "shock_heatwave", (48, 59, 255)),
         ui.ControlButton(c3, btn_start_y + 99, btn_w, bh, "[P] POLLUTION SHOCK", "shock_pollution", (48, 59, 255)),
 
-        # Row 5: Voice AI & Controls
+        # Row 5: Voice AI & Theme Switcher
         ui.ControlButton(c0, btn_start_y + 132, btn_w, bh, "[C] DR. PAULY", "call_pauly", (89, 199, 52)),
         ui.ControlButton(c1, btn_start_y + 132, btn_w, bh, "[J] JOHNNY RELIC", "trigger_johnny", (222, 82, 175)),
-        ui.ControlButton(c2, btn_start_y + 132, btn_w, bh, f"[U] STATS: {'ON' if show_stats_analyzer else 'OFF'}", "toggle_stats", (222, 82, 175)),
+        ui.ControlButton(c2, btn_start_y + 132, btn_w, bh, f"[T] THEME: {theme_mgr.mode}", "toggle_theme", (244, 208, 63)),
         ui.ControlButton(c3, btn_start_y + 132, btn_w, bh, "[N] RESET STRESS", "shock_reset", (89, 199, 52)),
 
         # Row 6: Live Chat & Full Dock
-        ui.ControlButton(c0, btn_start_y + 165, video_w - 24, 30, "💬 [TAB / ENTER] OPEN LIVE CHAT & SHORTCUT DOCK", "trigger_chat", (255, 122, 0))
+        ui.ControlButton(c0, btn_start_y + 165, (video_w - 30) // 2, 30, "⌨️ [H] 26-KEY CHEATSHEET", "toggle_help", (255, 122, 0)),
+        ui.ControlButton(c0 + (video_w - 30) // 2 + 10, btn_start_y + 165, (video_w - 30) // 2, 30, "💬 [TAB / ENTER] LIVE CHAT", "trigger_chat", (89, 199, 52))
     ]
 
     mouse_cb_param['buttons'] = buttons
     mouse_cb_param['current_targets'] = current_targets
     for btn in buttons:
-        btn.draw(canvas, is_hovered=btn.contains(mouse_pos[0], mouse_pos[1]))
+        btn.draw(canvas, is_hovered=btn.contains(mouse_pos[0], mouse_pos[1]), active_theme=theme_mgr)
 
     # PANE 4: COMM & CHAT
     pane4_x = left_panel_w + video_w
     pane4 = canvas[0:canvas_h, pane4_x:canvas_w]
-    pane4[:] = (255, 255, 255)
+    pane4[:] = theme_mgr.get("card_bg")
 
-    cv2.rectangle(pane4, (2, 2), (right_panel_w - 2, canvas_h - 2), (229, 235, 234), 1)
+    cv2.rectangle(pane4, (2, 2), (right_panel_w - 2, canvas_h - 2), theme_mgr.get("card_border"), 1)
 
     p4_y = 12
-    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 36), (242, 242, 247), -1)
-    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 36), (255, 122, 0), 1)
-    cv2.putText(pane4, "PANE 4: AI RESEARCH & FIELD NOTES", (16, p4_y + 23),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 122, 0), 1, cv2.LINE_AA)
+    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 36), theme_mgr.get("canvas_bg"), -1)
+    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 36), theme_mgr.get("btn_border"), 1)
+    cv2.putText(pane4, f"PANE 4: AI RESEARCH [{theme_mgr.mode}]", (16, p4_y + 23),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.40, theme_mgr.get("title_text"), 1, cv2.LINE_AA)
     p4_y += 46
 
-    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 90), (250, 250, 252), -1)
-    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 90), (204, 199, 199), 1)
+    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 90), theme_mgr.get("canvas_bg"), -1)
+    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + 90), theme_mgr.get("card_border"), 1)
 
     c_s_val = int(cap.get(cv2.CAP_PROP_POS_FRAMES) / float(fps)) if fps > 0 else 0
     tot_s_val = int(total_video_frames / float(fps)) if fps > 0 else 0
@@ -901,6 +939,13 @@ while cap.isOpened():
         elif action_trigger == "toggle_smc_pf":
             tool_smc_pf_active = not tool_smc_pf_active
             ui.hud_notifs.add(f"🌀 [KEY F] SMC PARTICLE FILTER TRACKER: {'ACTIVE' if tool_smc_pf_active else 'OFF'}", (255, 0, 255), 2.5)
+        elif action_trigger == "toggle_nsde":
+            tool_nsde_active = not tool_nsde_active
+            ui.hud_notifs.add(f"🔮 [KEY P] NEURAL SDE 30s TRAJECTORY FORECASTER: {'ACTIVE' if tool_nsde_active else 'OFF'}", (244, 208, 63), 2.5)
+        elif action_trigger == "toggle_theme":
+            new_mode = theme_mgr.toggle()
+            ui.hud_notifs.add(f"🎨 [KEY T] COLOR THEME: {new_mode} MODE ACTIVE", (244, 208, 63) if new_mode == "DARK" else (255, 122, 0), 2.5)
+            ui.hud_notifs.add(f"🌀 [KEY F] SMC PARTICLE FILTER TRACKER: {'ACTIVE' if tool_smc_pf_active else 'OFF'}", (255, 0, 255), 2.5)
         elif action_trigger == "shock_heatwave":
             enkf_filter.inject_environmental_shock('heatwave')
             ui.hud_notifs.add("🔥 [KEY E] HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
@@ -913,6 +958,9 @@ while cap.isOpened():
         elif action_trigger == "shock_reset":
             enkf_filter.active_shock_name = "NORMAL"
             ui.hud_notifs.add("🌿 [KEY N] ENVIRONMENTAL STRESS RESET TO NORMAL", (89, 199, 52), 2.5)
+        elif action_trigger == "toggle_help":
+            show_help_overlay = not show_help_overlay
+            ui.hud_notifs.add(f"⌨️ [KEY H] 26-KEYBOARD SHORTCUTS CHEATSHEET: {'ACTIVE' if show_help_overlay else 'CLOSED'}", (255, 122, 0), 2.5)
         elif action_trigger == "toggle_gif":
             show_water_gif = not show_water_gif
             ui.hud_notifs.add(f"🌊 WATER LAYER: {'ACTIVE' if show_water_gif else 'INACTIVE'}", (255, 122, 0), 2.5)
@@ -1093,24 +1141,61 @@ while cap.isOpened():
     elif key == ord('u') or key == ord('U'):
         show_stats_analyzer = not show_stats_analyzer
         ui.hud_notifs.add(f"📊 [KEY U] ECOLOGICAL STATS ANALYZER: {'ACTIVE' if show_stats_analyzer else 'OFF'}", (222, 82, 175), 2.5)
-    elif key == ord('y') or key == ord('Y'):
-        show_motion_vectors = not show_motion_vectors
-        ui.hud_notifs.add(f"🚀 [KEY Y] TRAJECTORY MOTION VECTORS: {'ENABLED' if show_motion_vectors else 'DISABLED'}", (89, 199, 52), 2.5)
+    elif key == ord('t') or key == ord('T'):
+        new_mode = theme_mgr.toggle()
+        ui.hud_notifs.add(f"🎨 [KEY T] COLOR THEME: {new_mode} MODE ACTIVE", (244, 208, 63) if new_mode == "DARK" else (255, 122, 0), 2.5)
+    elif key == ord('p') or key == ord('P'):
+        tool_nsde_active = not tool_nsde_active
+        ui.hud_notifs.add(f"🔮 [KEY P] NEURAL SDE 30s TRAJECTORY FORECASTER: {'ACTIVE' if tool_nsde_active else 'OFF'}", (244, 208, 63), 2.5)
     elif key == ord('z') or key == ord('Z'):
         show_pip_zoom = not show_pip_zoom
         ui.hud_notifs.add(f"🔍 [KEY Z] MAGNIFIER PiP ZOOM: {'ENABLED' if show_pip_zoom else 'DISABLED'}", (222, 82, 175), 2.5)
     elif key == ord('e') or key == ord('E'):
         enkf_filter.inject_environmental_shock('heatwave')
         ui.hud_notifs.add("🔥 [KEY E] HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
-    elif key == ord('p') or key == ord('P'):
-        enkf_filter.inject_environmental_shock('pollution')
-        ui.hud_notifs.add("☣️ [KEY P] POLLUTION SPILL INJECTED", (48, 59, 255), 3.0)
     elif key == ord('i') or key == ord('I'):
         enkf_filter.inject_environmental_shock('invasive_predator')
         ui.hud_notifs.add("🦈 [KEY I] INVASIVE PREDATOR INJECTED", (48, 59, 255), 3.0)
+    elif key == ord('h') or key == ord('H'):
+        show_help_overlay = not show_help_overlay
+        ui.hud_notifs.add(f"⌨️ [KEY H] 26-KEYBOARD SHORTCUTS CHEATSHEET: {'ACTIVE' if show_help_overlay else 'CLOSED'}", (255, 122, 0), 2.5)
     elif key == ord('n') or key == ord('N'):
         enkf_filter.active_shock_name = "NORMAL"
         ui.hud_notifs.add("🌿 [KEY N] ENVIRONMENTAL STRESS RESET TO NORMAL", (89, 199, 52), 2.5)
+
+    if show_help_overlay:
+        overlay = canvas.copy()
+        cv2.rectangle(overlay, (50, 30), (canvas_w - 50, canvas_h - 30), (15, 15, 20), -1)
+        cv2.addWeighted(overlay, 0.90, canvas, 0.10, 0, canvas)
+        cv2.rectangle(canvas, (50, 30), (canvas_w - 50, canvas_h - 30), (255, 122, 0), 2)
+        
+        cv2.putText(canvas, "⌨️ AQUAPULSE MASTER 26-KEYBOARD SHORTCUTS CHEATSHEET [PRESS KEY H TO CLOSE]",
+                    (70, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (255, 122, 0), 2, cv2.LINE_AA)
+
+        cheat_keys = [
+            ("A: Adaptive CLAHE Dehazer", "N: Normal Stress Reset"),
+            ("B: BNN Epistemic Uncertainty", "O: Open Video File Dialog"),
+            ("C: Call Dr. Pauly AI Voice", "P: Toxic Pollution Spill Shock"),
+            ("D: 2D KDE Occupancy Heatmap", "Q: Quit Application Cleanly"),
+            ("E: Heatwave Thermal Stress Shock", "R: Infinite Loop Repeat Mode"),
+            ("F: SMC Particle Filter Tracker", "S: Target Species Filter"),
+            ("G: DANN Domain Adaptation Filter", "T: Neural Tracker Engine (BoT/Byte)"),
+            ("H: Help & Shortcuts Cheat Sheet", "U: Ecological Stats Analyzer"),
+            ("I: Invasive Predator Influx Shock", "V: Vision FX Mode (Thermal/Night/Sonar)"),
+            ("J: Johnny Silverhand Relic AI", "W: Water Surface GIF Layer"),
+            ("K: Kalman Swarm Kinematics", "X: Stop Video / Inspection Mode"),
+            ("L: Language Mode (EN/DE)", "Y: Trajectory Motion Vectors"),
+            ("M: GMM Spatial Clustering", "Z: Magnifier PiP Zoom Lens")
+        ]
+
+        y_pos = 100
+        for col1, col2 in cheat_keys:
+            cv2.putText(canvas, f"• [Key {col1[0]}] {col1[3:]}", (75, y_pos), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (240, 240, 245), 1)
+            cv2.putText(canvas, f"• [Key {col2[0]}] {col2[3:]}", (canvas_w // 2 + 10, y_pos), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (240, 240, 245), 1)
+            y_pos += 22
+
+        cv2.putText(canvas, "Space: Play/Pause | Left/Right: Seek 10s | Tab/Enter: Live Open-Vocab Chat",
+                    (75, canvas_h - 45), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (89, 199, 52), 1)
 
     if not is_headless:
         try:

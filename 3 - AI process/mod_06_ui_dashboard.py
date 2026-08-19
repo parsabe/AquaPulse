@@ -1,7 +1,48 @@
-import time
-import cv2
-import numpy as np
-from mod_04_vision_engine import fit_text_to_width
+class ThemeManager:
+    """
+    Manages full-application UI color palettes and styling tokens for Cyber Dark Mode vs Modern Light Mode.
+    """
+    def __init__(self, mode="DARK"):
+        self.mode = mode
+        self.palettes = {
+            "DARK": {
+                "canvas_bg": (24, 18, 15),       # #0F172A BGR Deep Slate Navy
+                "card_bg": (45, 30, 20),         # #141E2D BGR Slate Glass Container
+                "card_border": (105, 85, 71),     # Steel Slate Border
+                "card_border_glow": (244, 208, 6),# Neon Cyan Glow
+                "title_text": (244, 208, 63),    # Electric Cyan
+                "accent_text": (63, 208, 244),   # Electric Gold / Turquoise
+                "body_text": (240, 232, 226),     # Soft Silver White
+                "sub_text": (184, 163, 148),      # Muted Slate Gray
+                "btn_bg": (45, 30, 20),          # Button Background
+                "btn_hover": (85, 65, 51),       # Button Hover
+                "btn_border": (212, 182, 6),     # Neon Cyan Button Border
+                "btn_text": (244, 208, 63)       # Cyan Button Text
+            },
+            "LIGHT": {
+                "canvas_bg": (255, 255, 255),
+                "card_bg": (250, 250, 252),
+                "card_border": (204, 199, 199),
+                "card_border_glow": (255, 122, 0),
+                "title_text": (255, 122, 0),
+                "accent_text": (0, 149, 255),
+                "body_text": (31, 29, 29),
+                "sub_text": (142, 142, 147),
+                "btn_bg": (235, 233, 233),
+                "btn_hover": (245, 213, 229),
+                "btn_border": (204, 199, 199),
+                "btn_text": (31, 29, 29)
+            }
+        }
+
+    def toggle(self):
+        self.mode = "LIGHT" if self.mode == "DARK" else "DARK"
+        return self.mode
+
+    def get(self, token):
+        return self.palettes.get(self.mode, self.palettes["DARK"]).get(token, (255, 255, 255))
+
+theme_mgr = ThemeManager(mode="DARK")
 
 # --- INTERACTIVE CONTROL BUTTON CLASS ---
 class ControlButton:
@@ -17,22 +58,24 @@ class ControlButton:
     def contains(self, mx, my):
         return self.x <= mx <= self.x + self.w and self.y <= my <= self.y + self.h
 
-    def draw(self, img, is_hovered=False):
+    def draw(self, img, is_hovered=False, active_theme=None):
+        tm = active_theme if active_theme is not None else theme_mgr
         roi = img[self.y:self.y+self.h, self.x:self.x+self.w]
         if roi.shape[0] == self.h and roi.shape[1] == self.w:
             bg = np.zeros_like(roi, dtype=np.uint8)
-            bg[:] = (245, 213, 229) if is_hovered else (235, 233, 233)
-            blended = cv2.addWeighted(roi, 0.10, bg, 0.90, 0)
+            bg_col = tm.get("btn_hover") if is_hovered else tm.get("btn_bg")
+            bg[:] = bg_col
+            blended = cv2.addWeighted(roi, 0.15, bg, 0.85, 0)
             img[self.y:self.y+self.h, self.x:self.x+self.w] = blended
 
-        border_color = (255, 122, 0) if is_hovered else (204, 199, 199)
+        border_color = (255, 0, 255) if is_hovered else tm.get("btn_border")
         cv2.rectangle(img, (self.x, self.y), (self.x+self.w, self.y+self.h), border_color, 1)
 
         lbl_text = fit_text_to_width(self.label, max_pixel_width=self.w - 10, font_scale=0.36)
         t_size = cv2.getTextSize(lbl_text, cv2.FONT_HERSHEY_SIMPLEX, 0.36, 1)[0]
         tx = self.x + (self.w - t_size[0]) // 2
         ty = self.y + (self.h + t_size[1]) // 2
-        txt_color = (255, 122, 0) if is_hovered else (31, 29, 29)
+        txt_color = (255, 255, 255) if is_hovered else tm.get("btn_text")
         cv2.putText(img, lbl_text, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX, 0.36, txt_color, 1, cv2.LINE_AA)
 
 # --- HUD NOTIFICATIONS ENGINE ---
