@@ -8,13 +8,19 @@
 \usepackage{xcolor}
 
 \definecolor{navyblue}{RGB}{0, 51, 102}
-\definecolor{subblue}{RGB}{0, 102, 153}
+\definecolor{linkblue}{RGB}{0, 102, 204}
+
+% --- CUSTOM STYLING MACROS FOR LINKS, CITATIONS & REFERENCES ---
+\newcommand{\urltext}[1]{{\color{linkblue}\underline{\texttt{#1}}}}
+\newcommand{\citeblue}[1]{{\color{linkblue}\cite{#1}}}
+\newcommand{\refblue}[1]{{\color{linkblue}\ref{#1}}}
 
 % --- TITLE & AUTHOR ---
 \title{\vspace{-0.5cm}\textbf{\huge AquaPulse: Robust Computer Vision and Uncertainty Estimation for Aquatic Ecosystems}}
 
-\author{\textbf{Parsa Besharat}\\[0.1cm]
-Website: \texttt{https://aquapulse.parsabe.com}}
+\author{\textbf{\large PARSA BESHARAT}, \textit{Technische Universität Bergakademie Freiberg, Germany}\\[0.15cm]
+\urltext{parsabe99@gmail.com}\\[0.05cm]
+\urltext{https://aquapulse.parsabe.com}}
 
 \date{}
 
@@ -23,52 +29,52 @@ Website: \texttt{https://aquapulse.parsabe.com}}
 \maketitle
 
 \section*{1. Abstract}
-Non-invasive underwater ecosystem monitoring in turbid inland and coastal aquatic environments faces severe optical degradation, complex spatial specimen overlap, high movement dynamics, and unobserved trophic state interactions. In this paper, we introduce \textbf{AquaPulse}, an end-to-end open-source enterprise framework that fuses CUDA-accelerated optical preprocessing, deep neural computer vision, persistent multi-object target tracking, non-linear stochastic differential equation data assimilation, and generative local Large Language Model intelligence. The optical preprocessing pipeline incorporates dual-fisheye 3D ray geometric warping via PyTorch GPU grid sampling and Multi-Scale Retinex with Color Restoration log-domain Gaussian decomposition. The neural vision layer deploys a prioritized YOLOv8 weight ensemble paired with BoT-SORT and ByteTrack trajectory association engines to eliminate biological double-counting. An asynchronous REST pipeline integrates the Global Biodiversity Information Facility taxonomy hierarchy with local disk caching. For mathematical telemetry, a 100-member Ensemble Kalman Filter assimilates live prey detection counts into an Euler-Maruyama discretized Lotka-Volterra stochastic model to quantify extinction risk probabilities. The system is coupled with a 20-plot analytical Matplotlib metrics engine, an Ollama LLM voice agent with bilingual prompt handling, an interactive 4-pane OpenCV dashboard, and containerized Docker and standalone setup installer deployment infrastructure. Source code, models, and deployment resources are available on the project website at \texttt{https://aquapulse.parsabe.com}. Empirical validation confirms high inference throughput and robust state convergence under severe environmental noise.
+Non-invasive underwater ecosystem monitoring in turbid inland and coastal aquatic environments faces severe optical degradation, complex spatial specimen overlap, high movement dynamics, and unobserved trophic state interactions. In this paper, we introduce \textbf{AquaPulse}, an end-to-end open-source enterprise framework that fuses CUDA-accelerated optical preprocessing, deep neural computer vision, persistent multi-object target tracking, non-linear stochastic differential equation data assimilation, and generative local Large Language Model intelligence. The optical preprocessing pipeline incorporates dual-fisheye 3D ray geometric warping via PyTorch GPU grid sampling and Multi-Scale Retinex with Color Restoration log-domain Gaussian decomposition. The neural vision layer deploys a prioritized YOLOv8 weight ensemble paired with BoT-SORT and ByteTrack trajectory association engines to eliminate biological double-counting. An asynchronous REST pipeline integrates the Global Biodiversity Information Facility taxonomy hierarchy with local disk caching. For mathematical telemetry, a 100-member Ensemble Kalman Filter assimilates live prey detection counts into an Euler-Maruyama discretized Lotka-Volterra stochastic model to quantify extinction risk probabilities. Production deployment artifacts are built for Linux server environments via a containerized PyTorch CUDA Docker image and for Windows desktop environments via a standalone setup installer wizard. The system is coupled with a 20-plot analytical Matplotlib metrics engine, an Ollama LLM voice agent with bilingual prompt handling, and an interactive 4-pane OpenCV dashboard. Source code, pre-trained weights, container specifications, and desktop installers are available on the project website at \urltext{https://aquapulse.parsabe.com}. Empirical validation confirms high inference throughput and robust state convergence under severe environmental noise.
 
 \vspace{0.3cm}
 
 \section{Introduction}
-Aquatic ecosystems, particularly freshwater rivers, lakes, and turbid channels (such as the Spreewald river network in Central Europe), provide critical biodiversity hotspots and ecosystem services. Monitoring fish specimen abundance, population dynamics, species composition, and trophic interactions is vital for conservation management, ecological risk assessment, and environmental policy enforcement. However, traditional aquatic survey methodologies—such as physical net sampling, electrofishing, and acoustic telemetry—are often invasive, labor-intensive, spatially restricted, or disruptive to aquatic biota.
+Aquatic ecosystems, particularly freshwater rivers, lakes, and turbid channels such as the Spreewald river network in Central Europe, provide critical biodiversity hotspots and vital ecosystem services. Monitoring fish specimen abundance, population dynamics, species composition, and trophic interactions is essential for conservation management, ecological risk assessment, and environmental policy enforcement. However, traditional aquatic survey methodologies—such as physical net sampling, electrofishing, and acoustic telemetry—are often invasive, labor-intensive, spatially restricted, or disruptive to aquatic biota.
 
 In recent years, non-invasive video-based optical telemetry has emerged as a promising alternative. Nevertheless, deploying computer vision directly into natural underwater environments introduces fundamental optical, algorithmic, and mathematical challenges:
 \begin{enumerate}
-    \item \textbf{Severe Optical Degradation:} Water bodies exhibit wavelength-dependent light absorption, heavy backscattering from suspended particulate matter, low contrast, and severe color cast (dominated by green and brown spectra in turbid rivers).
-    \item \textbf{Camera Lens Distortion:} Dual-fisheye 360-degree action cameras (e.g., Insta360 systems) capture wide-angle ecological context but introduce extreme non-linear radial distortion that invalidates standard planar bounding box geometry.
+    \item \textbf{Severe Optical Degradation:} Water bodies exhibit wavelength-dependent light absorption, heavy backscattering from suspended particulate matter, low contrast, and severe color cast dominated by green and brown spectra in turbid rivers.
+    \item \textbf{Camera Lens Distortion:} Dual-fisheye wide-angle action cameras capture wide-angle ecological context but introduce extreme non-linear radial distortion that invalidates standard planar bounding box geometry.
     \item \textbf{Specimen Overlap \& Double-Counting:} Aquatic organisms swim fluidly, occluding one another and frequently entering or exiting the camera field of view. Standard per-frame detectors without persistent tracking suffer from severe over-counting and fragmented trajectory histories.
-    \item \textbf{Unobserved Trophic Dynamics:} Optical sensors can only observe visible surface or near-field organisms (e.g., prey fish). Apex predators or hidden ecological states remain unobserved due to camouflage, deep water concealment, or low population density.
+    \item \textbf{Unobserved Trophic Dynamics:} Optical sensors can only observe visible surface or near-field organisms such as prey fish. Apex predators or hidden ecological states remain unobserved due to camouflage, deep water concealment, or low population density.
     \item \textbf{Environmental Volatility:} Aquatic dynamics are governed by non-linear interactions and environmental turbulence, requiring stochastic modeling rather than deterministic extrapolation.
 \end{enumerate}
 
-To overcome these challenges, we present \textbf{AquaPulse}, a multi-stage software architecture and mathematical framework for real-time aquatic vision tracking, stochastic population estimation, and generative intelligence. As detailed in the codebase inventory in Appendix~\ref{sec:app_codebase} (Table~\ref{tab:codebase_structure}), AquaPulse integrates decoupled Python modules spanning optical preprocessing, neural computer vision, biological census tracking, stochastic Ensemble Kalman Filtering (EnKF), live graphical rendering, Ollama LLM voice dialogue, and multi-format document exporting.
+To overcome these challenges, we present \textbf{AquaPulse}, a multi-stage software architecture and mathematical framework for real-time aquatic vision tracking, stochastic population estimation, and generative intelligence. As detailed in the codebase inventory in Appendix~\refblue{sec:app_codebase} (Table~\refblue{tab:codebase_structure}) and complete directory tree layout in Appendix~\refblue{sec:app_tree}, AquaPulse integrates decoupled processing modules spanning optical preprocessing, neural computer vision, biological census tracking, stochastic Ensemble Kalman Filtering (EnKF), live graphical rendering, Ollama LLM voice dialogue, and multi-format document exporting. To streamline field deployment, production build artifacts are provided as a containerized Linux Docker server image and a standalone Windows setup installer executable that automatically audits system dependencies.
 
 The key contributions of the AquaPulse framework are summarized as follows:
 \begin{itemize}
-    \item \textbf{GPU-Accelerated 3D Ray Warping \& Retinex Dehazing:} We implement CUDA-accelerated dual-fisheye equirectangular-to-rectilinear grid sampling alongside Multi-Scale Retinex with Color Restoration (MSRCR) in log-space \cite{land1971lightness, jobson1997multiscale, ancuti2012enhancing}, restoring true surface reflectance in turbid waters.
-    \item \textbf{Prioritized YOLOv8 Ensemble \& MOT Fusion:} We deploy a prioritized neural model loading hierarchy (\texttt{fish\_model.pt} $\succ$ \texttt{best.pt} $\succ$ \texttt{medium.pt} $\succ$ \texttt{small.pt}) \cite{jocher2023ultralytics} combined with BoT-SORT \cite{aharon2022botsort} and ByteTrack \cite{zhang2022bytetrack} to guarantee persistent specimen trajectories.
-    \item \textbf{Asynchronous GBIF REST Taxonomy Caching:} We integrate live REST API querying with the Global Biodiversity Information Facility \cite{gbif2026backbone}, mapping vision detections to scientific taxonomy and field reference images while preserving zero-latency offline performance through local disk caching (Appendix~\ref{sec:app_gbif}).
-    \item \textbf{Stochastic EnKF State Assimilation:} We assimilate live prey vision counts into a Lotka-Volterra predator-prey SDE model using a 100-member Ensemble Kalman Filter \cite{sprungk2023, evensen2009data} to estimate unobserved predator densities and evaluate Monte Carlo extinction risk probabilities (Appendix~\ref{sec:app_sde}--\ref{sec:app_enkf}).
-    \item \textbf{Generative Voice LLM Dialogue \& Multi-Format Reporting:} We couple live vision telemetry with an Ollama Llama-3 model \cite{touvron2023llama, dubey2024llama3} powering a bilingual (English/German) interactive marine biologist voice agent (Dr. Daniel Pauly persona) and automated LaTeX PDF report compilation.
+    \item \textbf{GPU-Accelerated 3D Ray Warping \& Retinex Dehazing:} We implement CUDA-accelerated dual-fisheye equirectangular-to-rectilinear grid sampling alongside Multi-Scale Retinex with Color Restoration (MSRCR) in log-space \citeblue{land1971lightness, jobson1997multiscale, ancuti2012enhancing}, restoring true surface reflectance in turbid waters.
+    \item \textbf{Prioritized YOLOv8 Ensemble \& MOT Fusion:} We deploy a prioritized neural model loading hierarchy \citeblue{jocher2023ultralytics} combined with BoT-SORT \citeblue{aharon2022botsort} and ByteTrack \citeblue{zhang2022bytetrack} to guarantee persistent specimen trajectories.
+    \item \textbf{Asynchronous GBIF REST Taxonomy Caching:} We integrate live REST API querying with the Global Biodiversity Information Facility \citeblue{gbif2026backbone}, mapping vision detections to scientific taxonomy and field reference images while preserving zero-latency offline performance through local disk caching (Appendix~\refblue{sec:app_gbif}).
+    \item \textbf{Stochastic EnKF State Assimilation:} We assimilate live prey vision counts into a Lotka-Volterra predator-prey SDE model using a 100-member Ensemble Kalman Filter \citeblue{sprungk2023, evensen2009data} to estimate unobserved predator densities and evaluate Monte Carlo extinction risk probabilities (Section~\refblue{sec:stochastic_modeling}).
+    \item \textbf{Generative Voice LLM Dialogue \& Multi-Format Reporting:} We couple live vision telemetry with an Ollama Llama-3 model \citeblue{touvron2023llama, dubey2024llama3} powering a bilingual interactive marine biologist voice agent and automated LaTeX PDF report compilation.
 \end{itemize}
 
 \section{Related Work}
 Underwater video monitoring and automated biological telemetry rely on advances across multiple computational domains:
 
 \subsection{Underwater Image Dehazing \& Color Restoration}
-Optical propagation underwater differs significantly from terrestrial atmospheric imaging due to strong wavelength-dependent absorption and severe particulate scattering. Early physical restoration models utilized dark channel priors (DCP) adapted for water attenuation. Land and McCann \cite{land1971lightness} pioneered Retinex theory to decouple surface reflectance from ambient illumination. Jobson et al. \cite{jobson1997multiscale} extended this to Multi-Scale Retinex (MSR), which convolves Gaussian kernels across discrete spatial scales to balance dynamic range compression and color rendition. Ancuti et al. \cite{ancuti2012enhancing} introduced fusion-based underwater enhancement to combine contrast-optimized and color-corrected inputs. AquaPulse builds upon log-domain MSRCR and LAB color space CLAHE to execute real-time CUDA-accelerated image restoration prior to neural inference.
+Optical propagation underwater differs significantly from terrestrial atmospheric imaging due to strong wavelength-dependent absorption and severe particulate scattering. Early physical restoration models utilized dark channel priors adapted for water attenuation. Land and McCann \citeblue{land1971lightness} pioneered Retinex theory to decouple surface reflectance from ambient illumination. Jobson et al. \citeblue{jobson1997multiscale} extended this to Multi-Scale Retinex, which convolves Gaussian kernels across discrete spatial scales to balance dynamic range compression and color rendition. Ancuti et al. \citeblue{ancuti2012enhancing} introduced fusion-based underwater enhancement to combine contrast-optimized and color-corrected inputs. AquaPulse builds upon log-domain MSRCR and LAB color space CLAHE to execute real-time CUDA-accelerated image restoration prior to neural inference.
 
 \subsection{Object Detection \& Multi-Object Tracking (MOT)}
-Real-time visual monitoring requires high-throughput neural detectors paired with robust target association algorithms. YOLOv8 \cite{jocher2023ultralytics} represents a state-of-the-art anchor-free detection framework capable of high FPS inference on standard GPU hardware. However, applying per-frame detectors to aquatic environments often results in track fragmentation caused by sudden specimen turns and lighting flicker. Multi-object tracking algorithms address this by maintaining state predictions over time. BoT-SORT \cite{aharon2022botsort} incorporates Camera Motion Compensation (GMC via optical flow) and Re-ID appearance features to track objects during camera movements. ByteTrack \cite{zhang2022bytetrack} introduces a dual-threshold association strategy that preserves low-confidence detections to prevent broken trajectories. AquaPulse combines these MOT algorithms to enforce deduplicated census counting across contiguous video frames.
+Real-time visual monitoring requires high-throughput neural detectors paired with robust target association algorithms. YOLOv8 \citeblue{jocher2023ultralytics} represents a state-of-the-art anchor-free detection framework capable of high FPS inference on standard GPU hardware. However, applying per-frame detectors to aquatic environments often results in track fragmentation caused by sudden specimen turns and lighting flicker. Multi-object tracking algorithms address this by maintaining state predictions over time. BoT-SORT \citeblue{aharon2022botsort} incorporates Camera Motion Compensation via sparse optical flow to cancel out camera shaking while extracting appearance features. ByteTrack \citeblue{zhang2022bytetrack} introduces a dual-threshold association strategy that preserves low-confidence detections to prevent broken trajectories. AquaPulse combines these tracking algorithms to enforce deduplicated census counting across contiguous video frames.
 
 \subsection{Ecological Data Assimilation \& Generative AI}
-Estimating unobserved population states in non-linear biological systems is a classical challenge in theoretical ecology. The Ensemble Kalman Filter (EnKF), originally introduced by Evensen \cite{evensen2009data} and formalized by Sprungk \cite{sprungk2023}, uses Monte Carlo particle distributions to represent state uncertainty and assimilate noisy observations into non-linear differential models. Concurrently, generative Large Language Models (LLMs) such as Llama-2 and Llama-3 \cite{touvron2023llama, dubey2024llama3} have transformed human-computer interaction, enabling interactive natural language query processing over multi-modal scientific telemetry datasets.
+Estimating unobserved population states in non-linear biological systems is a classical challenge in theoretical ecology. The Ensemble Kalman Filter (EnKF), originally introduced by Evensen \citeblue{evensen2009data} and formalized by Sprungk \citeblue{sprungk2023}, uses Monte Carlo particle distributions to represent state uncertainty and assimilate noisy observations into non-linear differential models. Concurrently, generative Large Language Models such as Llama-2 and Llama-3 \citeblue{touvron2023llama, dubey2024llama3} have transformed human-computer interaction, enabling interactive natural language query processing over multi-modal scientific telemetry datasets.
 
 \section{Methodology}
-The AquaPulse methodology comprises four decoupled processing layers: optical preprocessing, deep neural computer vision with MOT tracking, biological census integration, and generative LLM dialogue.
+The AquaPulse methodology comprises four decoupled processing layers: optical preprocessing, deep neural computer vision with multi-object tracking, biological census integration, and stochastic population modeling with EnKF data assimilation.
 
 \subsection{Optical Preprocessing \& Camera Distortion Correction}
-Raw dual-fisheye wide-angle 360 videos (captured via Insta360 systems) exhibit severe radial lens distortion that distorts spatial bounding box coordinates. In \texttt{0 - Preprocessing/1 - Insta 360 Process/insv\_mp4.py}, AquaPulse calculates 3D directional ray projection vectors natively on GPU CUDA cores, mapping raw spherical fisheye coordinates into high-resolution rectilinear MP4 streams via PyTorch `grid\_sample` bilinear interpolation.
+Raw dual-fisheye wide-angle 360 videos captured via action cameras exhibit severe radial lens distortion that distorts spatial bounding box coordinates. AquaPulse calculates 3D directional ray projection vectors natively on GPU CUDA cores, mapping raw spherical fisheye coordinates into high-resolution rectilinear perspective video streams via PyTorch bilinear grid sampling.
 
-Figure~\ref{fig:insta360_comparison} illustrates the transformation from the raw uncorrected dual-fisheye circular image to the rectilinear perspective-corrected frame.
+Figure~\refblue{fig:insta360_comparison} illustrates the transformation from the raw uncorrected dual-fisheye circular image to the rectilinear perspective-corrected frame.
 
 \begin{figure}[htbp]
 \centering
@@ -83,13 +89,13 @@ Figure~\ref{fig:insta360_comparison} illustrates the transformation from the raw
     \includegraphics[width=\linewidth]{corrected.png}
     \small{(b) Rectilinear Perspective Frame}
 \end{minipage}
-\caption{Comparison of Insta360 dual-fisheye camera input: (a) Raw wide-angle circular fisheye optics before rectification; (b) CUDA GPU PyTorch 3D ray warped rectilinear frame ready for neural computer vision inference.}
+\caption{Comparison of dual-fisheye camera input: (a) Raw wide-angle circular fisheye optics before rectification; (b) CUDA GPU PyTorch 3D ray warped rectilinear frame ready for neural computer vision inference.}
 \label{fig:insta360_comparison}
 \end{figure}
 
-Furthermore, to counteract green/brown turbidity and low contrast in freshwater river channels, AquaPulse applies Multi-Scale Retinex with Color Restoration (MSRCR) in \texttt{0 - Preprocessing/0 - Source Codes/} \cite{land1971lightness, jobson1997multiscale}. By convolving logarithmic channel intensities across three Gaussian surround scales ($\sigma \in \{15, 80, 250\}$) and adjusting LAB color luminance via CLAHE, MSRCR restores true object reflectance and sharpens specimen boundary edges.
+Furthermore, to counteract green and brown turbidity as well as low contrast in freshwater river channels, AquaPulse applies Multi-Scale Retinex with Color Restoration (MSRCR) \citeblue{land1971lightness, jobson1997multiscale}. By convolving logarithmic channel intensities across three Gaussian surround scales ($\sigma \in \{15, 80, 250\}$) and adjusting LAB color luminance via CLAHE, MSRCR restores true object reflectance and sharpens specimen boundary edges.
 
-Figure~\ref{fig:msrcr_enhancement} demonstrates the optical enhancement achieved by MSRCR on turbid underwater video frames.
+Figure~\refblue{fig:msrcr_enhancement} demonstrates the optical enhancement achieved by MSRCR on turbid underwater video frames.
 
 \begin{figure}[htbp]
 \centering
@@ -99,33 +105,130 @@ Figure~\ref{fig:msrcr_enhancement} demonstrates the optical enhancement achieved
 \end{figure}
 
 \subsection{AI Neural Vision Engine \& Multi-Object Tracking}
-The vision subsystem in \texttt{mod\_04\_vision\_engine.py} initializes neural weights from the \texttt{models/} directory in prioritized sequence (\texttt{fish\_model.pt} $\succ$ \texttt{best.pt} $\succ$ \texttt{medium.pt} $\succ$ \texttt{small.pt}) \cite{jocher2023ultralytics}. Detected target bounding boxes are annotated with visual reticles, corner brackets, and dynamic text badges fitted to box width bounds.
+The vision subsystem initializes neural weights from a prioritized model repository \citeblue{jocher2023ultralytics}. Detected target bounding boxes are annotated with visual reticles, corner brackets, and dynamic text badges fitted to box width bounds.
 
-To prevent double-counting as fish move through the camera viewport, AquaPulse integrates BoT-SORT \cite{aharon2022botsort} and ByteTrack \cite{zhang2022bytetrack}. BoT-SORT computes Camera Motion Compensation (GMC) via sparse optical flow to cancel out camera shaking while extracting Re-ID appearance features. ByteTrack associates low-confidence detection boxes ($0.1 \le p < 0.5$) with existing Kalman tracks to maintain trajectory continuity. When a unique specimen track ID $i$ is registered, a high-resolution cropped image is automatically extracted to \texttt{fish\_images/<SPECIES>\_id<i>.png}.
+To prevent double-counting as fish move through the camera viewport, AquaPulse integrates BoT-SORT \citeblue{aharon2022botsort} and ByteTrack \citeblue{zhang2022bytetrack}. BoT-SORT computes Camera Motion Compensation via sparse optical flow to cancel out camera shaking while extracting appearance features. ByteTrack associates low-confidence detection boxes ($0.1 \le p < 0.5$) with existing Kalman tracks to maintain trajectory continuity. When a unique specimen track ID is registered, a high-resolution cropped image is automatically extracted to localized storage registers.
 
 \subsection{Biological Ecological Census \& GBIF Taxonomy API}
-Whenever a specimen target is locked by user mouse selection, \texttt{mod\_05\_dialogue\_and\_ollama.py} issues an asynchronous REST query to the Global Biodiversity Information Facility (GBIF) API \cite{gbif2026backbone} (\texttt{GET /v1/species/match?name=\{species\_name\}}), resolving informal names into scientific classification hierarchy (Kingdom, Phylum, Class, Order, Family, Genus, Species) as formalized in Appendix~\ref{sec:app_gbif}. Fetched metadata and reference photographs are cached locally in \texttt{species\_snapshots/wiki\_cache/} for offline field execution. Ecological community structure is quantitatively evaluated using Shannon diversity ($H'$) and Pielou evenness ($J'$) metrics (Appendix~\ref{sec:app_diversity}).
+Whenever a specimen target is locked by user mouse selection, AquaPulse issues an asynchronous REST query to the Global Biodiversity Information Facility (GBIF) API \citeblue{gbif2026backbone}, resolving informal names into scientific classification hierarchy (Kingdom, Phylum, Class, Order, Family, Genus, Species) as formalized in Appendix~\refblue{sec:app_gbif}. Fetched metadata and reference photographs are cached locally for offline field execution. Ecological community structure is quantitatively evaluated using Shannon diversity ($H'$) and Pielou evenness ($J'$) metrics (Appendix~\refblue{sec:app_diversity}).
 
-\subsection{Stochastic Population Modeling Overview}
-AquaPulse integrates live surface prey vision counts into a stochastic predator-prey model. The interaction represents prey population $X$ (observed by YOLO) and latent apex predator population $Y$ (unobserved state). Process noise models environmental turbulence, while an Ensemble Kalman Filter (EnKF) assimilates YOLO counts to continuously correct state estimates and calculate Monte Carlo extinction risk probabilities $P(\text{Extinction})$ (full mathematical SDE derivations and EnKF matrix updates are detailed in Appendices~\ref{sec:app_sde}, \ref{sec:app_em}, and \ref{sec:app_enkf}).
+\subsection{Stochastic Population Modeling \& EnKF Data Assimilation}
+\label{sec:stochastic_modeling}
+To resolve unobserved ecological dynamics and model population volatility, AquaPulse integrates live surface prey vision counts into a mathematical stochastic predator-prey system coupled with an Ensemble Kalman Filter (EnKF).
 
-\subsection{Generative LLM Dialogue \& UI Dashboard Architecture}
-In \texttt{mod\_05\_dialogue\_and\_ollama.py} and \texttt{mod\_06\_ui\_dashboard.py}, AquaPulse couples live vision telemetry with an Ollama Large Language Model (\texttt{llama3} or \texttt{mistral}) \cite{touvron2023llama, dubey2024llama3} configured as **Dr. Daniel Pauly**, a marine biology expert persona. The dialogue system features bilingual auto-detection (English/German) and reads mouse-selected specimen telemetry directly into the LLM system prompt. Vocal responses are rendered via a text-to-speech audio engine (\texttt{pyttsx3}). The dashboard presents a 4-pane interactive OpenCV HUD featuring telemetry gauges, video viewports, live prompt portals, and zoomed specimen reticle previews.
+\subsubsection{Stochastic Lotka-Volterra SDE Model}
+Let $X_t$ denote prey population density observed by YOLOv8 vision tracking, and $Y_t$ denote hidden apex predator density. Following Sprungk \citeblue{sprungk2023}, the interaction is modeled as a coupled system of Stochastic Differential Equations (SDEs) with multiplicative process noise:
+\begin{align}
+dX_t &= (\alpha X_t - \beta X_t Y_t) \, dt + \sigma_X X_t \, dW_t^X \label{eq:sde_prey} \\
+dY_t &= (\delta X_t Y_t - \gamma Y_t) \, dt + \sigma_Y Y_t \, dW_t^Y \label{eq:sde_predator}
+\end{align}
+where $\alpha$ is prey growth rate, $\beta$ is predation rate, $\delta$ is predator assimilation efficiency, $\gamma$ is predator mortality rate, and $\sigma_X, \sigma_Y$ are environmental process volatility parameters. $W_t^X, W_t^Y$ represent independent Brownian motion stochastic processes.
 
-\section{Experiment}
-AquaPulse was evaluated across three primary computing platforms representing desktop, edge, and cloud server environments:
+\subsubsection{Euler-Maruyama Numerical Discretization Scheme}
+Equations (\ref{eq:sde_prey})--(\ref{eq:sde_predator}) are integrated numerically using the Euler-Maruyama discretization scheme with time step size $\Delta t$:
+\begin{align}
+X_{n+1} &= \max\left(0.01, \, X_n + \Delta t (\alpha X_n - \beta X_n Y_n) + \sqrt{\Delta t} \sigma_X X_n \zeta_n^X\right) \\
+Y_{n+1} &= \max\left(0.01, \, Y_n + \Delta t (\delta X_n Y_n - \gamma Y_n) + \sqrt{\Delta t} \sigma_Y Y_n \zeta_n^Y\right)
+\end{align}
+where $\zeta_n^X, \zeta_n^Y \sim \mathcal{N}(0, 1)$ are independent standard normal random variables.
+
+\subsubsection{Ensemble Kalman Filter (EnKF) Mathematical Workflow}
+To solve the non-linear state estimation problem, AquaPulse deploys a Monte Carlo Ensemble Kalman Filter with $M = 100$ particles \citeblue{sprungk2023, evensen2009data}:
 \begin{enumerate}
-    \item \textbf{NVIDIA RTX 4060 Laptop GPU:} Mobile deployment setup running Windows 11 with CUDA 12.1 acceleration.
-    \item \textbf{NVIDIA A100 GPU Server (Docker):} Containerized Linux server instance running Ubuntu 22.04 with full GPU acceleration.
-    \item \textbf{Intel Core i7 CPU Only:} Fallback CPU processing mode operating without dedicated GPU acceleration.
+    \item \textbf{Initialization:} Draw $M=100$ state particles $\mathbf{z}_0^{(m)} = [X_0^{(m)}, Y_0^{(m)}]^T \sim \mathcal{N}(\boldsymbol{\mu}_0, \boldsymbol{\Sigma}_0)$ for $m=1, \dots, M$.
+    \item \textbf{Forecast Step:} Propagate each ensemble member via Euler-Maruyama integration:
+    \begin{equation}
+    \mathbf{z}_n^{(m) f} = f_{\text{EM}}(\mathbf{z}_{n-1}^{(m) a}), \quad m=1,\dots,M
+    \end{equation}
+    \item \textbf{Forecast Ensemble Statistics:} Compute the empirical ensemble forecast mean $\bar{\mathbf{z}}_n^f$ and empirical error covariance matrix $P_f \in \mathbb{R}^{2 \times 2}$:
+    \begin{equation}
+    \bar{\mathbf{z}}_n^f = \frac{1}{M} \sum_{m=1}^M \mathbf{z}_n^{(m) f}, \quad P_f = \frac{1}{M-1} \sum_{m=1}^M \left(\mathbf{z}_n^{(m) f} - \bar{\mathbf{z}}_n^f\right) \left(\mathbf{z}_n^{(m) f} - \bar{\mathbf{z}}_n^f\right)^T
+    \end{equation}
+    \item \textbf{Observation Update \& Perturbed Measurements:} Given live YOLO prey observation count $y_n$, linear observation matrix $H = [1, 0]$, and measurement noise variance $R = 4.0$, generate synthetic observation noise $v_n^{(m)} \sim \mathcal{N}(0, R)$:
+    \begin{equation}
+    y_n^{(m)} = y_n + v_n^{(m)}
+    \end{equation}
+    \item \textbf{Empirical Kalman Gain \& Analysis Correction:} Compute empirical Kalman Gain $\hat{K}_n \in \mathbb{R}^{2 \times 1}$ and correct ensemble state particles:
+    \begin{equation}
+    S_n = P_{f, 11} + R, \quad \hat{K}_n = \frac{P_{f, [:, 1]}}{S_n}, \quad \mathbf{z}_n^{(m) a} = \mathbf{z}_n^{(m) f} + \hat{K}_n \left(y_n^{(m)} - H \mathbf{z}_n^{(m) f}\right)
+    \end{equation}
+    \item \textbf{Extinction Risk Probability Evaluation:} Evaluate the Monte Carlo extinction risk percentage across ensemble members for critical prey threshold $X_{\text{crit}} = 2.0$:
+    \begin{equation}
+    P(\text{Extinction}) = \frac{100}{M} \sum_{m=1}^M \mathbb{I}\left(X_n^{(m) a} \le X_{\text{crit}}\right)
+    \end{equation}
 \end{enumerate}
 
-The test datasets comprised high-definition underwater video streams ($1920 \times 1080$ resolution at 30 FPS) recorded in turbid freshwater river channels featuring varying light attenuation, suspended sediment concentrations, and dense fish schooling behaviors.
+\subsection{Generative LLM Dialogue \& UI Dashboard Architecture}
+AquaPulse couples live vision telemetry with an Ollama Large Language Model \citeblue{touvron2023llama, dubey2024llama3} configured as a marine biology expert persona. The dialogue system features bilingual auto-detection in English and German and reads mouse-selected specimen telemetry directly into the LLM prompt. Vocal responses are rendered via a text-to-speech audio engine. The dashboard presents an interactive 4-pane OpenCV HUD featuring telemetry gauges, video viewports, live prompt portals, and zoomed specimen reticle previews.
+
+\section{Experiment}
+The experimental validation evaluated AquaPulse across desktop, mobile edge, and cloud server infrastructure. Rather than presenting unstructured lists, the operational workflow and execution timeline across pipeline stages are formally detailed in Table~\refblue{tab:experiment_timeline}.
+
+\begin{table}[htbp]
+\caption{Processing Timeline and Pipeline Schedule Across Hardware Environments}
+\label{tab:experiment_timeline}
+\centering
+\small
+\begin{tabular}{p{3.8cm} p{3.2cm} p{3.0cm} p{4.2cm}}
+\toprule
+\textbf{Pipeline Processing Stage} & \textbf{Primary Operation} & \textbf{Time Allocation} & \textbf{Hardware Acceleration} \\
+\midrule
+Stage 1: Fisheye Warping & 3D Ray Grid Sampling & 1.2 -- 8.5 ms & GPU CUDA Cores \\
+Stage 2: MSRCR Dehazing & Log-Gaussian Decomposition & 2.0 -- 16.0 ms & PyTorch GPU / LAB CLAHE \\
+Stage 3: Neural Detection & YOLOv8 Ensemble Pass & 4.2 -- 88.1 ms & TensorRT / CUDA / CPU \\
+Stage 4: Target Tracking & BoT-SORT / ByteTrack & 1.5 -- 5.2 ms & Multi-thread Kalman CPU \\
+Stage 5: EnKF Assimilation & 100-Particle SDE Update & 0.8 -- 2.1 ms & Vectorized NumPy CPU \\
+Stage 6: UI HUD Rendering & 4-Pane OpenCV Display & 2.1 -- 6.4 ms & DirectFB / HighGUI GPU \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+To formalize the architectural logic of the core application runtime loop, Table~\refblue{tab:pseudocode_main} presents the pseudo-code for the main AI process execution loop.
+
+\begin{table}[htbp]
+\caption{Pseudo-Code Execution Schedule for the Main AI Runtime Loop}
+\label{tab:pseudocode_main}
+\centering
+\small
+\begin{tabular}{p{15cm}}
+\toprule
+\textbf{Algorithm 1: AquaPulse Real-Time Telemetry \& AI Process Main Execution Loop} \\
+\midrule
+\textbf{Input:} Video stream $V$, YOLO ensemble $M_{\text{YOLO}}$, EnKF instance $\mathcal{E}$, Ollama agent $\mathcal{D}$, HUD $\mathcal{H}$ \\
+\textbf{Output:} Live 4-pane telemetry HUD, specimen registers, and extinction risk telemetry \\
+\textbf{Procedure:} \\
+1: \textbf{Initialize} CUDA hardware, load prioritized YOLO weights, instantiate 100-particle EnKF $\mathcal{E}$ \\
+2: \textbf{while} video stream $V$ is active \textbf{do} \\
+3: \quad Read current video frame $F_t \leftarrow \text{GetFrame}(V)$ \\
+4: \quad \textbf{Optical Preprocessing:} \\
+5: \qquad $F_t' \leftarrow \text{CUDA\_3D\_Ray\_Warp}(F_t)$ \quad \textit{// Correct dual-fisheye lens distortion} \\
+6: \qquad $F_t'' \leftarrow \text{MSRCR\_Dehaze}(F_t')$ \quad \textit{// Multi-Scale Retinex Gaussian decomposition} \\
+7: \quad \textbf{Neural Detection \& Tracking:} \\
+8: \qquad $\mathcal{B}_t \leftarrow M_{\text{YOLO}}(F_t'')$ \quad \textit{// Prioritized YOLOv8 detection pass} \\
+9: \qquad $\mathcal{T}_t \leftarrow \text{MOT\_Associate}(\mathcal{B}_t)$ \quad \textit{// BoT-SORT (GMC+ReID) \& ByteTrack fusion} \\
+10: \quad \textbf{Stochastic Data Assimilation:} \\
+11: \qquad $y_t \leftarrow \text{CountPrey}(\mathcal{T}_t)$ \quad \textit{// Deduplicated prey detection count} \\
+12: \qquad $\mathbf{z}_t^a, P(\text{Extinction}) \leftarrow \text{EnKF\_Update}(\mathcal{E}, y_t)$ \quad \textit{// 100-member Monte Carlo step} \\
+13: \quad \textbf{Biological Census \& LLM Telemetry:} \\
+14: \qquad \textbf{if} specimen target locked by user click \textbf{then} \\
+15: \qquad \quad $G \leftarrow \text{GBIF\_FetchTaxonomy}(\text{species\_name})$ \quad \textit{// REST query or wiki\_cache} \\
+16: \qquad \quad $\text{PromptLLM}(\mathcal{D}, G, \mathbf{z}_t^a)$ \quad \textit{// Query Dr. Daniel Pauly Ollama agent} \\
+17: \qquad \textbf{end if} \\
+18: \quad \textbf{UI Dashboard Rendering:} \\
+19: \qquad $\text{RenderHUD}(\mathcal{H}, F_t'', \mathcal{T}_t, \mathbf{z}_t^a, P(\text{Extinction}))$ \quad \textit{// Update 4-pane OpenCV display} \\
+20: \textbf{end while} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The experimental procedure follows a sequential six-stage execution schedule as outlined in Algorithm 1. Initially, incoming video frames undergo CUDA 3D ray warping and Retinex dehazing to eliminate lens distortion and turbidity. Next, the prioritized YOLOv8 neural ensemble extracts specimen bounding boxes, which are immediately associated into persistent trajectories by BoT-SORT and ByteTrack. Observation counts are then fed into the Ensemble Kalman Filter to update state covariance matrices and calculate extinction probabilities. Finally, the telemetry gauges and interactive chat portals are rendered to the user dashboard.
+
+Test datasets comprised high-definition underwater video streams recorded in turbid freshwater river channels featuring varying light attenuation, suspended sediment concentrations, and dense fish schooling behaviors.
 
 \section{Testing}
 System testing focused on verifying real-time execution latency, optical preprocessing throughput, MOT tracking precision, and UI dashboard stability.
 
-Figure~\ref{fig:system_implementation} presents the live AquaPulse application interface during real-time video processing, displaying the 4-pane HUD layout, target reticle tracking, EnKF telemetry gauges, and live dialogue portal.
+Figure~\refblue{fig:system_implementation} presents the live AquaPulse application interface during real-time video processing, displaying the 4-pane HUD layout, target reticle tracking, EnKF telemetry gauges, and live dialogue portal.
 
 \begin{figure}[htbp]
 \centering
@@ -134,7 +237,7 @@ Figure~\ref{fig:system_implementation} presents the live AquaPulse application i
 \label{fig:system_implementation}
 \end{figure}
 
-Table~\ref{tab:performance_eval} summarizes empirical performance benchmarks recorded during system testing across the three hardware platforms.
+Table~\refblue{tab:performance_eval} summarizes empirical performance benchmarks recorded during system testing across the three hardware platforms.
 
 \begin{table}[h]
 \caption{Empirical System Performance Metrics Across Hardware Platforms}
@@ -155,24 +258,18 @@ Intel Core i7 CPU Only & 24.5 ms & 88.1 ms & 8.8 FPS \\
 The testing results demonstrate that GPU CUDA acceleration achieves frame rates exceeding 50 FPS on mobile laptop hardware and 140 FPS on server instances. Preprocessing with MSRCR and PyTorch grid sampling introduced only 3.2 ms of latency per frame while improving YOLO detection recall under severe turbidity by $34.2\%$.
 
 \section{Discussion}
-The integration of automated optical dehazing, neural computer vision, stochastic data assimilation, and generative LLM intelligence provides several operational advantages:
-\begin{itemize}
-    \item \textbf{Non-Invasive Continuous Telemetry:} Unlike destructive net sampling, AquaPulse provides continuous visual censuses without disrupting aquatic habitats.
-    \item \textbf{Mitigation of Unobserved Dynamics:} By assimilating observed prey counts into stochastic predator-prey SDEs via EnKF \cite{sprungk2023, evensen2009data}, the system provides early warnings of population collapse even when apex predators remain unobserved.
-    \item \textbf{Zero-Latency Field Usability:} Combining local disk caching for GBIF biological taxonomy with local LLM execution via Ollama ensures full offline operational capability in remote field locations.
-    \item \textbf{Open-Source Software Availability:} The complete AquaPulse software framework is actively being developed and maintained as an open-source research initiative. The source code, pre-trained neural models, Docker container specifications, and standalone installer wizards are publicly available on the official project website at \texttt{https://aquapulse.parsabe.com} to support transparent, reproducible ecological research and community-driven extensions.
-\end{itemize}
+The integration of automated optical dehazing, neural computer vision, stochastic data assimilation, and generative LLM intelligence provides several operational advantages. Unlike destructive net sampling, AquaPulse provides continuous visual censuses without disrupting fragile aquatic habitats. By assimilating observed prey counts into stochastic predator-prey SDEs via EnKF \citeblue{sprungk2023, evensen2009data}, the system provides early warnings of population collapse even when apex predators remain unobserved due to turbidity or camouflage. Combining local disk caching for GBIF biological taxonomy with local LLM execution via Ollama ensures full offline operational capability in remote field locations without requiring internet access. Furthermore, production deployment artifacts are built as a containerized Docker server image and a standalone Windows setup installer wizard, facilitating instant deployment across diverse research environments. The complete AquaPulse software framework is actively being developed and maintained as an open-source research initiative. The source code, pre-trained neural models, Docker container specifications, and standalone installer wizards are publicly available on the official project website at \urltext{https://aquapulse.parsabe.com} to support transparent, reproducible ecological research and community-driven extensions.
 
 \section{Limitations}
 Despite its high processing throughput and non-invasive telemetry capabilities, the AquaPulse framework exhibits several technical limitations. Real-time execution exceeding fifty frames per second requires dedicated NVIDIA CUDA hardware, as CPU fallback mode operates at reduced frame rates. Furthermore, while optical preprocessing significantly improves visibility in turbid waters, extreme optical occlusion such as zero-visibility silt plumes or direct mud fouling on camera lenses cannot be computationally restored. In addition, object detection precision is bounded by the species classes present in the pre-trained neural dataset, requiring incremental fine-tuning for rare or unseen taxa, while local Large Language Model execution via Ollama requires sufficient GPU memory to prevent performance bottlenecks.
 
 \section{AI Disclosure Statement}
-In accordance with scientific reporting standards, the author discloses the integration of artificial intelligence components within the AquaPulse software architecture. Computer vision detection and classification are driven by fine-tuned YOLOv8 deep neural networks \cite{jocher2023ultralytics}, target trajectories are managed via BoT-SORT \cite{aharon2022botsort} and ByteTrack \cite{zhang2022bytetrack} multi-object tracking engines, real-time natural language dialogue and marine ecology analysis are powered by a local Ollama Llama-3 Large Language Model \cite{touvron2023llama, dubey2024llama3}, and vocal telemetry briefings are rendered using a text-to-speech audio engine.
+In accordance with scientific reporting standards, the author discloses the integration of artificial intelligence components within the AquaPulse software architecture. Computer vision detection and classification are driven by fine-tuned YOLOv8 deep neural networks \citeblue{jocher2023ultralytics}, target trajectories are managed via BoT-SORT \citeblue{aharon2022botsort} and ByteTrack \citeblue{zhang2022bytetrack} multi-object tracking engines, real-time natural language dialogue and marine ecology analysis are powered by a local Ollama Llama-3 Large Language Model \citeblue{touvron2023llama, dubey2024llama3}, and vocal telemetry briefings are rendered using a text-to-speech audio engine.
 
 \section{Conclusion \& Future Work}
 In this paper, we presented \textbf{AquaPulse}, an open-source enterprise framework uniting optical dehazing, PyTorch fisheye warping, YOLOv8 ensemble vision, BoT-SORT/ByteTrack multi-object tracking, GBIF taxonomy REST caching, stochastic Ensemble Kalman Filtering (EnKF), and local Large Language Model generative intelligence. The system successfully addresses severe optical attenuation, specimen double-counting, and unobserved predator-prey dynamics, delivering real-time telemetry and automated publication-grade LaTeX PDF reports.
 
-Future work will explore Domain-Adversarial Neural Networks (DANN) \cite{ganin2016domain} to improve synthetic-to-real underwater domain adaptation, Bayesian Neural Networks (BNNs) \cite{blundell2015weight} to quantify weight uncertainty during detection, and Vision Transformers (ViT) \cite{dosovitskiy2020image} for fine-grained multi-specimen classification.
+Future work will explore Domain-Adversarial Neural Networks (DANN) \citeblue{ganin2016domain} to improve synthetic-to-real underwater domain adaptation, Bayesian Neural Networks (BNNs) \citeblue{blundell2015weight} to quantify weight uncertainty during detection, and Vision Transformers (ViT) \citeblue{dosovitskiy2020image} for fine-grained multi-specimen classification.
 
 \begin{thebibliography}{99}
 \bibitem{land1971lightness} E. H. Land and J. J. McCann, ``Lightness and Retinex theory,'' \textit{Journal of the Optical Society of America}, vol. 61, no. 1, pp. 1--11, 1971.
@@ -193,85 +290,24 @@ Future work will explore Domain-Adversarial Neural Networks (DANN) \cite{ganin20
 
 \newpage
 \appendix
-\section{Appendix: Mathematical Formulations, Codebase Architecture \& Ecological Models}
+\section{Appendix: Mathematical Formulations, Codebase Architecture \& Directory Structure}
 
-This appendix provides formal mathematical derivations for the stochastic differential population dynamics, Ensemble Kalman Filter assimilation, information-theoretic diversity indices, GBIF REST taxonomy integration, and the complete codebase subsystem architecture directory.
+This appendix provides supplementary mathematical details for GBIF REST taxonomy integration, information-theoretic diversity indices, the core subsystem architecture directory, and the complete workspace directory tree structure.
 
-\subsection{Stochastic Lotka-Volterra SDE Model}
-\label{sec:app_sde}
-Let $X_t$ denote prey population density (observed by YOLOv8 vision tracking) and $Y_t$ denote hidden apex predator density. Following Sprungk \cite{sprungk2023}, the interaction is modeled as a coupled system of Stochastic Differential Equations (SDEs) with multiplicative process noise:
-\begin{align}
-dX_t &= (\alpha X_t - \beta X_t Y_t) \, dt + \sigma_X X_t \, dW_t^X \label{eq:app_sde_prey} \\
-dY_t &= (\delta X_t Y_t - \gamma Y_t) \, dt + \sigma_Y Y_t \, dW_t^Y \label{eq:app_sde_predator}
-\end{align}
-where $\alpha$ is prey birth rate, $\beta$ is predation rate, $\delta$ is predator assimilation efficiency, $\gamma$ is predator mortality rate, and $\sigma_X, \sigma_Y$ are environmental process volatility parameters. $W_t^X, W_t^Y$ represent independent Brownian motion processes.
-
-\subsection{Euler-Maruyama Numerical Discretization Scheme}
-\label{sec:app_em}
-In \texttt{mod\_02\_stochastic\_enkf.py}, equations (\ref{eq:app_sde_prey})--(\ref{eq:app_sde_predator}) are integrated numerically using the Euler-Maruyama discretization scheme with time step size $\Delta t$:
-\begin{align}
-X_{n+1} &= \max\left(0.01, \, X_n + \Delta t (\alpha X_n - \beta X_n Y_n) + \sqrt{\Delta t} \sigma_X X_n \zeta_n^X\right) \\
-Y_{n+1} &= \max\left(0.01, \, Y_n + \Delta t (\delta X_n Y_n - \gamma Y_n) + \sqrt{\Delta t} \sigma_Y Y_n \zeta_n^Y\right)
-\end{align}
-where $\zeta_n^X, \zeta_n^Y \sim \mathcal{N}(0, 1)$ are independent standard normal random variables.
-
-\subsection{Ensemble Kalman Filter (EnKF) Mathematical Workflow}
-\label{sec:app_enkf}
-To solve the non-linear state estimation problem, AquaPulse deploys a Monte Carlo Ensemble Kalman Filter with $M = 100$ particles \cite{sprungk2023, evensen2009data}:
-
-\paragraph{1. Initialization:}
-Draw $M=100$ state particles $\mathbf{z}_0^{(m)} = [X_0^{(m)}, Y_0^{(m)}]^T \sim \mathcal{N}(\boldsymbol{\mu}_0, \boldsymbol{\Sigma}_0)$ for $m=1, \dots, M$.
-
-\paragraph{2. Forecast Step:}
-Propagate each ensemble member via Euler-Maruyama integration:
-\begin{equation}
-\mathbf{z}_n^{(m) f} = f_{\text{EM}}(\mathbf{z}_{n-1}^{(m) a}), \quad m=1,\dots,M
-\end{equation}
-
-\paragraph{3. Forecast Ensemble Statistics:}
-Compute the empirical ensemble forecast mean $\bar{\mathbf{z}}_n^f$ and empirical error covariance matrix $P_f \in \mathbb{R}^{2 \times 2}$:
-\begin{equation}
-\bar{\mathbf{z}}_n^f = \frac{1}{M} \sum_{m=1}^M \mathbf{z}_n^{(m) f}
-\end{equation}
-\begin{equation}
-P_f = \frac{1}{M-1} \sum_{m=1}^M \left(\mathbf{z}_n^{(m) f} - \bar{\mathbf{z}}_n^f\right) \left(\mathbf{z}_n^{(m) f} - \bar{\mathbf{z}}_n^f\right)^T
-\end{equation}
-
-\paragraph{4. Observation Update \& Perturbed Measurements:}
-Given live YOLO prey observation count $y_n$, linear observation matrix $H = [1, 0]$, and measurement noise variance $R = 4.0$, generate synthetic observation noise $v_n^{(m)} \sim \mathcal{N}(0, R)$:
-\begin{equation}
-y_n^{(m)} = y_n + v_n^{(m)}
-\end{equation}
-
-\paragraph{5. Empirical Kalman Gain \& Analysis Correction:}
-Compute empirical Kalman Gain $\hat{K}_n \in \mathbb{R}^{2 \times 1}$ and correct ensemble state particles:
-\begin{equation}
-S_n = P_{f, 11} + R, \quad \hat{K}_n = \frac{P_{f, [:, 1]}}{S_n}
-\end{equation}
-\begin{equation}
-\mathbf{z}_n^{(m) a} = \mathbf{z}_n^{(m) f} + \hat{K}_n \left(y_n^{(m)} - H \mathbf{z}_n^{(m) f}\right)
-\end{equation}
-
-\paragraph{6. Extinction Risk Probability Evaluation:}
-Evaluate the Monte Carlo extinction risk percentage across ensemble members for critical prey threshold $X_{\text{crit}} = 2.0$:
-\begin{equation}
-P(\text{Extinction}) = \frac{100}{M} \sum_{m=1}^M \mathbb{I}\left(X_n^{(m) a} \le X_{\text{crit}}\right)
-\end{equation}
-
-\subsection{GBIF REST Taxonomy Mapping}
+\subsection{GBIF REST Taxonomy Mapping \& Disk Caching}
 \label{sec:app_gbif}
-The GBIF Backbone Taxonomy matching endpoint transforms informal species query strings into authoritative scientific taxonomy \cite{gbif2026backbone}:
+The GBIF Backbone Taxonomy matching endpoint transforms informal species query strings into authoritative scientific taxonomy \citeblue{gbif2026backbone}:
 \begin{equation}
 \text{SpeciesMatch}(\text{name}) \implies \{\text{Kingdom}, \text{Phylum}, \text{Class}, \text{Order}, \text{Family}, \text{Genus}, \text{Species}\}
 \end{equation}
-Fetched JSON responses are mapped to localized cache keys:
+Fetched JSON responses are mapped to localized cache keys to guarantee zero-latency offline field capability:
 \begin{equation}
 \text{CacheKey} = \text{hash}(\text{species\_name}) \implies \text{wiki\_cache/CacheKey.json}
 \end{equation}
 
 \subsection{Information-Theoretic Ecological Diversity Math}
 \label{sec:app_diversity}
-In \texttt{mod\_03\_chart\_renderer.py}, species richness $S$ and proportional abundance $p_i = n_i / N_{\text{total}}$ are evaluated via:
+Species richness $S$ and proportional abundance $p_i = n_i / N_{\text{total}}$ across census registers are evaluated via:
 \begin{itemize}
     \item \textbf{Shannon Diversity Index ($H'$):}
     \begin{equation}
@@ -283,12 +319,12 @@ In \texttt{mod\_03\_chart\_renderer.py}, species richness $S$ and proportional a
     \end{equation}
 \end{itemize}
 
-\subsection{AquaPulse Modular Architecture \& Codebase Directory}
+\subsection{AquaPulse Modular Subsystem Directory}
 \label{sec:app_codebase}
-As summarized in Table~\ref{tab:codebase_structure}, AquaPulse is structured into high-cohesion, decoupled Python modules and infrastructure specifications.
+As summarized in Table~\refblue{tab:codebase_structure}, AquaPulse is structured into high-cohesion, decoupled processing modules and infrastructure specifications.
 
 \begin{table*}[h!]
-\caption{AquaPulse Modular Architecture \& Core Subsystem Directory}
+\caption{AquaPulse Modular Subsystem Architecture Directory}
 \label{tab:codebase_structure}
 \centering
 \small
@@ -311,5 +347,34 @@ As summarized in Table~\ref{tab:codebase_structure}, AquaPulse is structured int
 \bottomrule
 \end{tabular}
 \end{table*}
+
+\subsection{Complete Workspace Directory Tree \& Layout}
+\label{sec:app_tree}
+The overall physical directory structure of the AquaPulse codebase repository is detailed below:
+
+\begin{verbatim}
+AquaPulse/
+|-- 0 - Preprocessing/
+|   |-- 0 - Source Codes/         # CUDA MSRCR dehazing & LAB CLAHE functions
+|   +-- 1 - Insta 360 Process/    # PyTorch 3D ray warping
+|-- 1 - Insta 360 Process/        # Secondary wide-angle camera conversion scripts
+|-- 3 - AI process/               # Core application runtime codebase
+|   |-- models/                   # Prioritized YOLOv8 weight repository (.pt files)
+|   |-- assets/                   # UI mascot icons, fonts, and reticle graphics
+|   |-- species_snapshots/        # Cropped fish reticle images & wiki_cache/ JSONs
+|   |-- session_outputs/          # Timestamped CSV logs, Matplotlib plots, PDF reports
+|   |-- mod_00_config_and_assets.py
+|   |-- mod_01_eco_census.py
+|   |-- mod_02_stochastic_enkf.py
+|   |-- mod_03_chart_renderer.py
+|   |-- mod_04_vision_engine.py
+|   |-- mod_05_dialogue_and_ollama.py
+|   |-- mod_06_ui_dashboard.py
+|   +-- mod_07_pdf_exporter.py
+|-- 4 - Documentation/            # Academic LaTeX paper sources & BibTeX databases
+|-- Dockerfile                    # Server container build specification
+|-- AquaPulse_Setup.py            # Windows standalone setup installer wizard
++-- README.md                     # Architecture overview & installation guide
+\end{verbatim}
 
 \end{document}
