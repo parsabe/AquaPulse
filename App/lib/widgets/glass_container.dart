@@ -15,7 +15,7 @@ class GlassContainer extends StatelessWidget {
   final VoidCallback? onTap;
 
   const GlassContainer({
-    Key? key,
+    super.key,
     required this.child,
     this.width,
     this.height,
@@ -26,30 +26,31 @@ class GlassContainer extends StatelessWidget {
     this.borderRadius = 16.0,
     this.blur = 8.0,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBg = (backgroundColor ?? AppTheme.bgCard).withOpacity(0.88);
-    final effectiveBorder = (borderColor ?? AppTheme.cyanAccent).withOpacity(0.35);
+    final effectiveBg = (backgroundColor ?? AppTheme.bgCard).withValues(
+      alpha: 0.88,
+    );
+    final effectiveBorder = (borderColor ?? AppTheme.cyanAccent).withValues(
+      alpha: 0.35,
+    );
 
     Widget innerCard = Container(
       padding: padding,
       decoration: BoxDecoration(
         color: effectiveBg,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(
-          color: effectiveBorder,
-          width: 1.2,
-        ),
+        border: Border.all(color: effectiveBorder, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: (borderColor ?? AppTheme.cyanAccent).withOpacity(0.08),
+            color: (borderColor ?? AppTheme.cyanAccent).withValues(alpha: 0.08),
             blurRadius: 16,
           ),
         ],
@@ -73,10 +74,7 @@ class GlassContainer extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: content,
-      );
+      return GestureDetector(onTap: onTap, child: content);
     }
     return content;
   }

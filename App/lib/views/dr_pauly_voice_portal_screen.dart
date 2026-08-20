@@ -6,13 +6,15 @@ import '../widgets/glass_container.dart';
 import '../providers/app_providers.dart';
 
 class DrPaulyVoicePortalScreen extends ConsumerStatefulWidget {
-  const DrPaulyVoicePortalScreen({Key? key}) : super(key: key);
+  const DrPaulyVoicePortalScreen({super.key});
 
   @override
-  ConsumerState<DrPaulyVoicePortalScreen> createState() => _DrPaulyVoicePortalScreenState();
+  ConsumerState<DrPaulyVoicePortalScreen> createState() =>
+      _DrPaulyVoicePortalScreenState();
 }
 
-class _DrPaulyVoicePortalScreenState extends ConsumerState<DrPaulyVoicePortalScreen> {
+class _DrPaulyVoicePortalScreenState
+    extends ConsumerState<DrPaulyVoicePortalScreen> {
   final TextEditingController _queryController = TextEditingController();
 
   final List<String> sampleQuestionsEN = [
@@ -51,7 +53,11 @@ class _DrPaulyVoicePortalScreenState extends ConsumerState<DrPaulyVoicePortalScr
                         color: AppTheme.violetAccent,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.record_voice_over, color: Colors.white, size: 22),
+                      child: const Icon(
+                        Icons.record_voice_over,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -79,12 +85,17 @@ class _DrPaulyVoicePortalScreenState extends ConsumerState<DrPaulyVoicePortalScr
                     // Language Switcher (EN / DE)
                     GestureDetector(
                       onTap: () {
-                        ref.read(voiceAssistantProvider.notifier).toggleLanguage();
+                        ref
+                            .read(voiceAssistantProvider.notifier)
+                            .toggleLanguage();
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppTheme.cyanAccent.withOpacity(0.2),
+                          color: AppTheme.cyanAccent.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppTheme.cyanAccent),
                         ),
@@ -113,10 +124,15 @@ class _DrPaulyVoicePortalScreenState extends ConsumerState<DrPaulyVoicePortalScr
                     padding: const EdgeInsets.only(right: 8.0),
                     child: ActionChip(
                       backgroundColor: AppTheme.bgCard,
-                      side: BorderSide(color: AppTheme.cyanAccent.withOpacity(0.3)),
+                      side: BorderSide(
+                        color: AppTheme.cyanAccent.withValues(alpha: 0.3),
+                      ),
                       label: Text(
                         q,
-                        style: GoogleFonts.outfit(color: AppTheme.textSecondary, fontSize: 11),
+                        style: GoogleFonts.outfit(
+                          color: AppTheme.textSecondary,
+                          fontSize: 11,
+                        ),
                       ),
                       onPressed: () {
                         _queryController.text = q;
@@ -141,23 +157,31 @@ class _DrPaulyVoicePortalScreenState extends ConsumerState<DrPaulyVoicePortalScr
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12.0),
                     child: Align(
-                      alignment: isPauly ? Alignment.centerLeft : Alignment.centerRight,
+                      alignment: isPauly
+                          ? Alignment.centerLeft
+                          : Alignment.centerRight,
                       child: GlassContainer(
                         width: MediaQuery.of(context).size.width * 0.82,
                         padding: const EdgeInsets.all(12),
                         backgroundColor: isPauly
-                            ? AppTheme.bgCard.withOpacity(0.8)
-                            : AppTheme.cyanAccent.withOpacity(0.15),
-                        borderColor: isPauly ? AppTheme.violetAccent : AppTheme.cyanAccent,
+                            ? AppTheme.bgCard.withValues(alpha: 0.8)
+                            : AppTheme.cyanAccent.withValues(alpha: 0.15),
+                        borderColor: isPauly
+                            ? AppTheme.violetAccent
+                            : AppTheme.cyanAccent,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
                                 Text(
-                                  isPauly ? "DR. PAUL PAULY (LLM)" : "FIELD BIOLOGIST",
+                                  isPauly
+                                      ? "DR. PAUL PAULY (LLM)"
+                                      : "FIELD BIOLOGIST",
                                   style: GoogleFonts.jetBrainsMono(
-                                    color: isPauly ? AppTheme.violetAccent : AppTheme.cyanAccent,
+                                    color: isPauly
+                                        ? AppTheme.violetAccent
+                                        : AppTheme.cyanAccent,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 10,
                                   ),
@@ -199,12 +223,18 @@ class _DrPaulyVoicePortalScreenState extends ConsumerState<DrPaulyVoicePortalScr
                     const SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.violetAccent),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.violetAccent,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       "Dr. Pauly querying Ollama LLM endpoint...",
-                      style: GoogleFonts.jetBrainsMono(color: AppTheme.violetAccent, fontSize: 11),
+                      style: GoogleFonts.jetBrainsMono(
+                        color: AppTheme.violetAccent,
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ),
@@ -223,21 +253,34 @@ class _DrPaulyVoicePortalScreenState extends ConsumerState<DrPaulyVoicePortalScr
                         hintText: isGerman
                             ? "Frage an Dr. Pauly stellen..."
                             : "Ask Dr. Pauly a field inquiry...",
-                        hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted, fontSize: 13),
+                        hintStyle: GoogleFonts.outfit(
+                          color: AppTheme.textMuted,
+                          fontSize: 13,
+                        ),
                         filled: true,
                         fillColor: AppTheme.bgCard,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.violetAccent.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                            color: AppTheme.violetAccent.withValues(alpha: 0.3),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.violetAccent.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                            color: AppTheme.violetAccent.withValues(alpha: 0.3),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppTheme.violetAccent, width: 1.5),
+                          borderSide: const BorderSide(
+                            color: AppTheme.violetAccent,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                     ),
@@ -251,7 +294,9 @@ class _DrPaulyVoicePortalScreenState extends ConsumerState<DrPaulyVoicePortalScr
                         : () {
                             final text = _queryController.text.trim();
                             if (text.isNotEmpty) {
-                              ref.read(voiceAssistantProvider.notifier).sendQuery(text);
+                              ref
+                                  .read(voiceAssistantProvider.notifier)
+                                  .sendQuery(text);
                               _queryController.clear();
                             }
                           },

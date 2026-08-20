@@ -7,7 +7,7 @@ import '../widgets/glass_container.dart';
 import '../providers/app_providers.dart';
 
 class AcoustoVisualSdeScreen extends ConsumerWidget {
-  const AcoustoVisualSdeScreen({Key? key}) : super(key: key);
+  const AcoustoVisualSdeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,11 +16,13 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
 
     double avgTailBeatHz = specimens.isEmpty
         ? 6.4
-        : specimens.map((s) => s.tailBeatFreqHz).reduce((a, b) => a + b) / specimens.length;
+        : specimens.map((s) => s.tailBeatFreqHz).reduce((a, b) => a + b) /
+              specimens.length;
 
     double avgAcousticDb = specimens.isEmpty
         ? 118.5
-        : specimens.map((s) => s.acousticSourceDb).reduce((a, b) => a + b) / specimens.length;
+        : specimens.map((s) => s.acousticSourceDb).reduce((a, b) => a + b) /
+              specimens.length;
 
     double diffusionEntropy = 0.85 + (specimens.length * 0.12);
     double collisionRisk = (specimens.length > 2 ? 14.2 : 3.5);
@@ -36,7 +38,11 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
               // Screen Header
               Row(
                 children: [
-                  const Icon(Icons.graphic_eq, color: AppTheme.cyanAccent, size: 24),
+                  const Icon(
+                    Icons.graphic_eq,
+                    color: AppTheme.cyanAccent,
+                    size: 24,
+                  ),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,10 +79,14 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppTheme.cyanAccent.withOpacity(0.15),
+                            color: AppTheme.cyanAccent.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.waves, color: AppTheme.cyanAccent, size: 20),
+                          child: const Icon(
+                            Icons.waves,
+                            color: AppTheme.cyanAccent,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -93,7 +103,10 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                               ),
                               Text(
                                 "Lighthill Vortex Circulation Pressure Field",
-                                style: GoogleFonts.outfit(color: AppTheme.textMuted, fontSize: 11),
+                                style: GoogleFonts.outfit(
+                                  color: AppTheme.textMuted,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),
@@ -124,9 +137,14 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                         ),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppTheme.emeraldAccent.withOpacity(0.15),
+                            color: AppTheme.emeraldAccent.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: AppTheme.emeraldAccent),
                           ),
@@ -149,12 +167,16 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: List.generate(24, (index) {
-                          double h = (sin(index * 0.4 + avgTailBeatHz) * 16 + 20).clamp(6.0, 36.0);
+                          double h =
+                              (sin(index * 0.4 + avgTailBeatHz) * 16 + 20)
+                                  .clamp(6.0, 36.0);
                           return Container(
                             width: 6,
                             height: h,
                             decoration: BoxDecoration(
-                              color: AppTheme.cyanAccent.withOpacity((index % 2 == 0) ? 0.9 : 0.4),
+                              color: AppTheme.cyanAccent.withValues(
+                                alpha: (index % 2 == 0) ? 0.9 : 0.4,
+                              ),
                               borderRadius: BorderRadius.circular(3),
                             ),
                           );
@@ -178,10 +200,14 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppTheme.goldAccent.withOpacity(0.15),
+                            color: AppTheme.goldAccent.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.volume_up, color: AppTheme.goldAccent, size: 20),
+                          child: const Icon(
+                            Icons.volume_up,
+                            color: AppTheme.goldAccent,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -198,7 +224,10 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                               ),
                               Text(
                                 "Bioacoustic Sound Pressure Level @ 1m",
-                                style: GoogleFonts.outfit(color: AppTheme.textMuted, fontSize: 11),
+                                style: GoogleFonts.outfit(
+                                  color: AppTheme.textMuted,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),
@@ -230,7 +259,10 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                         const Spacer(),
                         Text(
                           "Peak Hydro-Pressure: ${(avgAcousticDb * 0.28).toStringAsFixed(1)} Pa",
-                          style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 10),
+                          style: GoogleFonts.jetBrainsMono(
+                            color: AppTheme.textMuted,
+                            fontSize: 10,
+                          ),
                         ),
                       ],
                     ),
@@ -261,10 +293,16 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppTheme.violetAccent.withOpacity(0.15),
+                            color: AppTheme.violetAccent.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.psychology, color: AppTheme.violetAccent, size: 20),
+                          child: const Icon(
+                            Icons.psychology,
+                            color: AppTheme.violetAccent,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -281,7 +319,10 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                               ),
                               Text(
                                 "Stochastic Future Cones & Inter-Specimen Repulsion",
-                                style: GoogleFonts.outfit(color: AppTheme.textMuted, fontSize: 11),
+                                style: GoogleFonts.outfit(
+                                  color: AppTheme.textMuted,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),
@@ -311,7 +352,10 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                     const SizedBox(height: 14),
                     Text(
                       "FORECASTED CONES PER TARGET SPECIMEN",
-                      style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 10),
+                      style: GoogleFonts.jetBrainsMono(
+                        color: AppTheme.textMuted,
+                        fontSize: 10,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Column(
@@ -323,17 +367,26 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                               Container(
                                 width: 6,
                                 height: 6,
-                                decoration: BoxDecoration(color: sp.badgeColor, shape: BoxShape.circle),
+                                decoration: BoxDecoration(
+                                  color: sp.badgeColor,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 "#${sp.trackId} ${sp.speciesName}",
-                                style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary, fontSize: 11),
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: AppTheme.textPrimary,
+                                  fontSize: 11,
+                                ),
                               ),
                               const Spacer(),
                               Text(
                                 "30s Projected Path: +${(sp.velocityPx * 1.8).toStringAsFixed(0)}px",
-                                style: GoogleFonts.jetBrainsMono(color: AppTheme.violetAccent, fontSize: 10),
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: AppTheme.violetAccent,
+                                  fontSize: 10,
+                                ),
                               ),
                             ],
                           ),
@@ -354,16 +407,19 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 9),
+            style: GoogleFonts.jetBrainsMono(
+              color: AppTheme.textMuted,
+              fontSize: 9,
+            ),
           ),
           const SizedBox(height: 4),
           Text(

@@ -6,10 +6,11 @@ import '../widgets/glass_container.dart';
 import '../providers/app_providers.dart';
 
 class OfflineTaxonomyScreen extends ConsumerStatefulWidget {
-  const OfflineTaxonomyScreen({Key? key}) : super(key: key);
+  const OfflineTaxonomyScreen({super.key});
 
   @override
-  ConsumerState<OfflineTaxonomyScreen> createState() => _OfflineTaxonomyScreenState();
+  ConsumerState<OfflineTaxonomyScreen> createState() =>
+      _OfflineTaxonomyScreenState();
 }
 
 class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
@@ -19,7 +20,10 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
   @override
   Widget build(BuildContext context) {
     final speciesList = ref.watch(taxonomyProvider);
-    final totalCensus = speciesList.fold<int>(0, (sum, item) => sum + item.censusCount);
+    final totalCensus = speciesList.fold<int>(
+      0,
+      (sum, item) => sum + item.censusCount,
+    );
 
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
@@ -36,7 +40,11 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.storage, color: AppTheme.cyanAccent, size: 22),
+                        const Icon(
+                          Icons.storage,
+                          color: AppTheme.cyanAccent,
+                          size: 22,
+                        ),
                         const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,15 +68,24 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                         ),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppTheme.emeraldAccent.withOpacity(0.15),
+                            color: AppTheme.emeraldAccent.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: AppTheme.emeraldAccent),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.wifi_off, color: AppTheme.emeraldAccent, size: 12),
+                              const Icon(
+                                Icons.wifi_off,
+                                color: AppTheme.emeraldAccent,
+                                size: 12,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 "OFFLINE READY",
@@ -88,11 +105,23 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                     // Census Statistics Grid
                     Row(
                       children: [
-                        _buildStatChip("SPECIES CACHED", "${speciesList.length}", AppTheme.cyanAccent),
+                        _buildStatChip(
+                          "SPECIES CACHED",
+                          "${speciesList.length}",
+                          AppTheme.cyanAccent,
+                        ),
                         const SizedBox(width: 8),
-                        _buildStatChip("TOTAL CENSUS", "$totalCensus", AppTheme.goldAccent),
+                        _buildStatChip(
+                          "TOTAL CENSUS",
+                          "$totalCensus",
+                          AppTheme.goldAccent,
+                        ),
                         const SizedBox(width: 8),
-                        _buildStatChip("GBIF SYNC", "LOCAL DB", AppTheme.violetAccent),
+                        _buildStatChip(
+                          "GBIF SYNC",
+                          "LOCAL DB",
+                          AppTheme.violetAccent,
+                        ),
                       ],
                     ),
                   ],
@@ -110,22 +139,36 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                       controller: _searchController,
                       style: GoogleFonts.outfit(color: AppTheme.textPrimary),
                       decoration: InputDecoration(
-                        hintText: "Enter GBIF species name (e.g. Salmo trutta)...",
-                        hintStyle: GoogleFonts.outfit(color: AppTheme.textMuted, fontSize: 13),
+                        hintText:
+                            "Enter GBIF species name (e.g. Salmo trutta)...",
+                        hintStyle: GoogleFonts.outfit(
+                          color: AppTheme.textMuted,
+                          fontSize: 13,
+                        ),
                         filled: true,
                         fillColor: AppTheme.bgCard,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.cyanAccent.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                            color: AppTheme.cyanAccent.withValues(alpha: 0.3),
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.cyanAccent.withOpacity(0.3)),
+                          borderSide: BorderSide(
+                            color: AppTheme.cyanAccent.withValues(alpha: 0.3),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppTheme.cyanAccent, width: 1.5),
+                          borderSide: const BorderSide(
+                            color: AppTheme.cyanAccent,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                     ),
@@ -138,7 +181,9 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                             final text = _searchController.text.trim();
                             if (text.isNotEmpty) {
                               setState(() => isSyncing = true);
-                              await ref.read(taxonomyProvider.notifier).searchAndSyncSpecies(text);
+                              await ref
+                                  .read(taxonomyProvider.notifier)
+                                  .searchAndSyncSpecies(text);
                               _searchController.clear();
                               setState(() => isSyncing = false);
                             }
@@ -146,18 +191,29 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.cyanAccent,
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: isSyncing
                         ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
                           )
                         : Text(
                             "SYNC GBIF",
-                            style: GoogleFonts.jetBrainsMono(fontWeight: FontWeight.bold, fontSize: 12),
+                            style: GoogleFonts.jetBrainsMono(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                   ),
                 ],
@@ -199,7 +255,10 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                                         width: 72,
                                         height: 72,
                                         color: AppTheme.bgCard,
-                                        child: const Icon(Icons.image_not_supported, color: AppTheme.cyanAccent),
+                                        child: const Icon(
+                                          Icons.image_not_supported,
+                                          color: AppTheme.cyanAccent,
+                                        ),
                                       );
                                     },
                                   ),
@@ -209,7 +268,8 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                                 // Species Details
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -255,11 +315,20 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                                 Column(
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.cyanAccent.withOpacity(0.15),
+                                        color: AppTheme.cyanAccent.withValues(
+                                          alpha: 0.15,
+                                        ),
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: AppTheme.cyanAccent.withOpacity(0.5)),
+                                        border: Border.all(
+                                          color: AppTheme.cyanAccent.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                        ),
                                       ),
                                       child: Column(
                                         children: [
@@ -282,9 +351,17 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.add_circle_outline, color: AppTheme.goldAccent, size: 20),
+                                      icon: const Icon(
+                                        Icons.add_circle_outline,
+                                        color: AppTheme.goldAccent,
+                                        size: 20,
+                                      ),
                                       onPressed: () {
-                                        ref.read(taxonomyProvider.notifier).incrementCensus(species.scientificName);
+                                        ref
+                                            .read(taxonomyProvider.notifier)
+                                            .incrementCensus(
+                                              species.scientificName,
+                                            );
                                       },
                                     ),
                                   ],
@@ -307,9 +384,9 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -342,7 +419,7 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: bg.withOpacity(0.2),
+        color: bg.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: bg),
       ),

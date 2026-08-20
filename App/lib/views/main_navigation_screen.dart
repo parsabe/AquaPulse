@@ -9,10 +9,11 @@ import 'acousto_visual_sde_screen.dart';
 import 'dr_pauly_voice_portal_screen.dart';
 
 class MainNavigationScreen extends ConsumerStatefulWidget {
-  const MainNavigationScreen({Key? key}) : super(key: key);
+  const MainNavigationScreen({super.key});
 
   @override
-  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  ConsumerState<MainNavigationScreen> createState() =>
+      _MainNavigationScreenState();
 }
 
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
@@ -29,19 +30,19 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppTheme.bgDark,
           border: Border(
-            top: BorderSide(color: AppTheme.cyanAccent.withOpacity(0.2), width: 1),
+            top: BorderSide(
+              color: AppTheme.cyanAccent.withValues(alpha: 0.2),
+              width: 1,
+            ),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -57,7 +58,10 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
           backgroundColor: Colors.transparent,
           selectedItemColor: AppTheme.cyanAccent,
           unselectedItemColor: AppTheme.textMuted,
-          selectedLabelStyle: GoogleFonts.jetBrainsMono(fontSize: 10, fontWeight: FontWeight.bold),
+          selectedLabelStyle: GoogleFonts.jetBrainsMono(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
           unselectedLabelStyle: GoogleFonts.jetBrainsMono(fontSize: 9),
           type: BottomNavigationBarType.fixed,
           items: const [
@@ -73,7 +77,10 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.warning_amber_outlined),
-              activeIcon: Icon(Icons.warning_amber_rounded, color: AppTheme.crimsonAccent),
+              activeIcon: Icon(
+                Icons.warning_amber_rounded,
+                color: AppTheme.crimsonAccent,
+              ),
               label: 'RISK ALARMS',
             ),
             BottomNavigationBarItem(

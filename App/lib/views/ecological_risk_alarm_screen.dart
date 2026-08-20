@@ -9,14 +9,17 @@ import '../providers/app_providers.dart';
 import '../models/telemetry_data_point.dart';
 
 class EcologicalRiskAlarmScreen extends ConsumerStatefulWidget {
-  const EcologicalRiskAlarmScreen({Key? key}) : super(key: key);
+  const EcologicalRiskAlarmScreen({super.key});
 
   @override
-  ConsumerState<EcologicalRiskAlarmScreen> createState() => _EcologicalRiskAlarmScreenState();
+  ConsumerState<EcologicalRiskAlarmScreen> createState() =>
+      _EcologicalRiskAlarmScreenState();
 }
 
-class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmScreen> {
-  int selectedPlotIndex = 0; // 0 for All 20 Grid View, or 1-20 for full screen chart detail
+class _EcologicalRiskAlarmScreenState
+    extends ConsumerState<EcologicalRiskAlarmScreen> {
+  int selectedPlotIndex =
+      0; // 0 for All 20 Grid View, or 1-20 for full screen chart detail
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +41,23 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
               padding: const EdgeInsets.all(16.0),
               child: GlassContainer(
                 padding: const EdgeInsets.all(14),
-                borderColor: isAlarmActive ? AppTheme.crimsonAccent : AppTheme.emeraldAccent,
+                borderColor: isAlarmActive
+                    ? AppTheme.crimsonAccent
+                    : AppTheme.emeraldAccent,
                 backgroundColor: isAlarmActive
-                    ? AppTheme.crimsonAccent.withOpacity(0.25)
-                    : AppTheme.emeraldAccent.withOpacity(0.1),
+                    ? AppTheme.crimsonAccent.withValues(alpha: 0.25)
+                    : AppTheme.emeraldAccent.withValues(alpha: 0.1),
                 child: Column(
                   children: [
                     Row(
                       children: [
                         Icon(
-                          isAlarmActive ? Icons.warning_amber_rounded : Icons.check_circle_outline,
-                          color: isAlarmActive ? AppTheme.crimsonAccent : AppTheme.emeraldAccent,
+                          isAlarmActive
+                              ? Icons.warning_amber_rounded
+                              : Icons.check_circle_outline,
+                          color: isAlarmActive
+                              ? AppTheme.crimsonAccent
+                              : AppTheme.emeraldAccent,
                           size: 24,
                         ),
                         const SizedBox(width: 10),
@@ -61,7 +70,9 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
                                     ? "ALARM TRIGGERED: ECOLOGICAL BIFURCATION / EXTINCTION RISK BREACH"
                                     : "ECOLOGICAL STABILITY: PARAMETERS NORMAL",
                                 style: GoogleFonts.outfit(
-                                  color: isAlarmActive ? AppTheme.crimsonAccent : AppTheme.emeraldAccent,
+                                  color: isAlarmActive
+                                      ? AppTheme.crimsonAccent
+                                      : AppTheme.emeraldAccent,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
@@ -86,23 +97,34 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
                         children: [
                           Text(
                             "INJECT SHOCK:",
-                            style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 10),
+                            style: GoogleFonts.jetBrainsMono(
+                              color: AppTheme.textMuted,
+                              fontSize: 10,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           _buildShockButton("HEATWAVE", () {
-                            ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("heatwave");
+                            ref
+                                .read(telemetryProvider.notifier)
+                                .triggerEnvironmentalShock("heatwave");
                           }),
                           const SizedBox(width: 6),
                           _buildShockButton("POLLUTION", () {
-                            ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("pollution");
+                            ref
+                                .read(telemetryProvider.notifier)
+                                .triggerEnvironmentalShock("pollution");
                           }),
                           const SizedBox(width: 6),
                           _buildShockButton("INVASIVE", () {
-                            ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("invasive");
+                            ref
+                                .read(telemetryProvider.notifier)
+                                .triggerEnvironmentalShock("invasive");
                           }),
                           const SizedBox(width: 12),
                           _buildShockButton("RESET", () {
-                            ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("reset");
+                            ref
+                                .read(telemetryProvider.notifier)
+                                .triggerEnvironmentalShock("reset");
                           }, isReset: true),
                         ],
                       ),
@@ -129,30 +151,96 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
                   DropdownButton<int>(
                     value: selectedPlotIndex,
                     dropdownColor: AppTheme.bgCard,
-                    style: GoogleFonts.jetBrainsMono(color: AppTheme.cyanAccent, fontSize: 11),
+                    style: GoogleFonts.jetBrainsMono(
+                      color: AppTheme.cyanAccent,
+                      fontSize: 11,
+                    ),
                     underline: Container(),
                     items: [
-                      const DropdownMenuItem(value: 0, child: Text("GRID VIEW (ALL 20 PLOTS)")),
-                      const DropdownMenuItem(value: 1, child: Text("PLOT 01: Population Time Series")),
-                      const DropdownMenuItem(value: 2, child: Text("PLOT 02: Extinction Risk Curve")),
-                      const DropdownMenuItem(value: 3, child: Text("PLOT 03: Lotka-Volterra Orbits")),
-                      const DropdownMenuItem(value: 4, child: Text("PLOT 04: Species Abundance Bar")),
-                      const DropdownMenuItem(value: 5, child: Text("PLOT 05: Density Histogram")),
-                      const DropdownMenuItem(value: 6, child: Text("PLOT 06: Cumulative Tracked")),
-                      const DropdownMenuItem(value: 7, child: Text("PLOT 07: Confidence Distribution")),
-                      const DropdownMenuItem(value: 8, child: Text("PLOT 08: Velocity Magnitude")),
-                      const DropdownMenuItem(value: 9, child: Text("PLOT 09: Shannon H' Index")),
-                      const DropdownMenuItem(value: 10, child: Text("PLOT 10: Pielou J' Evenness")),
-                      const DropdownMenuItem(value: 11, child: Text("PLOT 11: 2D Spatial Heatmap")),
-                      const DropdownMenuItem(value: 12, child: Text("PLOT 12: Growth Rate Phase Plot")),
-                      const DropdownMenuItem(value: 13, child: Text("PLOT 13: Stochastic Noise")),
-                      const DropdownMenuItem(value: 14, child: Text("PLOT 14: Kalman Gain Dynamics")),
-                      const DropdownMenuItem(value: 15, child: Text("PLOT 15: Innovation Residuals")),
-                      const DropdownMenuItem(value: 16, child: Text("PLOT 16: Specimen Area Box")),
-                      const DropdownMenuItem(value: 17, child: Text("PLOT 17: Detection Rate FPS")),
-                      const DropdownMenuItem(value: 18, child: Text("PLOT 18: Co-occurrence Matrix")),
-                      const DropdownMenuItem(value: 19, child: Text("PLOT 19: Eco Balance Gauge")),
-                      const DropdownMenuItem(value: 20, child: Text("PLOT 20: Covariance Trace")),
+                      const DropdownMenuItem(
+                        value: 0,
+                        child: Text("GRID VIEW (ALL 20 PLOTS)"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 1,
+                        child: Text("PLOT 01: Population Time Series"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 2,
+                        child: Text("PLOT 02: Extinction Risk Curve"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 3,
+                        child: Text("PLOT 03: Lotka-Volterra Orbits"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 4,
+                        child: Text("PLOT 04: Species Abundance Bar"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 5,
+                        child: Text("PLOT 05: Density Histogram"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 6,
+                        child: Text("PLOT 06: Cumulative Tracked"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 7,
+                        child: Text("PLOT 07: Confidence Distribution"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 8,
+                        child: Text("PLOT 08: Velocity Magnitude"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 9,
+                        child: Text("PLOT 09: Shannon H' Index"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 10,
+                        child: Text("PLOT 10: Pielou J' Evenness"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 11,
+                        child: Text("PLOT 11: 2D Spatial Heatmap"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 12,
+                        child: Text("PLOT 12: Growth Rate Phase Plot"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 13,
+                        child: Text("PLOT 13: Stochastic Noise"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 14,
+                        child: Text("PLOT 14: Kalman Gain Dynamics"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 15,
+                        child: Text("PLOT 15: Innovation Residuals"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 16,
+                        child: Text("PLOT 16: Specimen Area Box"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 17,
+                        child: Text("PLOT 17: Detection Rate FPS"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 18,
+                        child: Text("PLOT 18: Co-occurrence Matrix"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 19,
+                        child: Text("PLOT 19: Eco Balance Gauge"),
+                      ),
+                      const DropdownMenuItem(
+                        value: 20,
+                        child: Text("PLOT 20: Covariance Trace"),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) setState(() => selectedPlotIndex = val);
@@ -176,13 +264,19 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
     );
   }
 
-  Widget _buildShockButton(String label, VoidCallback onTap, {bool isReset = false}) {
+  Widget _buildShockButton(
+    String label,
+    VoidCallback onTap, {
+    bool isReset = false,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: isReset ? AppTheme.bgCard : AppTheme.goldAccent.withOpacity(0.2),
+          color: isReset
+              ? AppTheme.bgCard
+              : AppTheme.goldAccent.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: isReset ? AppTheme.textMuted : AppTheme.goldAccent,
@@ -232,7 +326,11 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
                 ),
                 const SizedBox(height: 4),
                 Expanded(
-                  child: _renderChartByPlotNumber(plotNum, history, isMini: true),
+                  child: _renderChartByPlotNumber(
+                    plotNum,
+                    history,
+                    isMini: true,
+                  ),
                 ),
               ],
             ),
@@ -279,33 +377,66 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
 
   String _getPlotTitle(int num) {
     switch (num) {
-      case 1: return "Population Time Series (X vs Y)";
-      case 2: return "Extinction Risk Trajectory (%)";
-      case 3: return "Lotka-Volterra Phase Orbits";
-      case 4: return "Species Abundance Bar";
-      case 5: return "Ensemble Density Histogram";
-      case 6: return "Cumulative Unique Tracked";
-      case 7: return "Bounding Box Confidence";
-      case 8: return "Velocity Distribution (px/s)";
-      case 9: return "Shannon Diversity Index H'";
-      case 10: return "Pielou Species Evenness J'";
-      case 11: return "2D Spatial Centroid Heatmap";
-      case 12: return "Growth Rate Phase (dX/dt vs dY/dt)";
-      case 13: return "Stochastic Noise Variance";
-      case 14: return "Kalman Gain Dynamics";
-      case 15: return "Innovation Residual Error";
-      case 16: return "Specimen Box Area Boxplot";
-      case 17: return "Detection Rate (FPS)";
-      case 18: return "Species Co-occurrence Matrix";
-      case 19: return "Ecological Balance Gauge X/Y";
-      case 20: return "State Covariance Trace Tr(Pf)";
-      default: return "Telemetry Plot";
+      case 1:
+        return "Population Time Series (X vs Y)";
+      case 2:
+        return "Extinction Risk Trajectory (%)";
+      case 3:
+        return "Lotka-Volterra Phase Orbits";
+      case 4:
+        return "Species Abundance Bar";
+      case 5:
+        return "Ensemble Density Histogram";
+      case 6:
+        return "Cumulative Unique Tracked";
+      case 7:
+        return "Bounding Box Confidence";
+      case 8:
+        return "Velocity Distribution (px/s)";
+      case 9:
+        return "Shannon Diversity Index H'";
+      case 10:
+        return "Pielou Species Evenness J'";
+      case 11:
+        return "2D Spatial Centroid Heatmap";
+      case 12:
+        return "Growth Rate Phase (dX/dt vs dY/dt)";
+      case 13:
+        return "Stochastic Noise Variance";
+      case 14:
+        return "Kalman Gain Dynamics";
+      case 15:
+        return "Innovation Residual Error";
+      case 16:
+        return "Specimen Box Area Boxplot";
+      case 17:
+        return "Detection Rate (FPS)";
+      case 18:
+        return "Species Co-occurrence Matrix";
+      case 19:
+        return "Ecological Balance Gauge X/Y";
+      case 20:
+        return "State Covariance Trace Tr(Pf)";
+      default:
+        return "Telemetry Plot";
     }
   }
 
-  Widget _renderChartByPlotNumber(int num, List<TelemetryDataPoint> history, {required bool isMini}) {
+  Widget _renderChartByPlotNumber(
+    int num,
+    List<TelemetryDataPoint> history, {
+    required bool isMini,
+  }) {
     if (history.isEmpty) {
-      return Center(child: Text("Gathering Telemetry...", style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 10)));
+      return Center(
+        child: Text(
+          "Gathering Telemetry...",
+          style: GoogleFonts.jetBrainsMono(
+            color: AppTheme.textMuted,
+            fontSize: 10,
+          ),
+        ),
+      );
     }
 
     switch (num) {
@@ -340,11 +471,16 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(
-                spots: history.map((p) => FlSpot(p.timeSec, p.extinctionRiskPct)).toList(),
+                spots: history
+                    .map((p) => FlSpot(p.timeSec, p.extinctionRiskPct))
+                    .toList(),
                 isCurved: true,
                 color: AppTheme.crimsonAccent,
                 barWidth: isMini ? 1.5 : 2.5,
-                belowBarData: BarAreaData(show: true, color: AppTheme.crimsonAccent.withOpacity(0.2)),
+                belowBarData: BarAreaData(
+                  show: true,
+                  color: AppTheme.crimsonAccent.withValues(alpha: 0.2),
+                ),
               ),
             ],
           ),
@@ -373,10 +509,26 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
             titlesData: const FlTitlesData(show: false),
             borderData: FlBorderData(show: false),
             barGroups: [
-              BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 42, color: AppTheme.cyanAccent)]),
-              BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 28, color: AppTheme.goldAccent)]),
-              BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 14, color: AppTheme.violetAccent)]),
-              BarChartGroupData(x: 4, barRods: [BarChartRodData(toY: 9, color: AppTheme.emeraldAccent)]),
+              BarChartGroupData(
+                x: 1,
+                barRods: [BarChartRodData(toY: 42, color: AppTheme.cyanAccent)],
+              ),
+              BarChartGroupData(
+                x: 2,
+                barRods: [BarChartRodData(toY: 28, color: AppTheme.goldAccent)],
+              ),
+              BarChartGroupData(
+                x: 3,
+                barRods: [
+                  BarChartRodData(toY: 14, color: AppTheme.violetAccent),
+                ],
+              ),
+              BarChartGroupData(
+                x: 4,
+                barRods: [
+                  BarChartRodData(toY: 9, color: AppTheme.emeraldAccent),
+                ],
+              ),
             ],
           ),
         );
@@ -390,7 +542,10 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
               return BarChartGroupData(
                 x: i,
                 barRods: [
-                  BarChartRodData(toY: 5.0 + sin(i.toDouble()) * 3.0, color: AppTheme.cyanAccent.withOpacity(0.8)),
+                  BarChartRodData(
+                    toY: 5.0 + sin(i.toDouble()) * 3.0,
+                    color: AppTheme.cyanAccent.withValues(alpha: 0.8),
+                  ),
                 ],
               );
             }),
@@ -404,7 +559,9 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(
-                spots: history.map((p) => FlSpot(p.timeSec, p.shannonH)).toList(),
+                spots: history
+                    .map((p) => FlSpot(p.timeSec, p.shannonH))
+                    .toList(),
                 color: AppTheme.cyanSecondary,
                 barWidth: 2.0,
               ),
@@ -419,7 +576,9 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(
-                spots: history.map((p) => FlSpot(p.timeSec, p.pielouJ)).toList(),
+                spots: history
+                    .map((p) => FlSpot(p.timeSec, p.pielouJ))
+                    .toList(),
                 color: AppTheme.goldAccent,
                 barWidth: 2.0,
               ),
@@ -434,7 +593,9 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(
-                spots: history.map((p) => FlSpot(p.timeSec, p.ecoRatioXY)).toList(),
+                spots: history
+                    .map((p) => FlSpot(p.timeSec, p.ecoRatioXY))
+                    .toList(),
                 color: AppTheme.violetAccent,
                 barWidth: 2.0,
               ),
@@ -449,7 +610,11 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(
-                spots: history.map((p) => FlSpot(p.timeSec, sin(p.timeSec + num) * 4 + 10)).toList(),
+                spots: history
+                    .map(
+                      (p) => FlSpot(p.timeSec, sin(p.timeSec + num) * 4 + 10),
+                    )
+                    .toList(),
                 color: AppTheme.cyanAccent,
                 barWidth: 1.8,
               ),

@@ -10,7 +10,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize SQLite FFI for Desktop (Windows/Linux/Mac)
-  if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.linux || defaultTargetPlatform == TargetPlatform.macOS)) {
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.windows ||
+          defaultTargetPlatform == TargetPlatform.linux ||
+          defaultTargetPlatform == TargetPlatform.macOS)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
@@ -25,15 +28,11 @@ void main() async {
     ),
   );
 
-  runApp(
-    const ProviderScope(
-      child: AquaPulseApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: AquaPulseApp()));
 }
 
 class AquaPulseApp extends StatelessWidget {
-  const AquaPulseApp({Key? key}) : super(key: key);
+  const AquaPulseApp({super.key});
 
   @override
   Widget build(BuildContext context) {
