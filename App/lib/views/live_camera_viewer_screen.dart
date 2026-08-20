@@ -15,12 +15,17 @@ class LiveCameraViewerScreen extends ConsumerStatefulWidget {
       _LiveCameraViewerScreenState();
 }
 
-class _LiveCameraViewerScreenState extends ConsumerState<LiveCameraViewerScreen>
+class _LiveCameraViewerScreenState
+    extends ConsumerState<LiveCameraViewerScreen>
     with SingleTickerProviderStateMixin {
   bool isClaheEnabled = true;
   bool isBnnUncertaintyShown = true;
   bool isTrajectoryShown = true;
   int? selectedTrackId;
+
+  // Video Attachment State
+  bool isVideoAttached = false;
+  String? attachedVideoName;
   late AnimationController _waveController;
 
   @override
@@ -38,17 +43,242 @@ class _LiveCameraViewerScreenState extends ConsumerState<LiveCameraViewerScreen>
     super.dispose();
   }
 
+  void _showAttachVideoModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: GlassContainer(
+            backgroundColor: AppTheme.bgDark.withValues(alpha: 0.95),
+            borderColor: AppTheme.cyanAccent,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.video_library,
+                      color: AppTheme.cyanAccent,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "ATTACH MARINE VIDEO STREAM",
+                        style: GoogleFonts.outfit(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppTheme.textMuted),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "Select a field video file, RTSP stream URL, or device camera feed to activate real-time specimen tracking.",
+                  style: GoogleFonts.outfit(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Option 1: Attach Survey Video File
+                _buildAttachOptionTile(
+                  icon: Icons.upload_file,
+                  title: "Attach Survey Video File (.MP4 / .AVI)",
+                  subtitle: "Load local underwater field video (NorthSea_Survey_2026.mp4)",
+                  accentColor: AppTheme.cyanAccent,
+                  onTap: () {
+                    setState(() {
+                      isVideoAttached = true;
+                      attachedVideoName = "NorthSea_Survey_2026.mp4";
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: AppTheme.bgCard,
+                        content: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: AppTheme.emeraldAccent),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Attached NorthSea_Survey_2026.mp4 (1080p60)",
+                              style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 10),
+
+                // Option 2: Device Camera Feed
+                _buildAttachOptionTile(
+                  icon: Icons.camera_alt,
+                  title: "Connect Device Camera",
+                  subtitle: "Stream directly from phone/tablet field camera sensor",
+                  accentColor: AppTheme.goldAccent,
+                  onTap: () {
+                    setState(() {
+                      isVideoAttached = true;
+                      attachedVideoName = "Live Field Camera Feed";
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: AppTheme.bgCard,
+                        content: Row(
+                          children: [
+                            const Icon(Icons.videocam, color: AppTheme.goldAccent),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Device Camera Stream Connected",
+                              style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 10),
+
+                // Option 3: RTSP URL Stream
+                _buildAttachOptionTile(
+                  icon: Icons.sensors,
+                  title: "Connect RTSP / HTTP Video Stream",
+                  subtitle: "rtsp://10.0.2.2:8554/marine_telemetry_live",
+                  accentColor: AppTheme.violetAccent,
+                  onTap: () {
+                    setState(() {
+                      isVideoAttached = true;
+                      attachedVideoName = "RTSP: marine_telemetry_live";
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: AppTheme.bgCard,
+                        content: Row(
+                          children: [
+                            const Icon(Icons.sensors, color: AppTheme.violetAccent),
+                            const SizedBox(width: 8),
+                            Text(
+                              "RTSP Stream Connected (8554/live)",
+                              style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAttachOptionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color accentColor,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppTheme.bgCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: accentColor.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: accentColor, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.outfit(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.outfit(
+                        color: AppTheme.textSecondary,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: accentColor,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final telemetry = ref.watch(telemetryProvider);
-    final specimens = telemetry.liveSpecimens;
+    final specimens = isVideoAttached ? telemetry.liveSpecimens : <SpecimenModel>[];
 
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
       body: SafeArea(
         child: Column(
           children: [
-            // Top Telemetry Header Bar
+            // Top Header Bar
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
@@ -59,12 +289,12 @@ class _LiveCameraViewerScreenState extends ConsumerState<LiveCameraViewerScreen>
                   Container(
                     width: 10,
                     height: 10,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.cyanAccent,
+                    decoration: BoxDecoration(
+                      color: isVideoAttached ? AppTheme.cyanAccent : AppTheme.goldAccent,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.cyanAccent,
+                          color: isVideoAttached ? AppTheme.cyanAccent : AppTheme.goldAccent,
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
@@ -72,32 +302,43 @@ class _LiveCameraViewerScreenState extends ConsumerState<LiveCameraViewerScreen>
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    "LIVE RTSP/CAM STREAM",
-                    style: GoogleFonts.jetBrainsMono(
-                      color: AppTheme.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                  Expanded(
+                    child: Text(
+                      isVideoAttached
+                          ? "STREAM: ${attachedVideoName ?? 'LIVE'}"
+                          : "NO VIDEO ATTACHED",
+                      style: GoogleFonts.jetBrainsMono(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: _showAttachVideoModal,
+                    icon: Icon(
+                      isVideoAttached ? Icons.swap_horiz : Icons.add_a_photo,
+                      size: 14,
+                      color: AppTheme.bgDark,
                     ),
-                    decoration: BoxDecoration(
-                      color: AppTheme.bgCard,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: AppTheme.cyanAccent.withValues(alpha: 0.3),
+                    label: Text(
+                      isVideoAttached ? "CHANGE VIDEO" : "ATTACH VIDEO",
+                      style: GoogleFonts.jetBrainsMono(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        color: AppTheme.bgDark,
                       ),
                     ),
-                    child: Text(
-                      "${telemetry.streamFps.toStringAsFixed(1)} FPS | 1080p60",
-                      style: GoogleFonts.jetBrainsMono(
-                        color: AppTheme.cyanAccent,
-                        fontSize: 11,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.cyanAccent,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
@@ -148,117 +389,189 @@ class _LiveCameraViewerScreenState extends ConsumerState<LiveCameraViewerScreen>
                           ),
                         ),
 
-                        // Render Target Bounding Box Reticles & BNN Bounds
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: BoundingBoxOverlayPainter(
-                              specimens: specimens,
-                              selectedTrackId: selectedTrackId,
-                              showBnnUncertainty: isBnnUncertaintyShown,
-                              showTrajectory: isTrajectoryShown,
-                            ),
-                          ),
-                        ),
-
-                        // Interactive Touch Layer for Specimen Selection
-                        Positioned.fill(
-                          child: GestureDetector(
-                            onTapDown: (details) {
-                              final clickPos = details.localPosition;
-                              for (var sp in specimens) {
-                                if (sp.box.contains(clickPos)) {
-                                  setState(() {
-                                    selectedTrackId = sp.trackId;
-                                  });
-                                  break;
-                                }
-                              }
-                            },
-                          ),
-                        ),
-
-                        // Top Controls Overlay Badge
-                        Positioned(
-                          top: 12,
-                          left: 12,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
+                        // Prompt Banner Overlay when video is not attached yet
+                        if (!isVideoAttached)
+                          Positioned.fill(
+                            child: Container(
                               color: Colors.black.withValues(alpha: 0.65),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppTheme.cyanAccent.withValues(
-                                  alpha: 0.4,
-                                ),
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.cyanAccent.withValues(alpha: 0.15),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: AppTheme.cyanAccent,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.video_call_rounded,
+                                      color: AppTheme.cyanAccent,
+                                      size: 48,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    "ATTACH MARINE TELEMETRY VIDEO",
+                                    style: GoogleFonts.outfit(
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                      letterSpacing: 1.1,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    "Please attach a marine survey video file, RTSP stream URL, or camera feed to start AI reticle tracking.",
+                                    style: GoogleFonts.outfit(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  ElevatedButton.icon(
+                                    onPressed: _showAttachVideoModal,
+                                    icon: const Icon(
+                                      Icons.file_upload_outlined,
+                                      color: AppTheme.bgDark,
+                                    ),
+                                    label: Text(
+                                      "ATTACH VIDEO FILE / STREAM",
+                                      style: GoogleFonts.jetBrainsMono(
+                                        color: AppTheme.bgDark,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.cyanAccent,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 14,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.center_focus_strong,
-                                  color: AppTheme.cyanAccent,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  "TRACKING: ${specimens.length} SPECIMENS DETECTED",
-                                  style: GoogleFonts.jetBrainsMono(
-                                    color: AppTheme.textPrimary,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
-                        ),
 
-                        // Bottom Viewport Controls Toolbar
-                        Positioned(
-                          bottom: 12,
-                          left: 12,
-                          right: 12,
-                          child: GlassContainer(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            backgroundColor: Colors.black.withValues(
-                              alpha: 0.7,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _buildFilterToggle(
-                                  label: "CLAHE OPTICAL",
-                                  isActive: isClaheEnabled,
-                                  onTap: () => setState(
-                                    () => isClaheEnabled = !isClaheEnabled,
-                                  ),
-                                ),
-                                _buildFilterToggle(
-                                  label: "BNN RETICLE",
-                                  isActive: isBnnUncertaintyShown,
-                                  onTap: () => setState(
-                                    () => isBnnUncertaintyShown =
-                                        !isBnnUncertaintyShown,
-                                  ),
-                                ),
-                                _buildFilterToggle(
-                                  label: "30S TRAJECTORY",
-                                  isActive: isTrajectoryShown,
-                                  onTap: () => setState(
-                                    () =>
-                                        isTrajectoryShown = !isTrajectoryShown,
-                                  ),
-                                ),
-                              ],
+                        // Bounding Box Overlay & Controls (when attached)
+                        if (isVideoAttached) ...[
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: BoundingBoxOverlayPainter(
+                                specimens: specimens,
+                                selectedTrackId: selectedTrackId,
+                                showBnnUncertainty: isBnnUncertaintyShown,
+                                showTrajectory: isTrajectoryShown,
+                              ),
                             ),
                           ),
-                        ),
+                          Positioned.fill(
+                            child: GestureDetector(
+                              onTapDown: (details) {
+                                final clickPos = details.localPosition;
+                                for (var sp in specimens) {
+                                  if (sp.box.contains(clickPos)) {
+                                    setState(() {
+                                      selectedTrackId = sp.trackId;
+                                    });
+                                    break;
+                                  }
+                                }
+                              },
+                            ),
+                          ),
+                          Positioned(
+                            top: 12,
+                            left: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.65),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: AppTheme.cyanAccent.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.center_focus_strong,
+                                    color: AppTheme.cyanAccent,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    "TRACKING: ${specimens.length} SPECIMENS DETECTED",
+                                    style: GoogleFonts.jetBrainsMono(
+                                      color: AppTheme.textPrimary,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 12,
+                            left: 12,
+                            right: 12,
+                            child: GlassContainer(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              backgroundColor: Colors.black.withValues(
+                                alpha: 0.7,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  _buildFilterToggle(
+                                    label: "CLAHE OPTICAL",
+                                    isActive: isClaheEnabled,
+                                    onTap: () => setState(
+                                      () => isClaheEnabled = !isClaheEnabled,
+                                    ),
+                                  ),
+                                  _buildFilterToggle(
+                                    label: "BNN RETICLE",
+                                    isActive: isBnnUncertaintyShown,
+                                    onTap: () => setState(
+                                      () => isBnnUncertaintyShown =
+                                          !isBnnUncertaintyShown,
+                                    ),
+                                  ),
+                                  _buildFilterToggle(
+                                    label: "30S TRAJECTORY",
+                                    isActive: isTrajectoryShown,
+                                    onTap: () => setState(
+                                      () => isTrajectoryShown =
+                                          !isTrajectoryShown,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -268,104 +581,129 @@ class _LiveCameraViewerScreenState extends ConsumerState<LiveCameraViewerScreen>
 
             const SizedBox(height: 12),
 
-            // Live Specimen Reticle Details Panel
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 6.0,
-              ),
-              child: GlassContainer(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.memory,
-                          color: AppTheme.goldAccent,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            "NEURAL RETICLE & BNN UNCERTAINTY BOUNDS",
-                            style: GoogleFonts.outfit(
-                              color: AppTheme.textPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+            // Specimen Details Panel (when video is attached)
+            if (isVideoAttached)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 6.0,
+                ),
+                child: GlassContainer(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.memory,
+                            color: AppTheme.goldAccent,
+                            size: 16,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "EMD Kalman EMA",
-                          style: GoogleFonts.jetBrainsMono(
-                            color: AppTheme.textMuted,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: specimens.map((sp) {
-                          final isSelected = sp.trackId == selectedTrackId;
-                          return Container(
-                            margin: const EdgeInsets.only(right: 10),
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppTheme.cyanAccent.withValues(alpha: 0.15)
-                                  : AppTheme.bgCard,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppTheme.cyanAccent
-                                    : AppTheme.textMuted.withValues(alpha: 0.3),
-                                width: isSelected ? 1.5 : 1,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "NEURAL RETICLE & BNN UNCERTAINTY BOUNDS",
+                              style: GoogleFonts.outfit(
+                                color: AppTheme.textPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "#${sp.trackId} ${sp.speciesName}",
-                                  style: GoogleFonts.jetBrainsMono(
-                                    color: sp.badgeColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "Conf: ${(sp.confidence * 100).toStringAsFixed(0)}% | Speed: ${sp.velocityPx.toStringAsFixed(1)}px/s",
-                                  style: GoogleFonts.outfit(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                                Text(
-                                  "BNN: +/-${(sp.bnnEpistemicUncertainty * 100).toStringAsFixed(1)}% [${(sp.bnnLowerConf * 100).toStringAsFixed(0)}-${(sp.bnnUpperConf * 100).toStringAsFixed(0)}%]",
-                                  style: GoogleFonts.jetBrainsMono(
-                                    color: AppTheme.goldAccent,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "EMD Kalman EMA",
+                            style: GoogleFonts.jetBrainsMono(
+                              color: AppTheme.textMuted,
+                              fontSize: 10,
                             ),
-                          );
-                        }).toList(),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: specimens.map((sp) {
+                            final isSelected = sp.trackId == selectedTrackId;
+                            return Container(
+                              margin: const EdgeInsets.only(right: 10),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppTheme.cyanAccent.withValues(alpha: 0.15)
+                                    : AppTheme.bgCard,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppTheme.cyanAccent
+                                      : AppTheme.textMuted.withValues(alpha: 0.3),
+                                  width: isSelected ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "#${sp.trackId} ${sp.speciesName}",
+                                    style: GoogleFonts.jetBrainsMono(
+                                      color: sp.badgeColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Conf: ${(sp.confidence * 100).toStringAsFixed(0)}% | Speed: ${sp.velocityPx.toStringAsFixed(1)}px/s",
+                                    style: GoogleFonts.outfit(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  Text(
+                                    "BNN: +/-${(sp.bnnEpistemicUncertainty * 100).toStringAsFixed(1)}% [${(sp.bnnLowerConf * 100).toStringAsFixed(0)}-${(sp.bnnUpperConf * 100).toStringAsFixed(0)}%]",
+                                    style: GoogleFonts.jetBrainsMono(
+                                      color: AppTheme.goldAccent,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+
+            if (!isVideoAttached)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                child: GlassContainer(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: AppTheme.cyanAccent, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "Tap 'ATTACH VIDEO' to select a field video recording or camera stream to enable live telemetry.",
+                          style: GoogleFonts.outfit(
+                            color: AppTheme.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
             const SizedBox(height: 8),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_container.dart';
 import '../providers/app_providers.dart';
+import '../services/ollama_voice_service.dart';
 
 class DrPaulyVoicePortalScreen extends ConsumerStatefulWidget {
   const DrPaulyVoicePortalScreen({super.key});
@@ -16,6 +17,7 @@ class DrPaulyVoicePortalScreen extends ConsumerStatefulWidget {
 class _DrPaulyVoicePortalScreenState
     extends ConsumerState<DrPaulyVoicePortalScreen> {
   final TextEditingController _queryController = TextEditingController();
+  final OllamaVoiceService _audioService = OllamaVoiceService();
 
   final List<String> sampleQuestionsEN = [
     "What is the extinction risk for Salmo trutta in boreal streams?",
@@ -161,10 +163,10 @@ class _DrPaulyVoicePortalScreenState
                           ? Alignment.centerLeft
                           : Alignment.centerRight,
                       child: GlassContainer(
-                        width: MediaQuery.of(context).size.width * 0.82,
-                        padding: const EdgeInsets.all(12),
+                        width: MediaQuery.of(context).size.width * 0.90,
+                        padding: const EdgeInsets.all(14),
                         backgroundColor: isPauly
-                            ? AppTheme.bgCard.withValues(alpha: 0.8)
+                            ? AppTheme.bgCard.withValues(alpha: 0.88)
                             : AppTheme.cyanAccent.withValues(alpha: 0.15),
                         borderColor: isPauly
                             ? AppTheme.violetAccent
@@ -174,9 +176,17 @@ class _DrPaulyVoicePortalScreenState
                           children: [
                             Row(
                               children: [
+                                Icon(
+                                  isPauly ? Icons.psychology : Icons.person,
+                                  color: isPauly
+                                      ? AppTheme.violetAccent
+                                      : AppTheme.cyanAccent,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
                                 Text(
                                   isPauly
-                                      ? "DR. PAUL PAULY (LLM)"
+                                      ? "DR. DANIEL PAULY (LLM)"
                                       : "FIELD BIOLOGIST",
                                   style: GoogleFonts.jetBrainsMono(
                                     color: isPauly
@@ -187,22 +197,40 @@ class _DrPaulyVoicePortalScreenState
                                   ),
                                 ),
                                 const Spacer(),
+                                if (isPauly) ...[
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.volume_up,
+                                      size: 18,
+                                      color: AppTheme.violetAccent,
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () {
+                                      _audioService.speakText(
+                                        msg.text,
+                                        voiceState.languageMode,
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
                                 Text(
                                   "${msg.timestamp.hour.toString().padLeft(2, '0')}:${msg.timestamp.minute.toString().padLeft(2, '0')}",
                                   style: GoogleFonts.jetBrainsMono(
                                     color: AppTheme.textMuted,
-                                    fontSize: 9,
+                                    fontSize: 10,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
-                            Text(
+                            const SizedBox(height: 8),
+                            SelectableText(
                               msg.text,
                               style: GoogleFonts.outfit(
                                 color: AppTheme.textPrimary,
-                                fontSize: 13,
-                                height: 1.3,
+                                fontSize: 13.5,
+                                height: 1.4,
                               ),
                             ),
                           ],
