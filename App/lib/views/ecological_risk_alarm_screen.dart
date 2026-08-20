@@ -140,111 +140,117 @@ class _EcologicalRiskAlarmScreenState
               child: Row(
                 children: [
                   Text(
-                    "20-PLOT TELEMETRY SUITE",
+                    "20-PLOT SUITE",
                     style: GoogleFonts.jetBrainsMono(
                       color: AppTheme.textPrimary,
                       fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      fontSize: 12,
                     ),
                   ),
-                  const Spacer(),
-                  DropdownButton<int>(
-                    value: selectedPlotIndex,
-                    dropdownColor: AppTheme.bgCard,
-                    style: GoogleFonts.jetBrainsMono(
-                      color: AppTheme.cyanAccent,
-                      fontSize: 11,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: DropdownButton<int>(
+                        isExpanded: true,
+                        value: selectedPlotIndex,
+                        dropdownColor: AppTheme.bgCard,
+                        style: GoogleFonts.jetBrainsMono(
+                          color: AppTheme.cyanAccent,
+                          fontSize: 11,
+                        ),
+                        underline: Container(),
+                        items: [
+                          const DropdownMenuItem(
+                            value: 0,
+                            child: Text("GRID VIEW (ALL 20 PLOTS)", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 1,
+                            child: Text("PLOT 01: Population Time Series", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 2,
+                            child: Text("PLOT 02: Extinction Risk Curve", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 3,
+                            child: Text("PLOT 03: Lotka-Volterra Orbits", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 4,
+                            child: Text("PLOT 04: Species Abundance Bar", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 5,
+                            child: Text("PLOT 05: Density Histogram", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 6,
+                            child: Text("PLOT 06: Cumulative Tracked", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 7,
+                            child: Text("PLOT 07: Confidence Distribution", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 8,
+                            child: Text("PLOT 08: Velocity Magnitude", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 9,
+                            child: Text("PLOT 09: Shannon H' Index", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 10,
+                            child: Text("PLOT 10: Pielou J' Evenness", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 11,
+                            child: Text("PLOT 11: 2D Spatial Heatmap", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 12,
+                            child: Text("PLOT 12: Growth Rate Phase Plot", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 13,
+                            child: Text("PLOT 13: Stochastic Noise", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 14,
+                            child: Text("PLOT 14: Kalman Gain Dynamics", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 15,
+                            child: Text("PLOT 15: Innovation Residuals", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 16,
+                            child: Text("PLOT 16: Specimen Area Box", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 17,
+                            child: Text("PLOT 17: Detection Rate FPS", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 18,
+                            child: Text("PLOT 18: Co-occurrence Matrix", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 19,
+                            child: Text("PLOT 19: Eco Balance Gauge", overflow: TextOverflow.ellipsis),
+                          ),
+                          const DropdownMenuItem(
+                            value: 20,
+                            child: Text("PLOT 20: Covariance Trace", overflow: TextOverflow.ellipsis),
+                          ),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) setState(() => selectedPlotIndex = val);
+                        },
+                      ),
                     ),
-                    underline: Container(),
-                    items: [
-                      const DropdownMenuItem(
-                        value: 0,
-                        child: Text("GRID VIEW (ALL 20 PLOTS)"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 1,
-                        child: Text("PLOT 01: Population Time Series"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 2,
-                        child: Text("PLOT 02: Extinction Risk Curve"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 3,
-                        child: Text("PLOT 03: Lotka-Volterra Orbits"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 4,
-                        child: Text("PLOT 04: Species Abundance Bar"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 5,
-                        child: Text("PLOT 05: Density Histogram"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 6,
-                        child: Text("PLOT 06: Cumulative Tracked"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 7,
-                        child: Text("PLOT 07: Confidence Distribution"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 8,
-                        child: Text("PLOT 08: Velocity Magnitude"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 9,
-                        child: Text("PLOT 09: Shannon H' Index"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 10,
-                        child: Text("PLOT 10: Pielou J' Evenness"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 11,
-                        child: Text("PLOT 11: 2D Spatial Heatmap"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 12,
-                        child: Text("PLOT 12: Growth Rate Phase Plot"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 13,
-                        child: Text("PLOT 13: Stochastic Noise"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 14,
-                        child: Text("PLOT 14: Kalman Gain Dynamics"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 15,
-                        child: Text("PLOT 15: Innovation Residuals"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 16,
-                        child: Text("PLOT 16: Specimen Area Box"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 17,
-                        child: Text("PLOT 17: Detection Rate FPS"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 18,
-                        child: Text("PLOT 18: Co-occurrence Matrix"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 19,
-                        child: Text("PLOT 19: Eco Balance Gauge"),
-                      ),
-                      const DropdownMenuItem(
-                        value: 20,
-                        child: Text("PLOT 20: Covariance Trace"),
-                      ),
-                    ],
-                    onChanged: (val) {
-                      if (val != null) setState(() => selectedPlotIndex = val);
-                    },
                   ),
                 ],
               ),

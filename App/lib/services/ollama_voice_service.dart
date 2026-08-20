@@ -17,8 +17,11 @@ class OllamaVoiceService {
 
   Future<void> _initTts() async {
     try {
-      await _tts.setSpeechRate(0.5);
       await _tts.setVolume(1.0);
+      await _tts.setSpeechRate(0.48);
+      await _tts.setPitch(1.0);
+      await _tts.setLanguage("en-US");
+      await _tts.awaitSpeakCompletion(true);
 
       _tts.setCompletionHandler(() {
         isSpeaking = false;
@@ -33,8 +36,15 @@ class OllamaVoiceService {
   Future<void> speakText(String text, String langCode) async {
     try {
       isSpeaking = true;
+      await _tts.stop(); // Stop any ongoing speech before starting new sentence
+      await _tts.setVolume(1.0);
+      await _tts.setSpeechRate(0.48);
+      await _tts.setPitch(1.0);
       await _tts.setLanguage(langCode == 'DE' ? 'de-DE' : 'en-US');
-      await _tts.speak(text);
+
+      // Strip special characters for smooth TTS voice pronunciation
+      final cleanText = text.replaceAll(RegExp(r'[#\*\_\\/]'), '');
+      await _tts.speak(cleanText);
     } catch (_) {
       isSpeaking = false;
     }

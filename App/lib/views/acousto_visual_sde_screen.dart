@@ -44,25 +44,31 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                     size: 24,
                   ),
                   const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "ACOUSTO-VISUAL & NEURAL SDE METRICS",
-                        style: GoogleFonts.outfit(
-                          color: AppTheme.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "ACOUSTO-VISUAL & NEURAL SDE METRICS",
+                          style: GoogleFonts.outfit(
+                            color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Text(
-                        "Lighthill Hydrodynamic Waves & Trajectory Forecasting",
-                        style: GoogleFonts.jetBrainsMono(
-                          color: AppTheme.textSecondary,
-                          fontSize: 11,
+                        Text(
+                          "Lighthill Hydrodynamic Waves & Trajectory Forecasting",
+                          style: GoogleFonts.jetBrainsMono(
+                            color: AppTheme.textSecondary,
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -100,6 +106,8 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 "Lighthill Vortex Circulation Pressure Field",
@@ -107,6 +115,8 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                                   color: AppTheme.textMuted,
                                   fontSize: 11,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -122,7 +132,7 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                           avgTailBeatHz.toStringAsFixed(2),
                           style: GoogleFonts.jetBrainsMono(
                             color: AppTheme.cyanAccent,
-                            fontSize: 36,
+                            fontSize: 32,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -131,29 +141,33 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                           "Hz",
                           style: GoogleFonts.outfit(
                             color: AppTheme.cyanAccent,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.emeraldAccent.withValues(
-                              alpha: 0.15,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: AppTheme.emeraldAccent),
-                          ),
-                          child: Text(
-                            "SWIM KINEMATICS NOMINAL",
-                            style: GoogleFonts.jetBrainsMono(
-                              color: AppTheme.emeraldAccent,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                            decoration: BoxDecoration(
+                              color: AppTheme.emeraldAccent.withValues(
+                                alpha: 0.15,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppTheme.emeraldAccent),
+                            ),
+                            child: Text(
+                              "SWIM KINEMATICS NOMINAL",
+                              style: GoogleFonts.jetBrainsMono(
+                                color: AppTheme.emeraldAccent,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
@@ -221,6 +235,8 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 "Bioacoustic Sound Pressure Level @ 1m",
@@ -228,6 +244,8 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                                   color: AppTheme.textMuted,
                                   fontSize: 11,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -243,25 +261,29 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                           avgAcousticDb.toStringAsFixed(1),
                           style: GoogleFonts.jetBrainsMono(
                             color: AppTheme.goldAccent,
-                            fontSize: 36,
+                            fontSize: 32,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         Text(
                           "dB re 1μPa",
                           style: GoogleFonts.outfit(
                             color: AppTheme.goldAccent,
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const Spacer(),
-                        Text(
-                          "Peak Hydro-Pressure: ${(avgAcousticDb * 0.28).toStringAsFixed(1)} Pa",
-                          style: GoogleFonts.jetBrainsMono(
-                            color: AppTheme.textMuted,
-                            fontSize: 10,
+                        Flexible(
+                          child: Text(
+                            "Peak: ${(avgAcousticDb * 0.28).toStringAsFixed(1)} Pa",
+                            style: GoogleFonts.jetBrainsMono(
+                              color: AppTheme.textMuted,
+                              fontSize: 10,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -316,6 +338,8 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 "Stochastic Future Cones & Inter-Specimen Repulsion",
@@ -323,6 +347,8 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                                   color: AppTheme.textMuted,
                                   fontSize: 11,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -373,19 +399,27 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Text(
-                                "#${sp.trackId} ${sp.speciesName}",
-                                style: GoogleFonts.jetBrainsMono(
-                                  color: AppTheme.textPrimary,
-                                  fontSize: 11,
+                              Expanded(
+                                child: Text(
+                                  "#${sp.trackId} ${sp.speciesName}",
+                                  style: GoogleFonts.jetBrainsMono(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const Spacer(),
-                              Text(
-                                "30s Projected Path: +${(sp.velocityPx * 1.8).toStringAsFixed(0)}px",
-                                style: GoogleFonts.jetBrainsMono(
-                                  color: AppTheme.violetAccent,
-                                  fontSize: 10,
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  "Path: +${(sp.velocityPx * 1.8).toStringAsFixed(0)}px",
+                                  style: GoogleFonts.jetBrainsMono(
+                                    color: AppTheme.violetAccent,
+                                    fontSize: 10,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -420,6 +454,8 @@ class AcoustoVisualSdeScreen extends ConsumerWidget {
               color: AppTheme.textMuted,
               fontSize: 9,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(

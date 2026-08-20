@@ -8,6 +8,7 @@ import 'offline_taxonomy_screen.dart';
 import 'ecological_risk_alarm_screen.dart';
 import 'acousto_visual_sde_screen.dart';
 import 'dr_pauly_voice_portal_screen.dart';
+import 'profile_reports_screen.dart';
 
 class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
@@ -26,6 +27,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     EcologicalRiskAlarmScreen(),
     AcoustoVisualSdeScreen(),
     DrPaulyVoicePortalScreen(),
+    ProfileReportsScreen(),
   ];
 
   @override
@@ -33,6 +35,35 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     return JohnnyGlitchOverlay(
       child: Scaffold(
         body: IndexedStack(index: _currentIndex, children: _screens),
+
+        // SLEEK FLOATING JOHNNY SILVERHAND RELIC TRIGGER BUTTON [J]
+        floatingActionButton: Builder(
+          builder: (context) {
+            return FloatingActionButton.extended(
+              heroTag: "johnny_relic_fab",
+              backgroundColor: const Color(0xFFDE52AF),
+              elevation: 8,
+              icon: const Icon(
+                Icons.developer_board,
+                color: Colors.white,
+                size: 18,
+              ),
+              label: Text(
+                "JOHNNY [J]",
+                style: GoogleFonts.jetBrainsMono(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              onPressed: () {
+                JohnnyGlitchOverlay.of(context)?.triggerJohnnyRelicGlitch();
+              },
+            );
+          },
+        ),
+
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             color: AppTheme.bgDark,
@@ -50,103 +81,55 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
               ),
             ],
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: BottomNavigationBar(
-                  currentIndex: _currentIndex,
-                  onTap: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  backgroundColor: Colors.transparent,
-                  selectedItemColor: AppTheme.cyanAccent,
-                  unselectedItemColor: AppTheme.textMuted,
-                  selectedLabelStyle: GoogleFonts.jetBrainsMono(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  unselectedLabelStyle: GoogleFonts.jetBrainsMono(fontSize: 9),
-                  type: BottomNavigationBarType.fixed,
-                  items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.videocam_outlined),
-                      activeIcon: Icon(Icons.videocam, color: AppTheme.cyanAccent),
-                      label: 'LIVE STREAM',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.storage_outlined),
-                      activeIcon: Icon(Icons.storage, color: AppTheme.cyanAccent),
-                      label: 'TAXONOMY',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.warning_amber_outlined),
-                      activeIcon: Icon(
-                        Icons.warning_amber_rounded,
-                        color: AppTheme.crimsonAccent,
-                      ),
-                      label: 'RISK ALARMS',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.equalizer_outlined),
-                      activeIcon: Icon(Icons.equalizer, color: AppTheme.cyanAccent),
-                      label: 'ACOUSTO/SDE',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.mic_none_outlined),
-                      activeIcon: Icon(Icons.mic, color: AppTheme.violetAccent),
-                      label: 'DR. PAULY',
-                    ),
-                  ],
-                ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            backgroundColor: Colors.transparent,
+            selectedItemColor: AppTheme.cyanAccent,
+            unselectedItemColor: AppTheme.textMuted,
+            selectedLabelStyle: GoogleFonts.jetBrainsMono(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+            unselectedLabelStyle: GoogleFonts.jetBrainsMono(fontSize: 8),
+            type: BottomNavigationBarType.fixed,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.videocam_outlined),
+                activeIcon: Icon(Icons.videocam, color: AppTheme.cyanAccent),
+                label: 'STREAM',
               ),
-
-              // JOHNNY SILVERHAND RELIC TRIGGER BUTTON [J]
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: GestureDetector(
-                  onTap: () {
-                    JohnnyGlitchOverlay.of(context)?.triggerJohnnyRelicGlitch();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDE52AF).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: const Color(0xFFDE52AF),
-                        width: 1.2,
-                      ),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0xFFDE52AF),
-                          blurRadius: 8,
-                          spreadRadius: -2,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.developer_board,
-                          color: Color(0xFFDE52AF),
-                          size: 18,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "JOHNNY [J]",
-                          style: GoogleFonts.jetBrainsMono(
-                            color: const Color(0xFFDE52AF),
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.storage_outlined),
+                activeIcon: Icon(Icons.storage, color: AppTheme.cyanAccent),
+                label: 'TAXONOMY',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.warning_amber_outlined),
+                activeIcon: Icon(
+                  Icons.warning_amber_rounded,
+                  color: AppTheme.crimsonAccent,
                 ),
+                label: 'ALARMS',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.equalizer_outlined),
+                activeIcon: Icon(Icons.equalizer, color: AppTheme.cyanAccent),
+                label: 'SDE',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.mic_none_outlined),
+                activeIcon: Icon(Icons.mic, color: AppTheme.violetAccent),
+                label: 'DR. PAULY',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person, color: AppTheme.cyanAccent),
+                label: 'PROFILE',
               ),
             ],
           ),
