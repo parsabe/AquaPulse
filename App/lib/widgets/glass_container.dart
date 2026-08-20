@@ -24,46 +24,51 @@ class GlassContainer extends StatelessWidget {
     this.borderColor,
     this.backgroundColor,
     this.borderRadius = 16.0,
-    this.blur = 16.0,
+    this.blur = 8.0,
     this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final effectiveBg = (backgroundColor ?? AppTheme.bgCard).withOpacity(0.88);
+    final effectiveBorder = (borderColor ?? AppTheme.cyanAccent).withOpacity(0.35);
+
+    Widget innerCard = Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: effectiveBg,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: effectiveBorder,
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: (borderColor ?? AppTheme.cyanAccent).withOpacity(0.08),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: child,
+    );
+
     Widget content = Container(
       width: width,
       height: height,
       margin: margin,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: (backgroundColor ?? AppTheme.bgCard).withOpacity(0.55),
-              borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(
-                color: (borderColor ?? AppTheme.cyanAccent).withOpacity(0.25),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.35),
-                  blurRadius: 12,
-                  spreadRadius: -2,
-                  offset: const Offset(0, 4),
-                ),
-                BoxShadow(
-                  color: (borderColor ?? AppTheme.cyanAccent).withOpacity(0.05),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: child,
-          ),
-        ),
+        child: blur > 0
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                child: innerCard,
+              )
+            : innerCard,
       ),
     );
 
