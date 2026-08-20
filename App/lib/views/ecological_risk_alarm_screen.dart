@@ -80,29 +80,32 @@ class _EcologicalRiskAlarmScreenState extends ConsumerState<EcologicalRiskAlarmS
                     ),
                     const SizedBox(height: 10),
                     // Environmental Disturbance Shock Simulation Triggers
-                    Row(
-                      children: [
-                        Text(
-                          "INJECT SHOCK:",
-                          style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 10),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildShockButton("HEATWAVE", () {
-                          ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("heatwave");
-                        }),
-                        const SizedBox(width: 6),
-                        _buildShockButton("POLLUTION", () {
-                          ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("pollution");
-                        }),
-                        const SizedBox(width: 6),
-                        _buildShockButton("INVASIVE", () {
-                          ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("invasive");
-                        }),
-                        const Spacer(),
-                        _buildShockButton("RESET", () {
-                          ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("reset");
-                        }, isReset: true),
-                      ],
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          Text(
+                            "INJECT SHOCK:",
+                            style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 10),
+                          ),
+                          const SizedBox(width: 8),
+                          _buildShockButton("HEATWAVE", () {
+                            ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("heatwave");
+                          }),
+                          const SizedBox(width: 6),
+                          _buildShockButton("POLLUTION", () {
+                            ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("pollution");
+                          }),
+                          const SizedBox(width: 6),
+                          _buildShockButton("INVASIVE", () {
+                            ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("invasive");
+                          }),
+                          const SizedBox(width: 12),
+                          _buildShockButton("RESET", () {
+                            ref.read(telemetryProvider.notifier).triggerEnvironmentalShock("reset");
+                          }, isReset: true),
+                        ],
+                      ),
                     ),
                   ],
                 ),

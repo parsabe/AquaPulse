@@ -241,15 +241,19 @@ class _LiveCameraViewerScreenState extends ConsumerState<LiveCameraViewerScreen>
                       children: [
                         const Icon(Icons.memory, color: AppTheme.goldAccent, size: 16),
                         const SizedBox(width: 8),
-                        Text(
-                          "NEURAL RETICLE & BNN UNCERTAINTY BOUNDS",
-                          style: GoogleFonts.outfit(
-                            color: AppTheme.textPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                        Expanded(
+                          child: Text(
+                            "NEURAL RETICLE & BNN UNCERTAINTY BOUNDS",
+                            style: GoogleFonts.outfit(
+                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Spacer(),
+                        const SizedBox(width: 8),
                         Text(
                           "EMD Kalman EMA",
                           style: GoogleFonts.jetBrainsMono(color: AppTheme.textMuted, fontSize: 10),
