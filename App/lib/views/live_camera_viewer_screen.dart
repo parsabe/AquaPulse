@@ -33,7 +33,7 @@ class _LiveCameraViewerScreenState
 
   bool isPlaying = true;
   double currentVideoSec = 0.0; // Starts at 00:00
-  double totalVideoDurationSec = 330.0; // 05:30
+  double totalVideoDurationSec = 60.0; // Dynamic: adapts to video metadata
   bool isLooping = true;
 
   late AnimationController _waveController;
@@ -56,6 +56,7 @@ class _LiveCameraViewerScreenState
           if (currentVideoSec >= totalVideoDurationSec) {
             if (isLooping) {
               currentVideoSec = 0.0;
+              _youtubeController?.seekTo(Duration.zero);
             } else {
               isPlaying = false;
             }
@@ -89,7 +90,22 @@ class _LiveCameraViewerScreenState
         hideControls: true,
         controlsVisibleAtStart: false,
       ),
-    );
+    )..addListener(() {
+        if (mounted && _youtubeController != null) {
+          final dur = _youtubeController!.value.metaData.duration.inSeconds.toDouble();
+          final pos = _youtubeController!.value.position.inSeconds.toDouble();
+          if (dur > 0 && dur != totalVideoDurationSec) {
+            setState(() {
+              totalVideoDurationSec = dur;
+            });
+          }
+          if (pos >= 0 && (pos - currentVideoSec).abs() > 1.5) {
+            setState(() {
+              currentVideoSec = pos;
+            });
+          }
+        }
+      });
   }
 
   String _getYoutubeThumbnailUrl(String raw) {
@@ -122,6 +138,7 @@ class _LiveCameraViewerScreenState
       isVideoLoading = false;
       isPlaying = false;
       currentVideoSec = 0.0;
+      totalVideoDurationSec = 60.0;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -135,7 +152,7 @@ class _LiveCameraViewerScreenState
     );
   }
 
-  void _attachVideoWithLoading(String videoName) {
+  void _attachVideoWithLoading(String videoName, {double defaultDuration = 60.0}) {
     if (videoName.startsWith("YT:") ||
         videoName.contains("youtube") ||
         videoName.contains("youtu.be")) {
@@ -151,6 +168,7 @@ class _LiveCameraViewerScreenState
       isVideoLoading = true;
       isPlaying = true;
       currentVideoSec = 0.0;
+      totalVideoDurationSec = defaultDuration;
     });
 
     // High-tech optical stream loading & buffering delay (1.6 seconds)
