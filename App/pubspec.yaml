@@ -42,7 +42,7 @@ dependencies:
   flutter_animate: ^4.5.0
   shared_preferences: ^2.2.3
   intl: ^0.19.0
-  camera: ^0.11.0
+  camera: ^0.12.0
   audioplayers: ^6.0.0
   flutter_tts: ^4.0.2
   http: ^1.2.1
