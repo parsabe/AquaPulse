@@ -79,11 +79,12 @@ Provide an exhaustive, multi-sentence biological response covering species popul
 Do not include meta-talk, markdown titles, or language declarations. Start directly as Dr. Daniel Pauly.
 ''';
 
-    // Dynamic Endpoints: Cloud API -> Local PC Ollama -> Android Loopback -> Expert Offline Fallback
+    // Dynamic Endpoints: User VPS Server -> Official Cloud API -> Local PC -> Android Loopback -> Expert Offline Fallback
     final endpoints = [
-      'https://api.aquapulse.ai/v1/ollama/generate', // Official Cloud LLM Endpoint
-      'http://localhost:11434/api/generate',          // Local PC
-      'http://10.0.2.2:11434/api/generate',         // Android Emulator loopback
+      'http://[2a02:c207:3018:8809::1]:11434/api/generate', // User VPS Cloud Ollama Server
+      'https://api.aquapulse.ai/v1/ollama/generate',        // Official Cloud LLM Endpoint
+      'http://localhost:11434/api/generate',                // Local PC
+      'http://10.0.2.2:11434/api/generate',               // Android Emulator loopback
       'http://127.0.0.1:11434/api/generate',
     ];
 
