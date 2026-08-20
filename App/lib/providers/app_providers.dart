@@ -7,40 +7,45 @@ import '../services/database_service.dart';
 import '../services/gbif_api_service.dart';
 import '../services/telemetry_engine_service.dart';
 import '../services/ollama_voice_service.dart';
-import '../services/alarm_sound_service.dart';
 
-// --- TELEMETRY STATE & PROVIDER ---
+// --- TELEMETRY ENGINE STATE & PROVIDER ---
 class TelemetryState {
+  final List<SpecimenModel> liveSpecimens;
   final TelemetryDataPoint currentPoint;
   final List<TelemetryDataPoint> history;
-  final List<SpecimenModel> liveSpecimens;
-  final String activeShock;
-  final bool isSimulating;
+  final double extinctionRiskPercent;
+  final double bifurcationIndexPercent;
+  final bool isAlarmActive;
   final double streamFps;
 
   TelemetryState({
+    required this.liveSpecimens,
     required this.currentPoint,
     required this.history,
-    required this.liveSpecimens,
-    required this.activeShock,
-    this.isSimulating = true,
-    this.streamFps = 29.8,
+    required this.extinctionRiskPercent,
+    required this.bifurcationIndexPercent,
+    required this.isAlarmActive,
+    required this.streamFps,
   });
 
   TelemetryState copyWith({
+    List<SpecimenModel>? liveSpecimens,
     TelemetryDataPoint? currentPoint,
     List<TelemetryDataPoint>? history,
-    List<SpecimenModel>? liveSpecimens,
-    String? activeShock,
-    bool? isSimulating,
+    double? extinctionRiskPercent,
+    double? bifurcationIndexPercent,
+    bool? isAlarmActive,
     double? streamFps,
   }) {
     return TelemetryState(
+      liveSpecimens: liveSpecimens ?? this.liveSpecimens,
       currentPoint: currentPoint ?? this.currentPoint,
       history: history ?? this.history,
-      liveSpecimens: liveSpecimens ?? this.liveSpecimens,
-      activeShock: activeShock ?? this.activeShock,
-      isSimulating: isSimulating ?? this.isSimulating,
+      extinctionRiskPercent:
+          extinctionRiskPercent ?? this.extinctionRiskPercent,
+      bifurcationIndexPercent:
+          bifurcationIndexPercent ?? this.bifurcationIndexPercent,
+      isAlarmActive: isAlarmActive ?? this.isAlarmActive,
       streamFps: streamFps ?? this.streamFps,
     );
   }
@@ -48,71 +53,57 @@ class TelemetryState {
 
 class TelemetryNotifier extends StateNotifier<TelemetryState> {
   final TelemetryEngineService _engine = TelemetryEngineService();
-  final AlarmSoundService _alarmSound = AlarmSoundService();
   Timer? _timer;
 
   TelemetryNotifier()
       : super(TelemetryState(
+          liveSpecimens: [],
           currentPoint: TelemetryDataPoint(
             timeSec: 0,
-            preyX: 10,
-            predY: 5,
-            extinctionRiskPct: 15.0,
-            bifurcationIndexPct: 18.0,
-            shannonH: 1.45,
-            pielouJ: 0.78,
+            preyX: 10.0,
+            predY: 5.0,
+            extinctionRiskPct: 8.4,
+            bifurcationIndexPct: 12.5,
+            shannonH: 1.5,
+            pielouJ: 0.8,
             kalmanGainX: 0.35,
             kalmanGainY: 0.18,
             innovationResidual: 0.1,
             velocityMagnitude: 4.5,
-            covarianceTrace: 1.2,
+            covarianceTrace: 0.5,
             ecoRatioXY: 2.0,
-            detectionFps: 29.8,
+            detectionFps: 30.0,
           ),
           history: [],
-          liveSpecimens: [],
-          activeShock: "NORMAL",
+          extinctionRiskPercent: 8.4,
+          bifurcationIndexPercent: 12.5,
+          isAlarmActive: false,
+          streamFps: 60.0,
         )) {
-    _startLoop();
+    _startSimulation();
   }
 
-  void _startLoop() {
-    _timer = Timer.periodic(const Duration(milliseconds: 600), (_) {
-      if (!state.isSimulating) return;
-
+  void _startSimulation() {
+    _timer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
       final point = _engine.step(yoloPreyObservation: 10.0);
-      final specimens = _engine.generateLiveSpecimens();
-
-      // Check Extinction Risk > 35% or Bifurcation Index > 50%
-      if (point.extinctionRiskPct > 35.0 || point.bifurcationIndexPct > 50.0) {
-        _alarmSound.triggerEcologicalAlarm(
-          extinctionRisk: point.extinctionRiskPct,
-          bifurcationIndex: point.bifurcationIndexPct,
-        );
-        DatabaseService.instance.logAlarmEvent(
-          point.extinctionRiskPct > 35.0 ? "EXTINCTION_RISK" : "BIFURCATION_COLLAPSE",
-          point.extinctionRiskPct,
-          point.bifurcationIndexPct,
-          "Threshold breach in remote telemetry stream",
-        );
-      }
+      final currentSpecimens = _engine.generateLiveSpecimens();
+      final risk = point.extinctionRiskPct;
+      final bifurcation = point.bifurcationIndexPct;
+      final alarm = (risk > 35.0 || bifurcation > 50.0);
 
       state = state.copyWith(
+        liveSpecimens: currentSpecimens,
         currentPoint: point,
         history: List.from(_engine.history),
-        liveSpecimens: specimens,
-        activeShock: _engine.activeShock,
+        extinctionRiskPercent: risk,
+        bifurcationIndexPercent: bifurcation,
+        isAlarmActive: alarm,
       );
     });
   }
 
   void triggerEnvironmentalShock(String shockType) {
     _engine.injectShock(shockType);
-    state = state.copyWith(activeShock: _engine.activeShock);
-  }
-
-  void toggleSimulation() {
-    state = state.copyWith(isSimulating: !state.isSimulating);
   }
 
   @override
@@ -122,10 +113,10 @@ class TelemetryNotifier extends StateNotifier<TelemetryState> {
   }
 }
 
-final telemetryProvider = StateNotifierProvider<TelemetryNotifier, TelemetryState>((ref) {
+final telemetryProvider =
+    StateNotifierProvider<TelemetryNotifier, TelemetryState>((ref) {
   return TelemetryNotifier();
 });
-
 
 // --- OFFLINE TAXONOMY STATE & PROVIDER ---
 class TaxonomyNotifier extends StateNotifier<List<TaxonomyModel>> {
@@ -151,10 +142,10 @@ class TaxonomyNotifier extends StateNotifier<List<TaxonomyModel>> {
   }
 }
 
-final taxonomyProvider = StateNotifierProvider<TaxonomyNotifier, List<TaxonomyModel>>((ref) {
+final taxonomyProvider =
+    StateNotifierProvider<TaxonomyNotifier, List<TaxonomyModel>>((ref) {
   return TaxonomyNotifier();
 });
-
 
 // --- VOICE ASSISTANT STATE & PROVIDER ---
 class VoiceChatMessage {
@@ -162,12 +153,14 @@ class VoiceChatMessage {
   final String text;
   final DateTime timestamp;
   final String language;
+  final String? attachedFishImage; // E.g. 'Salmo_trutta_specimen_042.jpg'
 
   VoiceChatMessage({
     required this.sender,
     required this.text,
     required this.timestamp,
     required this.language,
+    this.attachedFishImage,
   });
 }
 
@@ -211,7 +204,8 @@ class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantState> {
           messages: [
             VoiceChatMessage(
               sender: 'DR_PAULY',
-              text: "Welcome to field telemetry portal. I am Dr. Paul Pauly. Ask any ecological or species question in English or German.",
+              text:
+                  "Welcome to field telemetry portal. I am Dr. Daniel Pauly. Ask any ecological, bioacoustic, or species photo question in English or German.",
               timestamp: DateTime.now(),
               language: 'EN',
             )
@@ -223,14 +217,23 @@ class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantState> {
     state = state.copyWith(languageMode: nextLang);
   }
 
-  Future<void> sendQuery(String userQuestion, {String? speciesContext}) async {
-    if (userQuestion.trim().isEmpty) return;
+  Future<void> sendQuery(
+    String userQuestion, {
+    String? speciesContext,
+    String? attachedFishImage,
+  }) async {
+    if (userQuestion.trim().isEmpty && attachedFishImage == null) return;
+
+    final promptText = userQuestion.trim().isNotEmpty
+        ? userQuestion
+        : "Please inspect the attached fish photo ($attachedFishImage) for taxonomic identification and morphological traits.";
 
     final userMsg = VoiceChatMessage(
       sender: 'USER',
-      text: userQuestion,
+      text: promptText,
       timestamp: DateTime.now(),
       language: state.languageMode,
+      attachedFishImage: attachedFishImage,
     );
 
     state = state.copyWith(
@@ -239,9 +242,10 @@ class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantState> {
     );
 
     final answer = await _voiceService.queryDrPauly(
-      question: userQuestion,
+      question: promptText,
       languageMode: state.languageMode,
       speciesContext: speciesContext,
+      attachedFishImage: attachedFishImage,
     );
 
     final paulyMsg = VoiceChatMessage(
