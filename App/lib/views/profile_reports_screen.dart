@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_container.dart';
-import '../providers/app_providers.dart';
 
 class PdfReportItem {
   final String fileName;
@@ -108,7 +107,8 @@ Extinction Risk: 14.2\%, Bifurcation Index: 28.4\%.
         final timestampStr =
             "${now.year}_${now.month.toString().padLeft(2, '0')}_${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}";
 
-        final latexSource = '''\\documentclass{article}
+        final latexSource =
+            '''\\documentclass{article}
 \\usepackage[utf8]{inputenc}
 \\usepackage{amsmath, amssymb, graphicx, booktabs}
 \\title{\\textbf{AquaPulse Field Telemetry Report}}
@@ -169,7 +169,9 @@ Thunnus thynnus & 12 & 91\\% \\\\
                 Expanded(
                   child: Text(
                     "Cloud LaTeX Compiled PDF Saved: ${newReport.fileName}",
-                    style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary),
+                    style: GoogleFonts.jetBrainsMono(
+                      color: AppTheme.textPrimary,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -290,7 +292,10 @@ Thunnus thynnus & 12 & 91\\% \\\\
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.close, color: AppTheme.textMuted),
+                            icon: const Icon(
+                              Icons.close,
+                              color: AppTheme.textMuted,
+                            ),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ],
@@ -362,9 +367,21 @@ Thunnus thynnus & 12 & 91\\% \\\\
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildPdfTableRow("Salmo trutta (Brown Trout)", "24 Tracked", "94% BotSORT"),
-                        _buildPdfTableRow("Gadus morhua (Atlantic Cod)", "18 Tracked", "88% BotSORT"),
-                        _buildPdfTableRow("Thunnus thynnus (Bluefin Tuna)", "12 Tracked", "91% BotSORT"),
+                        _buildPdfTableRow(
+                          "Salmo trutta (Brown Trout)",
+                          "24 Tracked",
+                          "94% BotSORT",
+                        ),
+                        _buildPdfTableRow(
+                          "Gadus morhua (Atlantic Cod)",
+                          "18 Tracked",
+                          "88% BotSORT",
+                        ),
+                        _buildPdfTableRow(
+                          "Thunnus thynnus (Bluefin Tuna)",
+                          "12 Tracked",
+                          "91% BotSORT",
+                        ),
                       ] else ...[
                         // Raw LaTeX Source Code Viewer
                         Text(
@@ -383,7 +400,9 @@ Thunnus thynnus & 12 & 91\\% \\\\
                             color: Colors.black.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppTheme.violetAccent.withValues(alpha: 0.5),
+                              color: AppTheme.violetAccent.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                           ),
                           child: SelectableText(
@@ -432,7 +451,9 @@ Thunnus thynnus & 12 & 91\\% \\\\
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.cyanAccent,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -469,7 +490,9 @@ Thunnus thynnus & 12 & 91\\% \\\\
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppTheme.violetAccent),
+                              side: const BorderSide(
+                                color: AppTheme.violetAccent,
+                              ),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                                 vertical: 12,

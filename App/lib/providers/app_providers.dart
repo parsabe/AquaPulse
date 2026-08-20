@@ -56,7 +56,8 @@ class TelemetryNotifier extends StateNotifier<TelemetryState> {
   Timer? _timer;
 
   TelemetryNotifier()
-      : super(TelemetryState(
+    : super(
+        TelemetryState(
           liveSpecimens: [],
           currentPoint: TelemetryDataPoint(
             timeSec: 0,
@@ -79,7 +80,8 @@ class TelemetryNotifier extends StateNotifier<TelemetryState> {
           bifurcationIndexPercent: 12.5,
           isAlarmActive: false,
           streamFps: 60.0,
-        )) {
+        ),
+      ) {
     _startSimulation();
   }
 
@@ -115,8 +117,8 @@ class TelemetryNotifier extends StateNotifier<TelemetryState> {
 
 final telemetryProvider =
     StateNotifierProvider<TelemetryNotifier, TelemetryState>((ref) {
-  return TelemetryNotifier();
-});
+      return TelemetryNotifier();
+    });
 
 // --- OFFLINE TAXONOMY STATE & PROVIDER ---
 class TaxonomyNotifier extends StateNotifier<List<TaxonomyModel>> {
@@ -144,8 +146,8 @@ class TaxonomyNotifier extends StateNotifier<List<TaxonomyModel>> {
 
 final taxonomyProvider =
     StateNotifierProvider<TaxonomyNotifier, List<TaxonomyModel>>((ref) {
-  return TaxonomyNotifier();
-});
+      return TaxonomyNotifier();
+    });
 
 // --- VOICE ASSISTANT STATE & PROVIDER ---
 class VoiceChatMessage {
@@ -200,7 +202,8 @@ class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantState> {
   final OllamaVoiceService _voiceService = OllamaVoiceService();
 
   VoiceAssistantNotifier()
-      : super(VoiceAssistantState(
+    : super(
+        VoiceAssistantState(
           messages: [
             VoiceChatMessage(
               sender: 'DR_PAULY',
@@ -208,9 +211,10 @@ class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantState> {
                   "Welcome to field telemetry portal. I am Dr. Daniel Pauly. Ask any ecological, bioacoustic, or species photo question in English or German.",
               timestamp: DateTime.now(),
               language: 'EN',
-            )
+            ),
           ],
-        ));
+        ),
+      );
 
   void toggleLanguage() {
     final nextLang = state.languageMode == 'EN' ? 'DE' : 'EN';
@@ -272,5 +276,5 @@ class VoiceAssistantNotifier extends StateNotifier<VoiceAssistantState> {
 
 final voiceAssistantProvider =
     StateNotifierProvider<VoiceAssistantNotifier, VoiceAssistantState>((ref) {
-  return VoiceAssistantNotifier();
-});
+      return VoiceAssistantNotifier();
+    });
