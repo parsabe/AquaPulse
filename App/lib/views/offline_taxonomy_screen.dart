@@ -46,81 +46,100 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                           size: 22,
                         ),
                         const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "FIELD OFFLINE TAXONOMY CACHE",
-                              style: GoogleFonts.outfit(
-                                color: AppTheme.textPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            Text(
-                              "SQLite Database | GBIF Taxonomy & Ecological Census",
-                              style: GoogleFonts.jetBrainsMono(
-                                color: AppTheme.textSecondary,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.emeraldAccent.withValues(
-                              alpha: 0.15,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppTheme.emeraldAccent),
-                          ),
-                          child: Row(
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(
-                                Icons.wifi_off,
-                                color: AppTheme.emeraldAccent,
-                                size: 12,
-                              ),
-                              const SizedBox(width: 4),
                               Text(
-                                "OFFLINE READY",
-                                style: GoogleFonts.jetBrainsMono(
-                                  color: AppTheme.emeraldAccent,
+                                "FIELD OFFLINE TAXONOMY CACHE",
+                                style: GoogleFonts.outfit(
+                                  color: AppTheme.textPrimary,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                "SQLite DB | GBIF Taxonomy & Census",
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: AppTheme.textSecondary,
                                   fontSize: 10,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.emeraldAccent.withValues(
+                                alpha: 0.15,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppTheme.emeraldAccent),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.wifi_off,
+                                  color: AppTheme.emeraldAccent,
+                                  size: 10,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    "OFFLINE READY",
+                                    style: GoogleFonts.jetBrainsMono(
+                                      color: AppTheme.emeraldAccent,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 9,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
 
-                    // Census Statistics Grid
+                    // Census Statistics Grid (Wrapped with Expanded to prevent overflow)
                     Row(
                       children: [
-                        _buildStatChip(
-                          "SPECIES CACHED",
-                          "${speciesList.length}",
-                          AppTheme.cyanAccent,
+                        Expanded(
+                          child: _buildStatChip(
+                            "SPECIES CACHED",
+                            "${speciesList.length}",
+                            AppTheme.cyanAccent,
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        _buildStatChip(
-                          "TOTAL CENSUS",
-                          "$totalCensus",
-                          AppTheme.goldAccent,
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: _buildStatChip(
+                            "TOTAL CENSUS",
+                            "$totalCensus",
+                            AppTheme.goldAccent,
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        _buildStatChip(
-                          "GBIF SYNC",
-                          "LOCAL DB",
-                          AppTheme.violetAccent,
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: _buildStatChip(
+                            "GBIF SYNC",
+                            "LOCAL DB",
+                            AppTheme.violetAccent,
+                          ),
                         ),
                       ],
                     ),
@@ -139,17 +158,16 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                       controller: _searchController,
                       style: GoogleFonts.outfit(color: AppTheme.textPrimary),
                       decoration: InputDecoration(
-                        hintText:
-                            "Enter GBIF species name (e.g. Salmo trutta)...",
+                        hintText: "Search GBIF (e.g. Salmo trutta)...",
                         hintStyle: GoogleFonts.outfit(
                           color: AppTheme.textMuted,
-                          fontSize: 13,
+                          fontSize: 12,
                         ),
                         filled: true,
                         fillColor: AppTheme.bgCard,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                          horizontal: 12,
+                          vertical: 10,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -173,7 +191,7 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: isSyncing
                         ? null
@@ -192,8 +210,8 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                       backgroundColor: AppTheme.cyanAccent,
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
+                        horizontal: 12,
+                        vertical: 12,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -201,8 +219,8 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                     ),
                     child: isSyncing
                         ? const SizedBox(
-                            width: 16,
-                            height: 16,
+                            width: 14,
+                            height: 14,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: Colors.black,
@@ -212,7 +230,7 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                             "SYNC GBIF",
                             style: GoogleFonts.jetBrainsMono(
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              fontSize: 10,
                             ),
                           ),
                   ),
@@ -222,13 +240,16 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
 
             const SizedBox(height: 12),
 
-            // Cached Taxonomy Cards List
+            // Cached Species Inventory Cards List
             Expanded(
               child: speciesList.isEmpty
                   ? Center(
                       child: Text(
-                        "No species in offline SQLite database.",
-                        style: GoogleFonts.outfit(color: AppTheme.textMuted),
+                        "NO TAXONOMY DATA CACHED IN LOCAL SQLITE",
+                        style: GoogleFonts.jetBrainsMono(
+                          color: AppTheme.textMuted,
+                          fontSize: 12,
+                        ),
                       ),
                     )
                   : ListView.builder(
@@ -237,70 +258,65 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                       itemBuilder: (context, index) {
                         final species = speciesList[index];
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
+                          padding: const EdgeInsets.only(bottom: 10.0),
                           child: GlassContainer(
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: [
-                                // Reference Species Image Thumbnail
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
                                   child: Image.network(
                                     species.referenceImageUrl,
-                                    width: 72,
-                                    height: 72,
+                                    width: 52,
+                                    height: 52,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {
                                       return Container(
-                                        width: 72,
-                                        height: 72,
-                                        color: AppTheme.bgCard,
+                                        width: 52,
+                                        height: 52,
+                                        color: AppTheme.cyanAccent.withValues(
+                                          alpha: 0.15,
+                                        ),
                                         child: const Icon(
-                                          Icons.image_not_supported,
+                                          Icons.set_meal,
                                           color: AppTheme.cyanAccent,
+                                          size: 24,
                                         ),
                                       );
                                     },
                                   ),
                                 ),
-                                const SizedBox(width: 14),
-
-                                // Species Details
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              species.scientificName,
-                                              style: GoogleFonts.outfit(
-                                                color: AppTheme.textPrimary,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15,
-                                                fontStyle: FontStyle.italic,
-                                              ),
-                                            ),
-                                          ),
-                                          _buildIucnBadge(species.iucnStatus),
-                                        ],
+                                      Text(
+                                        species.scientificName,
+                                        style: GoogleFonts.outfit(
+                                          color: AppTheme.textPrimary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        "${species.commonName} • Key: ${species.gbifId}",
+                                        style: GoogleFonts.outfit(
+                                          color: AppTheme.cyanAccent,
+                                          fontSize: 11,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        "${species.commonName} • ${species.family}",
-                                        style: GoogleFonts.outfit(
-                                          color: AppTheme.textSecondary,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        species.habitatDescription,
-                                        style: GoogleFonts.outfit(
+                                        "Family: ${species.family} | Habitat: ${species.habitatDescription}",
+                                        style: GoogleFonts.jetBrainsMono(
                                           color: AppTheme.textMuted,
-                                          fontSize: 11,
+                                          fontSize: 9,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -308,63 +324,40 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
                                     ],
                                   ),
                                 ),
-
                                 const SizedBox(width: 8),
-
-                                // Census Count & Counter Button
-                                Column(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.cyanAccent.withValues(
-                                          alpha: 0.15,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: AppTheme.cyanAccent.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            "${species.censusCount}",
-                                            style: GoogleFonts.jetBrainsMono(
-                                              color: AppTheme.cyanAccent,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          Text(
-                                            "COUNT",
-                                            style: GoogleFonts.jetBrainsMono(
-                                              color: AppTheme.textMuted,
-                                              fontSize: 9,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.goldAccent.withValues(
+                                      alpha: 0.15,
                                     ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.add_circle_outline,
-                                        color: AppTheme.goldAccent,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        ref
-                                            .read(taxonomyProvider.notifier)
-                                            .incrementCensus(
-                                              species.scientificName,
-                                            );
-                                      },
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: AppTheme.goldAccent,
                                     ),
-                                  ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        "${species.censusCount}",
+                                        style: GoogleFonts.jetBrainsMono(
+                                          color: AppTheme.goldAccent,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Text(
+                                        "LOGGED",
+                                        style: GoogleFonts.jetBrainsMono(
+                                          color: AppTheme.goldAccent,
+                                          fontSize: 8,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -379,57 +372,38 @@ class _OfflineTaxonomyScreenState extends ConsumerState<OfflineTaxonomyScreen> {
     );
   }
 
-  Widget _buildStatChip(String label, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.jetBrainsMono(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-            Text(
-              label,
-              style: GoogleFonts.jetBrainsMono(
-                color: AppTheme.textMuted,
-                fontSize: 9,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIucnBadge(String status) {
-    Color bg = AppTheme.emeraldAccent;
-    if (status == 'VU') bg = AppTheme.goldAccent;
-    if (status == 'EN' || status == 'CR') bg = AppTheme.crimsonAccent;
-
+  Widget _buildStatChip(String title, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: bg.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: bg),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
-      child: Text(
-        "IUCN: $status",
-        style: GoogleFonts.jetBrainsMono(
-          color: bg,
-          fontWeight: FontWeight.bold,
-          fontSize: 9,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.jetBrainsMono(
+              color: AppTheme.textMuted,
+              fontSize: 8,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: GoogleFonts.jetBrainsMono(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_container.dart';
 import '../providers/app_providers.dart';
@@ -30,11 +32,13 @@ class _LiveCameraViewerScreenState
   String? attachedVideoName;
 
   bool isPlaying = true;
-  double currentVideoSec = 102.0; // 01:42
+  double currentVideoSec = 0.0; // Starts at 00:00
   double totalVideoDurationSec = 330.0; // 05:30
   bool isLooping = true;
 
   late AnimationController _waveController;
+  Timer? _playbackTimer;
+  YoutubePlayerController? _youtubeController;
 
   @override
   void initState() {
@@ -43,12 +47,49 @@ class _LiveCameraViewerScreenState
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat();
+
+    // REAL-TIME VIDEO PLAYBACK TIMER (Advances currentVideoSec and animates stream)
+    _playbackTimer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      if (mounted && isVideoAttached && !isVideoLoading && isPlaying) {
+        setState(() {
+          currentVideoSec += 0.2;
+          if (currentVideoSec >= totalVideoDurationSec) {
+            if (isLooping) {
+              currentVideoSec = 0.0;
+            } else {
+              isPlaying = false;
+            }
+          }
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _youtubeController?.dispose();
+    _playbackTimer?.cancel();
     _waveController.dispose();
     super.dispose();
+  }
+
+  void _initYoutubePlayer(String raw) {
+    String videoId = YoutubePlayer.convertUrlToId(raw) ?? "kxSjkyoW3WM";
+    if (raw.startsWith("YT: ")) {
+      videoId = raw.replaceFirst("YT: ", "").trim();
+    }
+    _youtubeController?.dispose();
+    _youtubeController = YoutubePlayerController(
+      initialVideoId: videoId,
+      flags: const YoutubePlayerFlags(
+        autoPlay: true,
+        mute: true,
+        isLive: false,
+        loop: true,
+        hideControls: true,
+        controlsVisibleAtStart: false,
+      ),
+    );
   }
 
   String _getYoutubeThumbnailUrl(String raw) {
@@ -71,11 +112,16 @@ class _LiveCameraViewerScreenState
 
   void _detachVideo() {
     final name = attachedVideoName ?? "Video Stream";
+    _youtubeController?.pause();
+    _youtubeController?.dispose();
+    _youtubeController = null;
+
     setState(() {
       isVideoAttached = false;
       attachedVideoName = null;
       isVideoLoading = false;
       isPlaying = false;
+      currentVideoSec = 0.0;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -90,6 +136,15 @@ class _LiveCameraViewerScreenState
   }
 
   void _attachVideoWithLoading(String videoName) {
+    if (videoName.startsWith("YT:") ||
+        videoName.contains("youtube") ||
+        videoName.contains("youtu.be")) {
+      _initYoutubePlayer(videoName);
+    } else {
+      _youtubeController?.dispose();
+      _youtubeController = null;
+    }
+
     setState(() {
       isVideoAttached = true;
       attachedVideoName = videoName;
@@ -731,8 +786,17 @@ Thunnus thynnus & 12 & 91\\% \\\\
                     borderRadius: BorderRadius.circular(16),
                     child: Stack(
                       children: [
-                        // YOUTUBE VIDEO IMAGE STREAM / UNDERWATER PAINTER BACKDROP
-                        if (isYoutubeStream && !isVideoLoading)
+                        // YOUTUBE REAL LIVE VIDEO STREAM PLAYER
+                        if (isYoutubeStream &&
+                            !isVideoLoading &&
+                            _youtubeController != null)
+                          Positioned.fill(
+                            child: YoutubePlayer(
+                              controller: _youtubeController!,
+                              showVideoProgressIndicator: false,
+                            ),
+                          )
+                        else if (isYoutubeStream && !isVideoLoading)
                           Positioned.fill(
                             child: Image.network(
                               _getYoutubeThumbnailUrl(attachedVideoName!),
@@ -916,14 +980,21 @@ Thunnus thynnus & 12 & 91\\% \\\\
                         // Bounding Box Overlay & Controls (when attached and loaded)
                         if (isVideoAttached && !isVideoLoading) ...[
                           Positioned.fill(
-                            child: CustomPaint(
-                              painter: BoundingBoxOverlayPainter(
-                                specimens: specimens,
-                                selectedTrackId: selectedTrackId,
-                                showBnnUncertainty: isBnnUncertaintyShown,
-                                showTrajectory: isTrajectoryShown,
-                                isBotSortEnabled: isBotSortEnabled,
-                              ),
+                            child: AnimatedBuilder(
+                              animation: _waveController,
+                              builder: (context, child) {
+                                return CustomPaint(
+                                  painter: BoundingBoxOverlayPainter(
+                                    specimens: specimens,
+                                    selectedTrackId: selectedTrackId,
+                                    showBnnUncertainty: isBnnUncertaintyShown,
+                                    showTrajectory: isTrajectoryShown,
+                                    isBotSortEnabled: isBotSortEnabled,
+                                    animationValue: _waveController.value,
+                                    isPlaying: isPlaying,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           Positioned.fill(
@@ -1041,6 +1112,11 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                             onChanged: (val) {
                                               setState(() {
                                                 currentVideoSec = val;
+                                                _youtubeController?.seekTo(
+                                                  Duration(
+                                                    seconds: val.toInt(),
+                                                  ),
+                                                );
                                               });
                                             },
                                           ),
@@ -1075,6 +1151,12 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                               0.0,
                                               currentVideoSec - 10.0,
                                             );
+                                            _youtubeController?.seekTo(
+                                              Duration(
+                                                seconds:
+                                                    currentVideoSec.toInt(),
+                                              ),
+                                            );
                                           });
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
@@ -1106,6 +1188,10 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                           setState(() {
                                             isPlaying = false;
                                             currentVideoSec = 0.0;
+                                            _youtubeController?.pause();
+                                            _youtubeController?.seekTo(
+                                              Duration.zero,
+                                            );
                                           });
                                         },
                                       ),
@@ -1115,6 +1201,11 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                         onTap: () {
                                           setState(() {
                                             isPlaying = !isPlaying;
+                                            if (isPlaying) {
+                                              _youtubeController?.play();
+                                            } else {
+                                              _youtubeController?.pause();
+                                            }
                                           });
                                         },
                                         child: Container(
@@ -1146,6 +1237,12 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                             currentVideoSec = min(
                                               totalVideoDurationSec,
                                               currentVideoSec + 10.0,
+                                            );
+                                            _youtubeController?.seekTo(
+                                              Duration(
+                                                seconds:
+                                                    currentVideoSec.toInt(),
+                                              ),
                                             );
                                           });
                                           ScaffoldMessenger.of(context)
@@ -1563,13 +1660,15 @@ class RealisticUnderwaterFishPainter extends CustomPainter {
   bool shouldRepaint(covariant RealisticUnderwaterFishPainter oldDelegate) => true;
 }
 
-// BotSORT Bounding Box Overlay Custom Painter
+// BotSORT Bounding Box Overlay Custom Painter (Animated with Real-Time Motion)
 class BoundingBoxOverlayPainter extends CustomPainter {
   final List<SpecimenModel> specimens;
   final int? selectedTrackId;
   final bool showBnnUncertainty;
   final bool showTrajectory;
   final bool isBotSortEnabled;
+  final double animationValue;
+  final bool isPlaying;
 
   BoundingBoxOverlayPainter({
     required this.specimens,
@@ -1577,18 +1676,24 @@ class BoundingBoxOverlayPainter extends CustomPainter {
     required this.showBnnUncertainty,
     required this.showTrajectory,
     required this.isBotSortEnabled,
+    required this.animationValue,
+    required this.isPlaying,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     for (var sp in specimens) {
       final isSelected = sp.trackId == selectedTrackId;
+      final dxOffset = isPlaying ? sin(animationValue * 2 * pi + sp.trackId) * 25.0 : 0.0;
+      final dyOffset = isPlaying ? cos(animationValue * 2 * pi + sp.trackId) * 10.0 : 0.0;
+      final animatedBox = sp.box.shift(Offset(dxOffset, dyOffset));
+
       final paint = Paint()
         ..color = isSelected ? const Color(0xFF00F0FF) : sp.badgeColor
         ..style = PaintingStyle.stroke
         ..strokeWidth = isSelected ? 3.0 : 1.8;
 
-      canvas.drawRect(sp.box, paint);
+      canvas.drawRect(animatedBox, paint);
 
       // Corner reticles
       final lineLen = 14.0;
@@ -1597,23 +1702,23 @@ class BoundingBoxOverlayPainter extends CustomPainter {
         ..strokeWidth = 2.5;
 
       canvas.drawLine(
-        sp.box.topLeft,
-        Offset(sp.box.left + lineLen, sp.box.top),
+        animatedBox.topLeft,
+        Offset(animatedBox.left + lineLen, animatedBox.top),
         reticlePaint,
       );
       canvas.drawLine(
-        sp.box.topLeft,
-        Offset(sp.box.left, sp.box.top + lineLen),
+        animatedBox.topLeft,
+        Offset(animatedBox.left, animatedBox.top + lineLen),
         reticlePaint,
       );
       canvas.drawLine(
-        sp.box.topRight,
-        Offset(sp.box.right - lineLen, sp.box.top),
+        animatedBox.topRight,
+        Offset(animatedBox.right - lineLen, animatedBox.top),
         reticlePaint,
       );
       canvas.drawLine(
-        sp.box.topRight,
-        Offset(sp.box.right, sp.box.top + lineLen),
+        animatedBox.topRight,
+        Offset(animatedBox.right, animatedBox.top + lineLen),
         reticlePaint,
       );
 
@@ -1623,12 +1728,12 @@ class BoundingBoxOverlayPainter extends CustomPainter {
           ..color = const Color(0xFF00F0FF)
           ..strokeWidth = 1.2;
         canvas.drawLine(
-          sp.box.center,
-          Offset(sp.box.center.dx + 18, sp.box.center.dy - 12),
+          animatedBox.center,
+          Offset(animatedBox.center.dx + 18, animatedBox.center.dy - 12),
           cmcPaint,
         );
         canvas.drawCircle(
-          Offset(sp.box.center.dx + 18, sp.box.center.dy - 12),
+          Offset(animatedBox.center.dx + 18, animatedBox.center.dy - 12),
           2.5,
           Paint()..color = const Color(0xFF00F0FF),
         );
@@ -1653,8 +1758,8 @@ class BoundingBoxOverlayPainter extends CustomPainter {
       textPainter.layout();
 
       final badgeRect = Rect.fromLTWH(
-        sp.box.left,
-        sp.box.top - textPainter.height - 6,
+        animatedBox.left,
+        animatedBox.top - textPainter.height - 6,
         textPainter.width + 8,
         textPainter.height + 4,
       );
@@ -1662,13 +1767,13 @@ class BoundingBoxOverlayPainter extends CustomPainter {
       canvas.drawRect(badgeRect, Paint()..color = sp.badgeColor);
       textPainter.paint(
         canvas,
-        Offset(sp.box.left + 4, sp.box.top - textPainter.height - 4),
+        Offset(animatedBox.left + 4, animatedBox.top - textPainter.height - 4),
       );
 
       // Speed Badge
       final speedTextSpan = TextSpan(
         text:
-            "v: ${sp.velocityPx.toStringAsFixed(1)}px/s | ${sp.tailBeatFreqHz.toStringAsFixed(1)}Hz ${isBotSortEnabled ? "| Re-ID: OK" : ""}",
+            "v: ${(sp.velocityPx + (isPlaying ? sin(animationValue * pi) * 2 : 0)).toStringAsFixed(1)}px/s | ${sp.tailBeatFreqHz.toStringAsFixed(1)}Hz ${isBotSortEnabled ? "| Re-ID: OK" : ""}",
         style: GoogleFonts.jetBrainsMono(
           color: const Color(0xFF00F0FF),
           fontSize: 9,
@@ -1679,7 +1784,7 @@ class BoundingBoxOverlayPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       );
       speedPainter.layout();
-      speedPainter.paint(canvas, Offset(sp.box.left, sp.box.bottom + 4));
+      speedPainter.paint(canvas, Offset(animatedBox.left, animatedBox.bottom + 4));
 
       // 30s Trajectory Cones
       if (showTrajectory && sp.trajectory30sPoints.isNotEmpty) {
@@ -1688,9 +1793,9 @@ class BoundingBoxOverlayPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5;
 
-        Offset current = sp.box.center;
+        Offset current = animatedBox.center;
         for (int i = 0; i < sp.trajectory30sPoints.length; i++) {
-          final target = sp.trajectory30sPoints[i];
+          final target = sp.trajectory30sPoints[i].translate(dxOffset, dyOffset);
           canvas.drawLine(current, target, trajPaint);
           canvas.drawCircle(
             target,

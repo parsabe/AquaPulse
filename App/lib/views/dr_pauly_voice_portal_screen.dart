@@ -268,8 +268,10 @@ class _DrPaulyVoicePortalScreenState
                             style: GoogleFonts.outfit(
                               color: AppTheme.textPrimary,
                               fontWeight: FontWeight.bold,
-                              fontSize: 15,
+                              fontSize: 14,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             "Ollama LLM Agent • ${voiceState.ollamaStatus}",
@@ -277,6 +279,8 @@ class _DrPaulyVoicePortalScreenState
                               color: AppTheme.violetAccent,
                               fontSize: 10,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),

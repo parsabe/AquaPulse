@@ -67,22 +67,26 @@ class _EcologicalRiskAlarmScreenState
                             children: [
                               Text(
                                 isAlarmActive
-                                    ? "ALARM TRIGGERED: ECOLOGICAL BIFURCATION / EXTINCTION RISK BREACH"
+                                    ? "ALARM TRIGGERED: ECOLOGICAL RISK BREACH"
                                     : "ECOLOGICAL STABILITY: PARAMETERS NORMAL",
                                 style: GoogleFonts.outfit(
                                   color: isAlarmActive
                                       ? AppTheme.crimsonAccent
                                       : AppTheme.emeraldAccent,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 13,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                "Monte Carlo Risk: ${point.extinctionRiskPct.toStringAsFixed(1)}% (Threshold >35%) | Bifurcation Index: ${point.bifurcationIndexPct.toStringAsFixed(1)}% (Threshold >50%)",
+                                "Risk: ${point.extinctionRiskPct.toStringAsFixed(1)}% | Bifurcation: ${point.bifurcationIndexPct.toStringAsFixed(1)}%",
                                 style: GoogleFonts.jetBrainsMono(
                                   color: AppTheme.textSecondary,
                                   fontSize: 10,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),

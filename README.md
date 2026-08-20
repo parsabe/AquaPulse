@@ -24,29 +24,18 @@ https://aquapulse.ai
 
 ## 🌟 Key Features & Breakthrough Capabilities
 
-### 1. 📱 Cross-Platform Mobile Android Application (Flutter)
-
-Located in [`App/`](file:///c:/Users/parsa/Desktop/Code/App), the AquaPulse Android mobile app features:
-- **Dynamic YouTube & Gallery Video Attachments**: Attach local field video files (`.mp4`, `.mov`) or paste YouTube URLs (e.g. `https://www.youtube.com/watch?v=kxSjkyoW3WM`) to run optical stream decoding and target tracking.
-- **BotSORT Multi-Object Tracker (CMC + Extended Kalman + Re-ID)**: Applied Camera Motion Compensation (CMC), Kalman Filter state updates, and appearance Re-ID feature matrix verification.
-- **Video Control Toolbar**: Includes `-10s` rewind, `+10s` fast-forward, play/pause frame freeze inspection, stop, loop toggle, and interactive timestamp progress scrubber (`01:42 / 05:30`).
-- **Johnny Silverhand Relic Glitch System**: Cyberpunk full-screen overlay with periodic 30s neural engram triggers, TTS spoken voice quotes (`pitch = 0.82`), RGB split chromatic distortion, and local single-pass GIF avatar.
-- **Dr. Pauly Voice Portal & Fish Photo Attachment**: Interactive Ollama LLM biological assistant with multi-paragraph species analyses, fish photo attachment inspection modal, TTS voice synthesis (`🔊`), and auto-scrolling chat history.
-- **20-Plot Analytical Telemetry Suite**: Real-time rendering of Lotka-Volterra phase orbits, Monte Carlo extinction risk curves (>35% alarm threshold), Shannon diversity indices ($H'$), and hydroacoustic sound pressure ($148.5\,\text{dB re } 1\,\mu\text{Pa}$).
-- **Cloud LaTeX Report Generator & PDF Archive**: Generates per-video `.tex` source code, compiles PDF reports via Cloud LaTeX Compiler API (`latex.online`), and provides saved report management with deletion options.
-
-### 2. 👁️ Multi-Model YOLO Neural Ensemble & Vision Engine
+### 1. 👁️ Multi-Model YOLO Neural Ensemble & Vision Engine
 
 - **Prioritized Multi-Weight Ensemble**: Simultaneously initializes and runs optimized YOLO weights (`fish_model.pt`, `best.pt`, `meduim.pt`, `small.pt`) with fallback priority loading.
 - **Adaptive Contrast Enhancement**: Employs dynamic CLAHE (Contrast Limited Adaptive Histogram Equalization) color restoration in LAB color space for low-visibility, turbid underwater video frames.
 - **Cyberpunk Interactive 4-Pane HUD Dashboard**: Native OpenCV window featuring interactive click-and-drag panel divider splitters, target locking/unlocking, live species reticles, and auditory/visual cues.
 
-### 3. 🎯 BotSORT Multi-Object Tracking & Ecological Census
+### 2. 🎯 BotSORT Multi-Object Tracking & Ecological Census
 
 - **Persistent Track Management**: Integrated BotSORT (Camera Motion Compensation + Extended Kalman Filtering + Re-ID) and ByteTrack for frame-to-frame specimen trajectory tracking without double-counting.
 - **Dynamic Species Taxonomy**: Live asynchronous REST integration with the **GBIF (Global Biodiversity Information Facility) API** to fetch species taxonomies and high-resolution reference images on specimen target lock.
 
-### 4. 📈 Stochastic Ensemble Kalman Filter (EnKF) Data Assimilation
+### 3. 📈 Stochastic Ensemble Kalman Filter (EnKF) Data Assimilation
 
 - **Lotka-Volterra Population Dynamics**: Models prey-predator interaction dynamics governed by:
   $$\frac{dX}{dt} = \alpha X - \beta X Y + \sigma_X dW_X$$
@@ -58,12 +47,12 @@ Located in [`App/`](file:///c:/Users/parsa/Desktop/Code/App), the AquaPulse Andr
   - 2D Spatial Centroid Heatmaps & Species Co-occurrence Matrices
   - Population Growth Rate Phase Plots & Extinction Risk Trajectories
 
-### 5. 🤖 Local AI Dialogue Engine (Pauly Assistant)
+### 4. 🤖 Local AI Dialogue Engine (Pauly Assistant)
 
 - **Ollama Llama-3 Integration**: Connects to a local `llama3` LLM via LangChain / Ollama REST endpoints for live marine ecology analysis and situational breakdown.
-- **Multilingual Voice Speech Engine**: Integrated TTS system (`flutter_tts` / `pyttsx3`) offering vocal telemetry briefings.
+- **Multilingual Voice Speech Engine**: Integrated TTS system (`pyttsx3`) offering vocal telemetry briefings.
 
-### 6. 📄 Per-Video Cloud LaTeX PDF Exporter
+### 5. 📄 Native LaTeX PDF Exporter
 
 - **Automated Scientific Reports**: Generates per-video LaTeX source code (`.tex`) with bioacoustic equations and BotSORT tables, compiling publication-grade PDF reports via Cloud LaTeX Compiler API (`latex.online`).
 
@@ -103,28 +92,7 @@ docker run -it --rm \
 ```
 C:\Users\parsa\Desktop\Code\
 ├── Dockerfile                          # Production PyTorch CUDA + LaTeX Docker container build recipe
-├── App/                                # Cross-Platform Flutter Android Mobile Application
-│   ├── lib/
-│   │   ├── main.dart                   # Flutter app entry point & Riverpod scope
-│   │   ├── views/
-│   │   │   ├── live_camera_viewer_screen.dart   # Live Stream, BotSORT Tracker, YouTube link, video controls
-│   │   │   ├── offline_taxonomy_screen.dart     # GBIF offline species taxonomy lookup
-│   │   │   ├── ecological_risk_alarm_screen.dart# 20-plot fl_chart telemetry suite & alarm triggers
-│   │   │   ├── acousto_visual_sde_screen.dart   # Hydroacoustics & Neural SDE trajectory forecasting
-│   │   │   ├── dr_pauly_voice_portal_screen.dart# Ollama voice assistant, fish photo upload & TTS
-│   │   │   ├── profile_reports_screen.dart      # Field Profile, Cloud LaTeX PDF compiler & report archive
-│   │   │   └── main_navigation_screen.dart      # Bottom navigation bar & Johnny FAB trigger
-│   │   ├── widgets/
-│   │   │   ├── johnny_glitch_overlay.dart       # Johnny Silverhand full-screen Cyberpunk glitch overlay
-│   │   │   └── glass_container.dart             # Glassmorphic UI container
-│   │   ├── services/
-│   │   │   ├── ollama_voice_service.dart        # Ollama LLM API client & vision inspection
-│   │   │   └── gbif_taxonomy_service.dart       # GBIF REST API client
-│   │   ├── providers/                       # Riverpod state providers
-│   │   └── models/                          # Telemetry & specimen data models
-│   ├── assets/
-│   │   └── johnny.gif                   # Johnny Silverhand local GIF asset
-│   └── pubspec.yaml                     # Flutter dependencies & asset declarations
+├── App/                                # Cross-Platform Flutter Android Mobile Application (.apk)
 ├── 0 - Preprocessing/                  # Raw Video & Image Preprocessing Pipeline
 ├── 1 - Training/                       # YOLO model training, DANN domain adaptation, BNN
 ├── 2 - Evaluation/                     # Validation scripts, precision-recall & mAP evaluation
@@ -154,19 +122,7 @@ AquaPulse supports four primary execution modes: **Flutter Android Mobile App**,
 
 ### Option A: Flutter Android Mobile Application
 
-1. Open `App/` in Flutter / Android Studio:
-   ```bash
-   cd App
-   flutter pub get
-   ```
-2. Run on Android Emulator or connected phone:
-   ```bash
-   flutter run
-   ```
-3. Test production build:
-   ```bash
-   flutter test
-   ```
+Download the `.apk` directly from the Releases page.
 
 ---
 
@@ -233,3 +189,31 @@ For exhaustive mathematical details, system design diagrams, and empirical resul
 1. **Word Document Technical Report**: [`4 - Documentation/AquaPulse_Preprocessing_and_AI_Process_Report.docx`](file:///C:/Users/parsa/Desktop/Code/4%20-%20Documentation/AquaPulse_Preprocessing_and_AI_Process_Report.docx)
 2. **Interactive HTML Workflow & Architecture**: [`4 - Documentation/AquaPulse_System_Workflow_and_Structure.html`](file:///C:/Users/parsa/Desktop/Code/4%20-%20Documentation/AquaPulse_System_Workflow_and_Structure.html)
 3. **Markdown Architecture & Reference Specification**: [`4 - Documentation/AquaPulse_Workflow_and_Structure.md`](file:///C:/Users/parsa/Desktop/Code/4%20-%20Documentation/AquaPulse_Workflow_and_Structure.md)
+
+---
+
+## 📌 Conclusion
+
+AquaPulse bridges multi-model YOLO neural vision, BotSORT multi-object tracking, Ensemble Kalman Filtering stochastic data assimilation, and local generative AI into an end-to-end ecosystem telemetry platform. By eliminating manual fish counting and enabling non-invasive automated observation in turbid aquatic environments, AquaPulse provides researchers, marine biologists, and environmental agencies with real-time ecological safety monitoring, extinction risk forecasting, and publication-ready LaTeX scientific reports.
+
+---
+
+## 🤝 Contributing
+
+Contributions, bug reports, and feature requests are welcome! To contribute:
+
+1. **Fork the Repository** on GitHub.
+2. **Create a Feature Branch**: `git checkout -b feature/amazing-feature`.
+3. **Commit your Changes**: `git commit -m 'Add amazing feature'`.
+4. **Push to Branch**: `git push origin feature/amazing-feature`.
+5. **Open a Pull Request** describing your changes.
+
+Please ensure all tests pass (`flutter test` for mobile app, validation scripts for computer vision pipeline) before submitting PRs.
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See [`LICENSE`](file:///c:/Users/parsa/Desktop/Code/LICENSE) for more information.
+
+Copyright © 2026 AquaPulse AI Team. All Rights Reserved.
