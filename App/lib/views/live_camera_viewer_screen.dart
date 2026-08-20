@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_container.dart';
@@ -38,7 +41,11 @@ class _LiveCameraViewerScreenState
 
   late AnimationController _waveController;
   Timer? _playbackTimer;
+
+  // Video Players (YouTube & Local Device Gallery File)
   YoutubePlayerController? _youtubeController;
+  VideoPlayerController? _localVideoController;
+  File? _localVideoFile;
 
   @override
   void initState() {
@@ -48,7 +55,7 @@ class _LiveCameraViewerScreenState
       duration: const Duration(seconds: 4),
     )..repeat();
 
-    // REAL-TIME VIDEO PLAYBACK TIMER (Advances currentVideoSec and animates stream)
+    // REAL-TIME VIDEO PLAYBACK TIMER
     _playbackTimer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
       if (mounted && isVideoAttached && !isVideoLoading && isPlaying) {
         setState(() {
@@ -57,6 +64,7 @@ class _LiveCameraViewerScreenState
             if (isLooping) {
               currentVideoSec = 0.0;
               _youtubeController?.seekTo(Duration.zero);
+              _localVideoController?.seekTo(Duration.zero);
             } else {
               isPlaying = false;
             }
@@ -69,6 +77,7 @@ class _LiveCameraViewerScreenState
   @override
   void dispose() {
     _youtubeController?.dispose();
+    _localVideoController?.dispose();
     _playbackTimer?.cancel();
     _waveController.dispose();
     super.dispose();
@@ -79,6 +88,12 @@ class _LiveCameraViewerScreenState
     if (raw.startsWith("YT: ")) {
       videoId = raw.replaceFirst("YT: ", "").trim();
     }
+
+    _localVideoController?.pause();
+    _localVideoController?.dispose();
+    _localVideoController = null;
+    _localVideoFile = null;
+
     _youtubeController?.dispose();
     _youtubeController = YoutubePlayerController(
       initialVideoId: videoId,
@@ -108,6 +123,84 @@ class _LiveCameraViewerScreenState
       });
   }
 
+  Future<void> _pickGalleryVideo() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? video = await picker.pickVideo(source: ImageSource.gallery);
+    if (video != null) {
+      final file = File(video.path);
+      final fileName = video.name.isNotEmpty
+          ? video.name
+          : file.path.split(Platform.pathSeparator).last;
+      _initLocalVideoPlayer(file, fileName);
+    }
+  }
+
+  Future<void> _initLocalVideoPlayer(File file, String name) async {
+    _youtubeController?.pause();
+    _youtubeController?.dispose();
+    _youtubeController = null;
+
+    _localVideoController?.pause();
+    _localVideoController?.dispose();
+
+    final controller = VideoPlayerController.file(file);
+    _localVideoController = controller;
+
+    setState(() {
+      isVideoAttached = true;
+      attachedVideoName = name;
+      isVideoLoading = true;
+      _localVideoFile = file;
+      isPlaying = true;
+    });
+
+    try {
+      await controller.initialize();
+      controller.setLooping(isLooping);
+      controller.play();
+
+      final durationInSec = controller.value.duration.inSeconds.toDouble();
+      setState(() {
+        totalVideoDurationSec = durationInSec > 0 ? durationInSec : 60.0;
+        isVideoLoading = false;
+      });
+
+      controller.addListener(() {
+        if (mounted &&
+            _localVideoController != null &&
+            _localVideoController!.value.isInitialized) {
+          final pos = _localVideoController!.value.position.inSeconds.toDouble();
+          final dur = _localVideoController!.value.duration.inSeconds.toDouble();
+          if (dur > 0 && dur != totalVideoDurationSec) {
+            setState(() {
+              totalVideoDurationSec = dur;
+            });
+          }
+          if (pos >= 0) {
+            setState(() {
+              currentVideoSec = pos;
+            });
+          }
+        }
+      });
+    } catch (e) {
+      setState(() {
+        isVideoLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppTheme.bgCard,
+            content: Text(
+              "Loaded video file $name (${(file.lengthSync() / 1024 / 1024).toStringAsFixed(1)} MB)",
+              style: GoogleFonts.jetBrainsMono(color: AppTheme.cyanAccent),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   String _getYoutubeThumbnailUrl(String raw) {
     String videoId = "kxSjkyoW3WM"; // Default marine survey YouTube ID
     if (raw.contains("YT: ")) {
@@ -131,6 +224,11 @@ class _LiveCameraViewerScreenState
     _youtubeController?.pause();
     _youtubeController?.dispose();
     _youtubeController = null;
+
+    _localVideoController?.pause();
+    _localVideoController?.dispose();
+    _localVideoController = null;
+    _localVideoFile = null;
 
     setState(() {
       isVideoAttached = false;
@@ -171,8 +269,7 @@ class _LiveCameraViewerScreenState
       totalVideoDurationSec = defaultDuration;
     });
 
-    // High-tech optical stream loading & buffering delay (1.6 seconds)
-    Future.delayed(const Duration(milliseconds: 1600), () {
+    Future.delayed(const Duration(milliseconds: 1400), () {
       if (mounted) {
         setState(() {
           isVideoLoading = false;
@@ -247,7 +344,21 @@ class _LiveCameraViewerScreenState
                   ),
                   const SizedBox(height: 16),
 
-                  // Option 1: Dynamic YouTube Video Link Input
+                  // Option 1: Pick Real Video from Device Gallery / Storage
+                  _buildAttachOptionTile(
+                    icon: Icons.video_collection,
+                    title: "Pick Video from Device Gallery",
+                    subtitle: "Select any MP4, MOV, or AVI video from device photo gallery",
+                    accentColor: AppTheme.emeraldAccent,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickGalleryVideo();
+                    },
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Option 2: Dynamic YouTube Video Link Input
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -378,36 +489,6 @@ class _LiveCameraViewerScreenState
                         ),
                       ],
                     ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Option 2: Pick Video from Device Gallery / Storage
-                  _buildAttachOptionTile(
-                    icon: Icons.video_collection,
-                    title: "Pick Video from Gallery / Storage",
-                    subtitle: "Select MP4, MOV, or AVI field video from device storage",
-                    accentColor: AppTheme.cyanAccent,
-                    onTap: () {
-                      final randomId = Random().nextInt(899) + 100;
-                      Navigator.pop(context);
-                      _attachVideoWithLoading("Gallery_Marine_Video_$randomId.mp4");
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: AppTheme.bgCard,
-                          content: Row(
-                            children: [
-                              const Icon(Icons.check_circle, color: AppTheme.emeraldAccent),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Loading Gallery_Marine_Video_$randomId.mp4",
-                                style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
                   ),
 
                   const SizedBox(height: 10),
@@ -804,8 +885,22 @@ Thunnus thynnus & 12 & 91\\% \\\\
                     borderRadius: BorderRadius.circular(16),
                     child: Stack(
                       children: [
-                        // YOUTUBE REAL LIVE VIDEO STREAM PLAYER
-                        if (isYoutubeStream &&
+                        // 1. REAL LOCAL GALLERY VIDEO PLAYER
+                        if (_localVideoController != null &&
+                            _localVideoController!.value.isInitialized &&
+                            !isVideoLoading)
+                          Positioned.fill(
+                            child: FittedBox(
+                              fit: BoxFit.cover,
+                              child: SizedBox(
+                                width: _localVideoController!.value.size.width,
+                                height: _localVideoController!.value.size.height,
+                                child: VideoPlayer(_localVideoController!),
+                              ),
+                            ),
+                          )
+                        // 2. YOUTUBE REAL LIVE VIDEO STREAM PLAYER
+                        else if (isYoutubeStream &&
                             !isVideoLoading &&
                             _youtubeController != null)
                           Positioned.fill(
@@ -906,7 +1001,7 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      "DECODING YOUTUBE H.264 FEED • 1080p @ 60 FPS\nRUNNING BOTSORT (CMC + KALMAN + RE-ID)",
+                                      "DECODING H.264 / MP4 VIDEO STREAM • 1080p @ 60 FPS\nRUNNING BOTSORT (CMC + KALMAN + RE-ID)",
                                       style: GoogleFonts.jetBrainsMono(
                                         color: AppTheme.textMuted,
                                         fontSize: 10,
@@ -1135,6 +1230,11 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                                     seconds: val.toInt(),
                                                   ),
                                                 );
+                                                _localVideoController?.seekTo(
+                                                  Duration(
+                                                    seconds: val.toInt(),
+                                                  ),
+                                                );
                                               });
                                             },
                                           ),
@@ -1175,6 +1275,12 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                                     currentVideoSec.toInt(),
                                               ),
                                             );
+                                            _localVideoController?.seekTo(
+                                              Duration(
+                                                seconds:
+                                                    currentVideoSec.toInt(),
+                                              ),
+                                            );
                                           });
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
@@ -1210,6 +1316,10 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                             _youtubeController?.seekTo(
                                               Duration.zero,
                                             );
+                                            _localVideoController?.pause();
+                                            _localVideoController?.seekTo(
+                                              Duration.zero,
+                                            );
                                           });
                                         },
                                       ),
@@ -1221,8 +1331,10 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                             isPlaying = !isPlaying;
                                             if (isPlaying) {
                                               _youtubeController?.play();
+                                              _localVideoController?.play();
                                             } else {
                                               _youtubeController?.pause();
+                                              _localVideoController?.pause();
                                             }
                                           });
                                         },
@@ -1262,6 +1374,12 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                                     currentVideoSec.toInt(),
                                               ),
                                             );
+                                            _localVideoController?.seekTo(
+                                              Duration(
+                                                seconds:
+                                                    currentVideoSec.toInt(),
+                                              ),
+                                            );
                                           });
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
@@ -1294,6 +1412,9 @@ Thunnus thynnus & 12 & 91\\% \\\\
                                         onPressed: () {
                                           setState(() {
                                             isLooping = !isLooping;
+                                            _localVideoController?.setLooping(
+                                              isLooping,
+                                            );
                                           });
                                         },
                                       ),
