@@ -16,12 +16,6 @@ Designed for turbid underwater environments (such as the Spreewald river network
 
 ---
 
-## 🌐 Official Website
-
-https://aquapulse.ai
-
----
-
 ## 🌟 Key Features & Breakthrough Capabilities
 
 ### 1. 👁️ Multi-Model YOLO Neural Ensemble & Vision Engine
@@ -58,15 +52,21 @@ https://aquapulse.ai
 
 ---
 
-## 🐳 Docker Hub Distribution
+## 📦 Installation & Releases
 
-The official pre-built AquaPulse Docker image is published on Docker Hub:
+AquaPulse provides multi-platform installation options: a pre-built containerized Docker Hub distribution, standalone Windows releases & automated setup installer, cross-platform Android mobile app release (`.apk`), and developer source installation.
+
+---
+
+### 🐳 1. Docker Installation (Recommended Containerized Deployment)
+
+The official pre-built image is published on Docker Hub:
 
 ```bash
 docker pull parsabe99/aquapulse-ai:latest
 ```
 
-### Run Container with NVIDIA GPU Acceleration (Recommended)
+#### Run Container with NVIDIA GPU Acceleration (Recommended)
 
 ```bash
 docker run --gpus all -it --rm \
@@ -76,7 +76,7 @@ docker run --gpus all -it --rm \
   parsabe99/aquapulse-ai:latest --video /app/data/underwater_stream.mp4
 ```
 
-### Run Container in Headless / CPU Mode
+#### Run Container in Headless / CPU Mode
 
 ```bash
 docker run -it --rm \
@@ -84,6 +84,39 @@ docker run -it --rm \
   -v /path/to/sessions:/app/video_analysis_sessions \
   parsabe99/aquapulse-ai:latest --video /app/data/underwater_stream.mp4 --headless
 ```
+
+---
+
+### 🪟 2. Windows Installation & Releases
+
+Pre-compiled production releases and automated setup installers for Windows:
+
+- **AquaPulse Setup Installer**: [`AquaPulse_Setup.exe`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_Setup.exe)
+- **Standalone Application Folder**: [`AquaPulse_App/`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_App)
+
+Execute `AquaPulse_Setup.exe` to automatically install AquaPulse and its required dependencies on Windows.
+
+---
+
+### 📱 3. Android Mobile Application (.apk) Release
+
+Download the pre-built Flutter Android release `.apk` directly from the **Releases** section to install and run the telemetry application on mobile devices.
+
+---
+
+### 💻 4. Running from Source (Developer Mode)
+
+1. **Activate Virtual Environment**:
+
+   ```powershell
+   c:\Users\parsa\Desktop\Code\venv\Scripts\Activate.ps1
+   ```
+
+2. **Launch the Master AI Vision Telemetry System**:
+
+   ```powershell
+   python "3 - AI process\main.py"
+   ```
 
 ---
 
@@ -111,60 +144,6 @@ C:\Users\parsa\Desktop\Code\
 │   └── johnny.gif                      # Animated telemetry UI mascot asset
 └── 4 - Documentation/                  # Complete system workflow HTML & Word technical reports
 ```
-
----
-
-## ⚡ Quick Start & Deployment Options
-
-AquaPulse supports four primary execution modes: **Flutter Android Mobile App**, **Docker Hub Container (`parsabe99/aquapulse-ai:latest`)**, **Standalone Windows Setup Installer**, and **Developer Source Execution**.
-
----
-
-### Option A: Flutter Android Mobile Application
-
-Download the `.apk` directly from the Releases page.
-
----
-
-### Option B: Docker Hub Deployment (`parsabe99/aquapulse-ai:latest`)
-
-Pull and run the official Docker Hub image:
-
-```bash
-docker pull parsabe99/aquapulse-ai:latest
-
-docker run --gpus all -it --rm \
-  -v /path/to/videos:/app/data \
-  -v /path/to/sessions:/app/video_analysis_sessions \
-  -e HEADLESS=1 \
-  parsabe99/aquapulse-ai:latest --video /app/data/underwater_stream.mp4
-```
-
----
-
-### Option C: Standalone Windows Setup Installer
-
-The compiled production bundle and automated installer executable are located in:
-`C:\Users\parsa\Desktop\New folder`
-
-- **AquaPulse Setup Installer**: [`AquaPulse_Setup.exe`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_Setup.exe)
-- **Standalone Application Folder**: [`AquaPulse_App/`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_App)
-
----
-
-### Option D: Running from Source (Developer Mode)
-
-1. **Activate Virtual Environment**:
-
-   ```powershell
-   c:\Users\parsa\Desktop\Code\venv\Scripts\Activate.ps1
-   ```
-
-2. **Launch the Master AI Vision Telemetry System**:
-
-   ```powershell
-   python "3 - AI process\main.py"
-   ```
 
 ---
 
