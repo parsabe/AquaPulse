@@ -16,11 +16,6 @@ Designed for turbid underwater environments (such as the Spreewald river network
 
 ---
 
-## 🌐 Official Website
-
-https://aquapulse.ai
-
----
 
 ## 🌟 Key Features & Breakthrough Capabilities
 
