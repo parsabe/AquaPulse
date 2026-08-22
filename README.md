@@ -91,6 +91,7 @@ docker run -it --rm \
 
 Pre-compiled production releases and automated setup installers for Windows:
 
+First, go to the <a href="https://github.com/parsabe/AquaPulse/releases">releases</a> section and download the .exe Windows file.
 - **AquaPulse Setup Installer**: [`AquaPulse_Setup.exe`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_Setup.exe)
 - **Standalone Application Folder**: [`AquaPulse_App/`](file:///C:/Users/parsa/Desktop/New%20folder/AquaPulse_App)
 
