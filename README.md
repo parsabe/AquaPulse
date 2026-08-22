@@ -1,4 +1,5 @@
 # 🌊 AquaPulse: Robust Computer Vision, BotSORT Tracking, and Stochastic Uncertainty Estimation for Aquatic Ecosystems
+<img width="1437" height="789" alt="implmentation" src="https://github.com/user-attachments/assets/dfbac6b4-72a9-4d27-b6c8-8cf47b9f5301" />
 
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Flutter Android](https://img.shields.io/badge/Flutter-Android%20App-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
