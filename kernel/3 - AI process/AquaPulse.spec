@@ -6,13 +6,17 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 block_cipher = None
 
-script_dir = os.path.abspath(r"C:\Users\parsa\Desktop\Code\3 - AI process")
+try:
+    script_dir = SPECPATH
+except NameError:
+    script_dir = os.path.abspath(r"c:\Users\parsa\Desktop\Code\kernel\3 - AI process")
 
 datas = [
     (os.path.join(script_dir, "models", "*"), "models"),
     (os.path.join(script_dir, "johnny.gif"), "."),
     (os.path.join(script_dir, "report_template.tex"), "."),
     (os.path.join(script_dir, "aquapulse_system_architecture_documentation.tex"), "."),
+    (os.path.join(script_dir, "app_icon.ico"), "."),
 ]
 
 datas += collect_data_files('ultralytics')
@@ -84,12 +88,13 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='AquaPulse',
+    name='Techno_Eco_Project',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
     console=True,
+    icon=os.path.join(script_dir, 'app_icon.ico'),
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
@@ -105,5 +110,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='AquaPulse_App',
+    name='Techno_Eco_App',
 )

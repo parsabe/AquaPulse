@@ -3,14 +3,22 @@
 import os
 
 block_cipher = None
-script_dir = os.path.abspath(r"C:\Users\parsa\Desktop\Code\3 - AI process")
+try:
+    script_dir = SPECPATH
+except NameError:
+    script_dir = os.path.abspath(r"c:\Users\parsa\Desktop\Code\kernel\3 - AI process")
+
+datas = [
+    (os.path.join(script_dir, 'app_payload.zip'), '.'),
+    (os.path.join(script_dir, 'app_icon.ico'), '.'),
+]
 
 a = Analysis(
     [os.path.join(script_dir, 'AquaPulse_Setup.py')],
     pathex=[script_dir],
     binaries=[],
-    datas=[],
-    hiddenimports=['winreg', 'tkinter', 'tkinter.ttk', 'tkinter.filedialog', 'tkinter.messagebox', 'urllib.request'],
+    datas=datas,
+    hiddenimports=['winreg', 'tkinter', 'tkinter.ttk', 'tkinter.filedialog', 'tkinter.messagebox', 'urllib.request', 'zipfile', 'shutil'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -30,7 +38,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='AquaPulse_Setup',
+    name='Techno_Eco_Project_Setup',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -38,6 +46,7 @@ exe = EXE(
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
+    icon=os.path.join(script_dir, 'app_icon.ico'),
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

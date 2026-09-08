@@ -203,8 +203,8 @@ def display_on_screen_data_assimilation_prompt(window_name, canvas_w, canvas_h, 
         # Header Title (Thin, Crisp, Non-Bold)
         cv2.rectangle(canvas, (card_x, card_y), (card_x + card_w, card_y + 55), (242, 242, 247), -1)
         cv2.rectangle(canvas, (card_x, card_y), (card_x + card_w, card_y + 55), (255, 122, 0), 1)
-        cv2.putText(canvas, "AQUAPULSE DATA ASSIMILATION & ANALYSIS PROMPT", (card_x + 35, card_y + 36),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.46, (255, 122, 0), 1, cv2.LINE_AA)
+        cv2.putText(canvas, "TECHNO - ECO PROJECT DATA ASSIMILATION & ANALYSIS PROMPT", (card_x + 35, card_y + 36),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.44, (255, 122, 0), 1, cv2.LINE_AA)
 
         # Subtitle & Video Target (Thin, Crisp, Non-Bold)
         v_str = fit_text_to_width(f"Target Video: {clean_basename}", max_pixel_width=card_w - 70, font_scale=0.40)
@@ -248,7 +248,7 @@ def display_dynamic_loading_screen(window_name, canvas_w, canvas_h, model_name="
     Displays dynamic 5.0-second San Francisco Light Mode loading screen with spinning ring and progress bar.
     Uses thin, ultra-legible fonts (thickness=1) and clean ASCII text.
     """
-    print("Loading AquaPulse 5-second dynamic loading screen...")
+    print("Loading Techno - Eco Project 5-second dynamic loading screen...")
     loading_start_time = time.time()
     
     while time.time() - loading_start_time < duration:
@@ -265,7 +265,7 @@ def display_dynamic_loading_screen(window_name, canvas_w, canvas_h, model_name="
         cv2.rectangle(load_canvas, (card_x, card_y), (card_x + card_w, card_y + card_h), (255, 255, 255), -1)
         cv2.rectangle(load_canvas, (card_x, card_y), (card_x + card_w, card_y + card_h), (229, 235, 234), 1)
         
-        cv2.putText(load_canvas, "AQUAPULSE NEURAL VISION TRANSFORMER", (card_x + 45, card_y + 60),
+        cv2.putText(load_canvas, "TECHNO - ECO PROJECT NEURAL VISION", (card_x + 45, card_y + 60),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.52, (31, 29, 29), 1, cv2.LINE_AA)
         cv2.putText(load_canvas, "SAN FRANCISCO LIGHT ENGINE | EnKF ASSIMILATION PIPELINE", (card_x + 45, card_y + 88),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.38, (142, 142, 147), 1, cv2.LINE_AA)
@@ -289,7 +289,7 @@ def display_dynamic_loading_screen(window_name, canvas_w, canvas_h, model_name="
                     cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 122, 0), 1, cv2.LINE_AA)
         
         if progress < 0.25:
-            msg = "Initializing AquaPulse San Francisco Light Engine..."
+            msg = "Initializing Techno - Eco Project Engine..."
         elif progress < 0.50:
             msg = f"Loading YOLO Neural Vision Weights ({model_name})..."
         elif progress < 0.75:
@@ -297,15 +297,17 @@ def display_dynamic_loading_screen(window_name, canvas_w, canvas_h, model_name="
         elif progress < 0.95:
             msg = "Calibrating 4-Pane Dashboard & Matplotlib Analysis Canvas..."
         else:
-            msg = "AquaPulse Vision System Ready."
+            msg = "Techno - Eco Project Vision System Ready."
             
         cv2.putText(load_canvas, msg, (bar_x, bar_y + 42),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.36, (60, 58, 58), 1, cv2.LINE_AA)
         
         cv2.imshow(window_name, load_canvas)
-        cv2.waitKey(20)
+        key = cv2.waitKey(30) & 0xFF
+        if key == 27:
+            break
 
-def display_analysis_export_loading_screen(window_name, canvas_w, canvas_h, session_info, export_callback):
+def display_end_of_session_screen(window_name, canvas_w, canvas_h, session_info, export_callback):
     """
     Displays an elegant San Francisco Light Mode End-of-Session Loading Screen.
     Renders real-time stage updates for CSV, 20 Plots, Ollama Analysis, and PDF generation,
@@ -313,7 +315,7 @@ def display_analysis_export_loading_screen(window_name, canvas_w, canvas_h, sess
     """
     import os
     import threading
-    print("⏳ Displaying AquaPulse End-of-Session Analysis Export Loading Screen...")
+    print("Displaying Techno - Eco Project End-of-Session Analysis Export Loading Screen...")
     
     session_name = session_info.get("session_name", "Video Analysis Session")
     
@@ -356,8 +358,8 @@ def display_analysis_export_loading_screen(window_name, canvas_w, canvas_h, sess
         
         cv2.rectangle(load_canvas, (card_x, card_y), (card_x + card_w, card_y + 55), (242, 242, 247), -1)
         cv2.rectangle(load_canvas, (card_x, card_y), (card_x + card_w, card_y + 55), (0, 149, 255), 1)
-        cv2.putText(load_canvas, "AQUAPULSE SESSION ANALYSIS & REPORT GENERATION", (card_x + 35, card_y + 36),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.46, (0, 149, 255), 1, cv2.LINE_AA)
+        cv2.putText(load_canvas, "TECHNO - ECO PROJECT SESSION ANALYSIS & REPORT GENERATION", (card_x + 35, card_y + 36),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 149, 255), 1, cv2.LINE_AA)
         
         v_str = fit_text_to_width(f"Session: {session_name}", max_pixel_width=card_w - 70, font_scale=0.38)
         cv2.putText(load_canvas, v_str, (card_x + 35, card_y + 90),

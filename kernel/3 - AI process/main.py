@@ -29,7 +29,7 @@ def select_video_file_dialog():
         result_path = {"path": None}
         
         root = tk.Tk()
-        root.title("AquaPulse AI Vision - Select Video Source")
+        root.title("Techno - Eco Project - Select Video Source")
         root.geometry("540x260")
         root.resizable(False, False)
         root.attributes('-topmost', True)
@@ -54,7 +54,7 @@ def select_video_file_dialog():
         header_frame = tk.Frame(root, bg=bg_color)
         header_frame.pack(fill="x", padx=20, pady=(15, 5))
         
-        title_label = tk.Label(header_frame, text="🌊 AquaPulse AI Neural Vision", font=("Segoe UI", 16, "bold"), fg="#38bdf8", bg=bg_color)
+        title_label = tk.Label(header_frame, text="🌿 Techno - Eco Project", font=("Segoe UI", 16, "bold"), fg="#10b981", bg=bg_color)
         title_label.pack(anchor="w")
         
         sub_label = tk.Label(header_frame, text="Select an underwater video file for real-time tracking & data assimilation", font=("Segoe UI", 9), fg="#94a3b8", bg=bg_color)
@@ -176,7 +176,7 @@ video_h = 580
 canvas_w = left_panel_w + video_w + right_panel_w  # 1600
 canvas_h = video_h + tools_panel_h                 # 920
 
-window_name = "AquaPulse Vision Dashboard - San Francisco Light Mode"
+window_name = "Techno - Eco Project Dashboard - San Francisco Light Mode"
 cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
 cv2.resizeWindow(window_name, canvas_w, canvas_h)
 

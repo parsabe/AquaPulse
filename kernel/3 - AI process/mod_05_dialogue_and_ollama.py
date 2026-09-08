@@ -30,7 +30,7 @@ except Exception:
                     return res.json().get("response", "Telemetry system operational.")
             except Exception:
                 pass
-            return "AquaPulse AI system online. Neural telemetry parameters synchronized."
+            return "Techno - Eco Project AI system online. Neural telemetry parameters synchronized."
 
 # --- GLOBAL AUDIO & STATE CONTROLS ---
 ACTIVE_COMM = None
@@ -463,7 +463,7 @@ def generate_executive_ollama_report(session_info, census_summary, enkf_filter, 
     ]
     
     prompt = f"""
-    You are Dr. Daniel Pauly, world-renowned marine biologist and Lead Scientist at AquaPulse Research Institute.
+    You are Dr. Daniel Pauly, world-renowned marine biologist and Lead Scientist at Techno - Eco Project Research Institute.
     Synthesize an exhaustive, academic peer-reviewed research paper for session '{session_info.get("session_name", "Video Analysis Session")}'.
     
     DATA TELEMETRY & STATISTICAL CALCULATIONS:
@@ -477,7 +477,7 @@ def generate_executive_ollama_report(session_info, census_summary, enkf_filter, 
     - 100-Member EnKF Data Assimilation (Sprungk, 2023) with empirical covariances C_n^(zy) and C_n^(yy), Kalman gain K_n, and analysis state update.
 
     Format as a formal academic research paper in Markdown with these exact sections:
-    # AquaPulse Aquatic Vision Tracking & Ensemble Kalman Filter Data Assimilation Report
+    # Techno - Eco Project Aquatic Vision Tracking & Ensemble Kalman Filter Data Assimilation Report
     
     ## Abstract
     [Executive summary of objectives, video telemetry, deduplicated species counts, stochastic SDE modeling, and EnKF extinction risk assessment.]
@@ -517,7 +517,7 @@ def generate_executive_ollama_report(session_info, census_summary, enkf_filter, 
     except Exception as e:
         print(f"[Ollama Exporter Notice]: {e}")
         report_md = (
-            f"# AquaPulse Executive Summary ({session_info.get('session_name')})\n\n"
+            f"# Techno - Eco Project Executive Summary ({session_info.get('session_name')})\n\n"
             f"## 1. Ecological Census & Species Abundance\n"
             f"Total Unique Specimens Tracked: {total_unique}\n"
             f"Species Distribution: {top_species[:5]}\n\n"

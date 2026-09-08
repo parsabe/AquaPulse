@@ -3,7 +3,10 @@
 import os
 
 block_cipher = None
-script_dir = os.path.abspath(r"C:\Users\parsa\Desktop\Code\3 - AI process")
+try:
+    script_dir = SPECPATH
+except NameError:
+    script_dir = os.path.abspath(r"c:\Users\parsa\Desktop\Code\kernel\3 - AI process")
 
 a = Analysis(
     [os.path.join(script_dir, 'AquaPulse_Uninstaller.py')],
@@ -38,6 +41,7 @@ exe = EXE(
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
+    icon=os.path.join(script_dir, 'app_icon.ico'),
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
