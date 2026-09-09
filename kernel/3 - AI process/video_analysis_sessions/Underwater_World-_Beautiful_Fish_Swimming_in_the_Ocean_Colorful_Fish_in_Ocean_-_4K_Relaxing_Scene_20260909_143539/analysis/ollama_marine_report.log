@@ -1,0 +1,611 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.14)  9 SEP 2026 14:36
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**./ollama_marine_report.tex
+(ollama_marine_report.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/base\size11.clo
+File: size11.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count275
+\c@section=\count276
+\c@subsection=\count277
+\c@subsubsection=\count278
+\c@paragraph=\count279
+\c@subparagraph=\count280
+\c@figure=\count281
+\c@table=\count282
+\abovecaptionskip=\skip49
+\belowcaptionskip=\skip50
+\bibindent=\dimen148
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+Package: geometry 2026/03/07 v6.0 Page Geometry
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks17
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
+Package: iftex 2024/12/12 v1.0g TeX engine tests
+))
+\Gm@cnth=\count283
+\Gm@cntv=\count284
+\c@Gm@tempcnt=\count285
+\Gm@bindingoffset=\dimen149
+\Gm@wd@mp=\dimen150
+\Gm@odd@mp=\dimen151
+\Gm@even@mp=\dimen152
+\Gm@layoutwidth=\dimen153
+\Gm@layoutheight=\dimen154
+\Gm@layouthoffset=\dimen155
+\Gm@layoutvoffset=\dimen156
+\Gm@dimlist=\toks18
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+Package: amsmath 2025/07/09 v2.17z AMS math features
+\@mathmargin=\skip51
+
+For additional information on amsmath, use the `?' option.
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
+Package: amstext 2024/11/17 v2.01 AMS text
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks19
+\ex@=\dimen157
+))
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen158
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
+Package: amsopn 2022/04/08 v2.04 operator names
+)
+\inf@bad=\count286
+LaTeX Info: Redefining \frac on input line 233.
+\uproot@=\count287
+\leftroot@=\count288
+LaTeX Info: Redefining \overline on input line 398.
+LaTeX Info: Redefining \colon on input line 409.
+\classnum@=\count289
+\DOTSCASE@=\count290
+LaTeX Info: Redefining \ldots on input line 495.
+LaTeX Info: Redefining \dots on input line 498.
+LaTeX Info: Redefining \cdots on input line 619.
+\Mathstrutbox@=\box53
+\strutbox@=\box54
+LaTeX Info: Redefining \big on input line 721.
+LaTeX Info: Redefining \Big on input line 722.
+LaTeX Info: Redefining \bigg on input line 723.
+LaTeX Info: Redefining \Bigg on input line 724.
+\big@size=\dimen159
+LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
+\macc@depth=\count291
+LaTeX Info: Redefining \bmod on input line 904.
+LaTeX Info: Redefining \pmod on input line 909.
+LaTeX Info: Redefining \smash on input line 939.
+LaTeX Info: Redefining \relbar on input line 969.
+LaTeX Info: Redefining \Relbar on input line 970.
+\c@MaxMatrixCols=\count292
+\dotsspace@=\muskip17
+\c@parentequation=\count293
+\dspbrk@lvl=\count294
+\tag@help=\toks20
+\row@=\count295
+\column@=\count296
+\maxfields@=\count297
+\andhelp@=\toks21
+\eqnshift@=\dimen160
+\alignsep@=\dimen161
+\tagshift@=\dimen162
+\tagwidth@=\dimen163
+\totwidth@=\dimen164
+\lineht@=\dimen165
+\@envbody=\toks22
+\multlinegap=\skip52
+\multlinetaggap=\skip53
+\mathdisplay@stack=\toks23
+LaTeX Info: Redefining \[ on input line 2950.
+LaTeX Info: Redefining \] on input line 2951.
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)) (C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.st
+y
+Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
+fg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+File: pdftex.def 2025/09/29 v1.2d Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen166
+\Gin@req@width=\dimen167
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen168
+\lightrulewidth=\dimen169
+\cmidrulewidth=\dimen170
+\belowrulesep=\dimen171
+\belowbottomsep=\dimen172
+\aboverulesep=\dimen173
+\abovetopsep=\dimen174
+\cmidrulesep=\dimen175
+\cmidrulekern=\dimen176
+\defaultaddspace=\dimen177
+\@cmidla=\count298
+\@cmidlb=\count299
+\@aboverulesep=\dimen178
+\@belowrulesep=\dimen179
+\@thisruleclass=\count300
+\@lastruleclass=\count301
+\@thisrulewidth=\dimen180
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 274.
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1349.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1353.
+Package xcolor Info: Model `RGB' extended on input line 1365.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1367.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
+tex.def
+File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count302
+)
+No file ollama_marine_report.aux.
+\openout1 = `ollama_marine_report.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 12.
+LaTeX Font Info:    ... okay on input line 12.
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(72.26999pt, 452.9679pt, 72.26999pt)
+* v-part:(T,H,B)=(72.26999pt, 700.50687pt, 72.26999pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=452.9679pt
+* \textheight=700.50687pt
+* \oddsidemargin=0.0pt
+* \evensidemargin=0.0pt
+* \topmargin=-37.0pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=11.0pt
+* \footskip=30.0pt
+* \marginparwidth=50.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
+ii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count303
+\scratchdimen=\dimen181
+\scratchbox=\box55
+\nofMPsegments=\count304
+\nofMParguments=\count305
+\everyMPshowfont=\toks24
+\MPscratchCnt=\count306
+\MPscratchDim=\dimen182
+\MPnumerator=\count307
+\makeMPintoPDFobject=\count308
+\everyMPtoPDFconversion=\toks25
+)
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
+ase.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.c
+fg
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+))
+LaTeX Font Info:    Trying to load font information for U+msa on input line 13.
+
+ (C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 13.
+
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+<../fish_images/Coris_julis.png, id=1, 220.825pt x 85.31876pt>
+File: ../fish_images/Coris_julis.png Graphic file (type png)
+<use ../fish_images/Coris_julis.png>
+Package pdftex.def Info: ../fish_images/Coris_julis.png  used on input line 43.
+
+(pdftex.def)             Requested size: 113.81206pt x 85.36409pt.
+<../fish_images/Mullus_surmuletus.png, id=2, 97.36375pt x 39.14626pt>
+File: ../fish_images/Mullus_surmuletus.png Graphic file (type png)
+<use ../fish_images/Mullus_surmuletus.png>
+Package pdftex.def Info: ../fish_images/Mullus_surmuletus.png  used on input li
+ne 43.
+(pdftex.def)             Requested size: 113.81557pt x 85.36996pt.
+<../fish_images/Sarpa_salpa.png, id=3, 247.92625pt x 76.285pt>
+File: ../fish_images/Sarpa_salpa.png Graphic file (type png)
+<use ../fish_images/Sarpa_salpa.png>
+Package pdftex.def Info: ../fish_images/Sarpa_salpa.png  used on input line 43.
+
+(pdftex.def)             Requested size: 113.80913pt x 85.36177pt.
+<../fish_images/Sphyraena_viridensis.png, id=4, 340.27126pt x 73.27374pt>
+File: ../fish_images/Sphyraena_viridensis.png Graphic file (type png)
+<use ../fish_images/Sphyraena_viridensis.png>
+Package pdftex.def Info: ../fish_images/Sphyraena_viridensis.png  used on input
+ line 45.
+(pdftex.def)             Requested size: 113.81114pt x 85.35759pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+LaTeX Warning: Citation `sprungk2023' on page 1 undefined on input line 58.
+
+
+LaTeX Warning: Citation `sprungk2023' on page 1 undefined on input line 63.
+
+[1
+
+{C:/Users/parsa/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+
+LaTeX Warning: Citation `sprungk2023' on page 2 undefined on input line 74.
+
+LaTeX Font Info:    Trying to load font information for U+euf on input line 80.
+
+(C:\Users\parsa\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\ueuf.fd
+File: ueuf.fd 2013/01/14 v3.01 Euler Fraktur
+)
+[2 <../fish_images/Coris_julis.png (PNG copy)> <../fish_images/Mullus_surmuletu
+s.png (PNG copy)> <../fish_images/Sarpa_salpa.png (PNG copy)> <../fish_images/S
+phyraena_viridensis.png (PNG copy)>] [3]
+<../plots/01_population_time_series.png, id=29, 489.5088pt x 310.2792pt>
+File: ../plots/01_population_time_series.png Graphic file (type png)
+<use ../plots/01_population_time_series.png>
+Package pdftex.def Info: ../plots/01_population_time_series.png  used on input 
+line 148.
+(pdftex.def)             Requested size: 385.02547pt x 244.05263pt.
+<../plots/02_extinction_risk_curve.png, id=31, 502.0356pt x 310.2792pt>
+File: ../plots/02_extinction_risk_curve.png Graphic file (type png)
+<use ../plots/02_extinction_risk_curve.png>
+Package pdftex.def Info: ../plots/02_extinction_risk_curve.png  used on input l
+ine 160.
+(pdftex.def)             Requested size: 385.02547pt x 237.95935pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[4 <../plots/01_population_time_series.png>]
+<../plots/03_phase_space_orbits.png, id=36, 499.1448pt x 310.2792pt>
+File: ../plots/03_phase_space_orbits.png Graphic file (type png)
+<use ../plots/03_phase_space_orbits.png>
+Package pdftex.def Info: ../plots/03_phase_space_orbits.png  used on input line
+ 172.
+(pdftex.def)             Requested size: 385.02547pt x 239.34656pt.
+ [5 <../plots/02_extinction_risk_curve.png> <../plots/03_phase_space_orbits.png
+>]
+<../plots/04_species_abundance_bar.png, id=42, 489.5088pt x 296.307pt>
+File: ../plots/04_species_abundance_bar.png Graphic file (type png)
+<use ../plots/04_species_abundance_bar.png>
+Package pdftex.def Info: ../plots/04_species_abundance_bar.png  used on input l
+ine 184.
+(pdftex.def)             Requested size: 385.02547pt x 233.06267pt.
+<../plots/05_ensemble_density_hist.png, id=43, 495.7722pt x 310.2792pt>
+File: ../plots/05_ensemble_density_hist.png Graphic file (type png)
+<use ../plots/05_ensemble_density_hist.png>
+Package pdftex.def Info: ../plots/05_ensemble_density_hist.png  used on input l
+ine 196.
+(pdftex.def)             Requested size: 385.02547pt x 240.97522pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<../plots/06_cumulative_tracked_unique.png, id=44, 495.7722pt x 310.2792pt>
+File: ../plots/06_cumulative_tracked_unique.png Graphic file (type png)
+<use ../plots/06_cumulative_tracked_unique.png>
+Package pdftex.def Info: ../plots/06_cumulative_tracked_unique.png  used on inp
+ut line 208.
+(pdftex.def)             Requested size: 385.02547pt x 240.97522pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[6 <../plots/04_species_abundance_bar.png>]
+<../plots/07_confidence_distribution.png, id=49, 507.8172pt x 310.2792pt>
+File: ../plots/07_confidence_distribution.png Graphic file (type png)
+<use ../plots/07_confidence_distribution.png>
+Package pdftex.def Info: ../plots/07_confidence_distribution.png  used on input
+ line 220.
+(pdftex.def)             Requested size: 385.02547pt x 235.25124pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[7 <../plots/05_ensemble_density_hist.png> <../plots/06_cumulative_tracked_uniq
+ue.png>]
+<../plots/08_velocity_magnitude_hist.png, id=56, 510.708pt x 310.2792pt>
+File: ../plots/08_velocity_magnitude_hist.png Graphic file (type png)
+<use ../plots/08_velocity_magnitude_hist.png>
+Package pdftex.def Info: ../plots/08_velocity_magnitude_hist.png  used on input
+ line 232.
+(pdftex.def)             Requested size: 385.02547pt x 233.92558pt.
+
+Overfull \hbox (11.00204pt too wide) in paragraph at lines 238--239
+\OT1/cmr/bx/n/10.95 Ollama AI An-a-lyt-i-cal Break-down (Part 1): \OT1/cmr/m/n/
+10.95 The Shan-non Di-ver-sity In-dex ($\OML/cmm/m/it/10.95 H[] \OT1/cmr/m/n/10
+.95 = \OMS/cmsy/m/n/10.95 ^^@ [] \OML/cmm/m/it/10.95 p[] [] p[]$\OT1/cmr/m/n/10
+.95 )
+ []
+
+<../plots/09_shannon_diversity_index.png, id=57, 499.1448pt x 310.2792pt>
+File: ../plots/09_shannon_diversity_index.png Graphic file (type png)
+<use ../plots/09_shannon_diversity_index.png>
+Package pdftex.def Info: ../plots/09_shannon_diversity_index.png  used on input
+ line 244.
+(pdftex.def)             Requested size: 385.02547pt x 239.34656pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[8 <../plots/07_confidence_distribution.png> <../plots/08_velocity_magnitude_hi
+st.png>]
+<../plots/10_pielou_evenness_index.png, id=63, 499.1448pt x 310.2792pt>
+File: ../plots/10_pielou_evenness_index.png Graphic file (type png)
+<use ../plots/10_pielou_evenness_index.png>
+Package pdftex.def Info: ../plots/10_pielou_evenness_index.png  used on input l
+ine 256.
+(pdftex.def)             Requested size: 385.02547pt x 239.34656pt.
+ [9 <../plots/09_shannon_diversity_index.png> <../plots/10_pielou_evenness_inde
+x.png>]
+<../plots/11_spatial_centroid_heatmap.png, id=69, 502.0356pt x 310.2792pt>
+File: ../plots/11_spatial_centroid_heatmap.png Graphic file (type png)
+<use ../plots/11_spatial_centroid_heatmap.png>
+Package pdftex.def Info: ../plots/11_spatial_centroid_heatmap.png  used on inpu
+t line 268.
+(pdftex.def)             Requested size: 385.02547pt x 237.95935pt.
+<../plots/12_growth_rate_phase_plot.png, id=70, 514.0806pt x 310.2792pt>
+File: ../plots/12_growth_rate_phase_plot.png Graphic file (type png)
+<use ../plots/12_growth_rate_phase_plot.png>
+Package pdftex.def Info: ../plots/12_growth_rate_phase_plot.png  used on input 
+line 280.
+(pdftex.def)             Requested size: 385.02547pt x 232.39162pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<../plots/13_stochastic_noise_variance.png, id=71, 511.6716pt x 310.2792pt>
+File: ../plots/13_stochastic_noise_variance.png Graphic file (type png)
+<use ../plots/13_stochastic_noise_variance.png>
+Package pdftex.def Info: ../plots/13_stochastic_noise_variance.png  used on inp
+ut line 292.
+(pdftex.def)             Requested size: 385.02547pt x 233.48528pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<../plots/14_kalman_gain_dynamics.png, id=72, 505.4082pt x 310.2792pt>
+File: ../plots/14_kalman_gain_dynamics.png Graphic file (type png)
+<use ../plots/14_kalman_gain_dynamics.png>
+Package pdftex.def Info: ../plots/14_kalman_gain_dynamics.png  used on input li
+ne 304.
+(pdftex.def)             Requested size: 385.02547pt x 236.3733pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[10 <../plots/11_spatial_centroid_heatmap.png>]
+<../plots/15_innovation_residuals.png, id=77, 498.1812pt x 310.2792pt>
+File: ../plots/15_innovation_residuals.png Graphic file (type png)
+<use ../plots/15_innovation_residuals.png>
+Package pdftex.def Info: ../plots/15_innovation_residuals.png  used on input li
+ne 316.
+(pdftex.def)             Requested size: 385.02547pt x 239.81053pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[11 <../plots/12_growth_rate_phase_plot.png> <../plots/13_stochastic_noise_vari
+ance.png>]
+<../plots/16_specimen_size_boxplot.png, id=83, 475.5366pt x 310.2792pt>
+File: ../plots/16_specimen_size_boxplot.png Graphic file (type png)
+<use ../plots/16_specimen_size_boxplot.png>
+Package pdftex.def Info: ../plots/16_specimen_size_boxplot.png  used on input l
+ine 328.
+(pdftex.def)             Requested size: 385.02547pt x 251.22061pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<../plots/17_detection_rate_fps.png, id=84, 495.7722pt x 310.2792pt>
+File: ../plots/17_detection_rate_fps.png Graphic file (type png)
+<use ../plots/17_detection_rate_fps.png>
+Package pdftex.def Info: ../plots/17_detection_rate_fps.png  used on input line
+ 340.
+(pdftex.def)             Requested size: 385.02547pt x 240.97522pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[12 <../plots/14_kalman_gain_dynamics.png> <../plots/15_innovation_residuals.pn
+g>]
+<../plots/18_species_cooccurrence_matrix.png, id=90, 369.0588pt x 296.307pt>
+File: ../plots/18_species_cooccurrence_matrix.png Graphic file (type png)
+<use ../plots/18_species_cooccurrence_matrix.png>
+Package pdftex.def Info: ../plots/18_species_cooccurrence_matrix.png  used on i
+nput line 352.
+(pdftex.def)             Requested size: 385.02547pt x 309.14668pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[13 <../plots/16_specimen_size_boxplot.png> <../plots/17_detection_rate_fps.png
+>]
+<../plots/19_ecological_balance_gauge.png, id=97, 499.1448pt x 310.2792pt>
+File: ../plots/19_ecological_balance_gauge.png Graphic file (type png)
+<use ../plots/19_ecological_balance_gauge.png>
+Package pdftex.def Info: ../plots/19_ecological_balance_gauge.png  used on inpu
+t line 364.
+(pdftex.def)             Requested size: 385.02547pt x 239.34656pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+<../plots/20_enkf_state_covariance.png, id=98, 499.1448pt x 310.2792pt>
+File: ../plots/20_enkf_state_covariance.png Graphic file (type png)
+<use ../plots/20_enkf_state_covariance.png>
+Package pdftex.def Info: ../plots/20_enkf_state_covariance.png  used on input l
+ine 376.
+(pdftex.def)             Requested size: 385.02547pt x 239.34656pt.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+! Misplaced alignment tab character &.
+<argument> ...: 3D Volumetric Spatial Trajectory &
+                                                   Swimming Lanes
+l.381 ...tric Spatial Trajectory & Swimming Lanes}
+                                                  
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+<../plots/21_3d_volumetric_trajectories.png, id=99, 439.8834pt x 315.579pt>
+File: ../plots/21_3d_volumetric_trajectories.png Graphic file (type png)
+<use ../plots/21_3d_volumetric_trajectories.png>
+Package pdftex.def Info: ../plots/21_3d_volumetric_trajectories.png  used on in
+put line 388.
+(pdftex.def)             Requested size: 385.02547pt x 276.22723pt.
+! Misplaced alignment tab character &.
+<argument> ...s 3D Volumetric Spatial Trajectory &
+                                                   Swimming Lanes
+l.389 ...tric Spatial Trajectory & Swimming Lanes}
+                                                  
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+LaTeX Warning: Citation `sprungk2023' on page 14 undefined on input line 396.
+
+[14 <../plots/18_species_cooccurrence_matrix.png>] [15 <../plots/19_ecological_
+balance_gauge.png> <../plots/20_enkf_state_covariance.png>] [16 <../plots/21_3d
+_volumetric_trajectories.png>] (ollama_marine_report.aux)
+ ***********
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+ ***********
+
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 3885 strings out of 467871
+ 63391 string characters out of 5418376
+ 475991 words of memory out of 5000000
+ 32731 multiletter control sequences out of 15000+600000
+ 638411 words of font info for 79 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 57i,12n,65p,625b,334s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\parsa\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm
+1095.pk><C:/Users/parsa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
+ts/cm/cmbx10.pfb><C:/Users/parsa/AppData/Local/Programs/MiKTeX/fonts/type1/publ
+ic/amsfonts/cm/cmbx12.pfb><C:/Users/parsa/AppData/Local/Programs/MiKTeX/fonts/t
+ype1/public/amsfonts/cm/cmex10.pfb><C:/Users/parsa/AppData/Local/Programs/MiKTe
+X/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/parsa/AppData/Local/Progr
+ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/parsa/AppData/Loc
+al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/parsa/App
+Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/p
+arsa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/
+Users/parsa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10
+.pfb><C:/Users/parsa/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
+cm/cmsy8.pfb><C:/Users/parsa/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cm/cmti10.pfb><C:/Users/parsa/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/amsfonts/cm/cmti12.pfb><C:/Users/parsa/AppData/Local/Programs/MiKTeX/fo
+nts/type1/public/amsfonts/euler/eufm10.pfb><C:/Users/parsa/AppData/Local/Progra
+ms/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on "c:\Users\parsa\Desktop\Code\kernel\3 - AI process\video_anal
+ysis_sessions\Underwater_World-_Beautiful_Fish_Swimming_in_the_Ocean_Colorful_F
+ish_in_Ocean_-_4K_Relaxing_Scene_20260909_143539\analysis\ollama_marine_report.
+pdf" (16 pages, 1322373 bytes).
+PDF statistics:
+ 176 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 126 words of extra memory for PDF output out of 10000 (max. 10000000)
+

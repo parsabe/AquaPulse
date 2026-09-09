@@ -17,20 +17,58 @@ except Exception:
     pyttsx3 = None
     HAS_PYTTSX3 = False
 
-try:
-    from langchain_ollama import OllamaLLM
-except Exception:
-    class OllamaLLM:
-        def __init__(self, model="llama3"):
-            self.model = model
-        def invoke(self, prompt):
-            try:
-                res = requests.post("http://localhost:11434/api/generate", json={"model": self.model, "prompt": prompt, "stream": False}, timeout=10)
-                if res.status_code == 200:
-                    return res.json().get("response", "Telemetry system operational.")
-            except Exception:
-                pass
-            return "Techno - Eco Project AI system online. Neural telemetry parameters synchronized."
+# --- DYNAMIC OLLAMA DISCOVERY & QUERY HELPERS ---
+def get_available_ollama_model():
+    """Detects any locally installed Ollama model dynamically."""
+    try:
+        r = requests.get("http://localhost:11434/api/tags", timeout=1.5)
+        if r.status_code == 200:
+            models_data = r.json().get("models", [])
+            if models_data:
+                names = [m.get("name", "") for m in models_data if m.get("name")]
+                # Prioritize lightweight or standard chat models
+                for pref in ["llama3.2:1b", "llama3.2", "llama3", "mistral", "phi3", "qwen", "gemma"]:
+                    for n in names:
+                        if pref in n:
+                            return n
+                if names:
+                    return names[0]
+    except Exception:
+        pass
+    return None
+
+def query_ollama_direct(prompt, timeout=3.5):
+    """Direct fast REST call to Ollama without failing or throwing if model is missing."""
+    model_name = get_available_ollama_model()
+    if not model_name:
+        return None
+    try:
+        res = requests.post(
+            "http://localhost:11434/api/generate",
+            json={"model": model_name, "prompt": prompt, "stream": False},
+            timeout=timeout
+        )
+        if res.status_code == 200:
+            ans = res.json().get("response", "").strip()
+            if ans and len(ans) > 5:
+                return clean_pauly_response(ans)
+    except Exception:
+        pass
+    return None
+
+class DynamicOllamaLLM:
+    """Wrapper that dynamically detects installed Ollama models with offline fallback."""
+    def __init__(self, model="llama3"):
+        self.preferred_model = model
+
+    def invoke(self, prompt):
+        res = query_ollama_direct(prompt)
+        if res:
+            return res
+        return "Techno - Eco Project AI system online. Neural telemetry parameters synchronized."
+
+pauly_llm = DynamicOllamaLLM(model="llama3")
+risk_analyst_llm = DynamicOllamaLLM(model="llama3")
 
 # --- GLOBAL AUDIO & STATE CONTROLS ---
 ACTIVE_COMM = None
@@ -61,31 +99,41 @@ class CancellableAudioEngine:
             self.is_speaking = True
 
         def _speak_thread(tok, lang_mode):
+            co_initialized = False
             try:
+                try:
+                    import pythoncom
+                    pythoncom.CoInitialize()
+                    co_initialized = True
+                except Exception:
+                    pass
+
                 if HAS_PYTTSX3 and pyttsx3 is not None:
                     eng = pyttsx3.init()
-                    eng.setProperty('rate', 155)
+                    eng.setProperty('rate', 150)
                     eng.setProperty('volume', 1.0)
                     
                     voices = eng.getProperty('voices')
                     selected_voice = None
                     
-                    is_german = (lang_mode == "DE" or any(w in text.lower() for w in ['ich', 'der', 'die', 'das', 'ist', 'und', 'nicht', 'fisch', 'wasser', 'deutsch', 'ä', 'ö', 'ü', 'ß']))
-                    
-                    if is_german:
+                    # Strictly select a male voice (e.g. Microsoft David Desktop), never female
+                    for v in voices:
+                        v_name = v.name.lower()
+                        v_id = v.id.lower()
+                        if any(f in v_name or f in v_id for f in ['hedda', 'zira', 'katja', 'female', 'eva', 'hazel']):
+                            continue
+                        if any(m in v_name or m in v_id for m in ['david', 'male', 'george', 'stefan', 'mark', 'michael']):
+                            selected_voice = v.id
+                            break
+                    if not selected_voice:
                         for v in voices:
                             v_name = v.name.lower()
                             v_id = v.id.lower()
-                            if 'hedda' in v_name or 'german' in v_name or 'de-de' in v_id or 'de_de' in v_id or 'stefan' in v_name or 'katja' in v_name:
+                            if not any(f in v_name or f in v_id for f in ['hedda', 'zira', 'katja', 'female', 'eva', 'hazel']):
                                 selected_voice = v.id
                                 break
-                    else:
-                        for v in voices:
-                            v_name = v.name.lower()
-                            v_id = v.id.lower()
-                            if 'david' in v_name or 'en-us' in v_id or 'zira' in v_name:
-                                selected_voice = v.id
-                                break
+                    if not selected_voice and voices:
+                        selected_voice = voices[0].id
 
                     if selected_voice:
                         eng.setProperty('voice', selected_voice)
@@ -94,15 +142,25 @@ class CancellableAudioEngine:
                         if self.speech_token != tok:
                             return
                         self.engine = eng
+                    try:
+                        eng.endLoop()
+                    except Exception:
+                        pass
                     eng.say(text)
                     eng.runAndWait()
-            except Exception:
+            except Exception as e:
                 pass
             finally:
                 with self.lock:
                     if self.speech_token == tok:
                         self.is_speaking = False
                         self.engine = None
+                if co_initialized:
+                    try:
+                        import pythoncom
+                        pythoncom.CoUninitialize()
+                    except Exception:
+                        pass
 
         threading.Thread(target=_speak_thread, args=(token, lang), daemon=True).start()
 
@@ -115,6 +173,10 @@ class CancellableAudioEngine:
                     self.engine.stop()
                 except Exception:
                     pass
+                try:
+                    self.engine.endLoop()
+                except Exception:
+                    pass
                 self.engine = None
 
 audio_manager = CancellableAudioEngine()
@@ -124,10 +186,89 @@ def speak_tts_async(text, lang=None):
         lang = language_mode
     audio_manager.speak(text, lang=lang)
 
-pauly_llm = OllamaLLM(model="llama3")
-risk_analyst_llm = OllamaLLM(model="llama3")
 pauly_lock = threading.Lock()
 pauly_speech_active = False
+
+# --- OFFLINE EXPERT BIOLOGICAL REASONING ENGINE (DR. DANIEL PAULY) ---
+def generate_offline_pauly_response(species_name, user_question=None, target_specimen_info=None, lang="EN"):
+    """
+    Expert biological reasoning engine acting as Dr. Daniel Pauly.
+    Provides authentic, scientific, concise insights when Ollama is offline or model is not pulled.
+    """
+    import re
+    is_de = (lang == "DE")
+    q = (user_question or "").strip().lower()
+    sp = (species_name or "Specimen").strip()
+    words = set(re.findall(r'\b\w+\b', q))
+    
+    if words & {"wer", "hallo", "fisch", "wie", "was", "ist", "bitte", "danke", "guten", "moin", "deutsch"}:
+        is_de = True
+
+    # 1. Identity
+    if any(phrase in q for phrase in ["who are you", "who r u", "your name", "wer bist du", "wer sind sie", "identify yourself"]):
+        if is_de:
+            return "Ich bin Dr. Daniel Pauly, Meeresbiologe. Mein Forschungsschwerpunkt liegt auf globalen Fischereidynamiken, Kiemen-Sauerstoff-Theorie und Arterhaltung."
+        return "I am Dr. Daniel Pauly, principal marine biologist. My work focuses on global fishery dynamics, the Gill-Oxygen Limitation Theory, and ecosystem conservation."
+
+    # 2. Pure Greetings (only if no specific scientific or specimen query)
+    greeting_words = {"hello", "hi", "hey", "greetings", "hallo", "moin"}
+    if (words & greeting_words) and not (words & {"fish", "species", "fisch", "protect", "schützen", "salmo", "cod", "tuna", "shark", "gill", "oxygen", "extinction"}):
+        if is_de:
+            return "Seid gegrüßt! Hier ist Dr. Daniel Pauly. Unsere hydrodynamische Telemetrie ist aktiv. Welche meeresbiologischen Beobachtungen möchten Sie analysieren?"
+        return "Greetings! Dr. Daniel Pauly here. Our hydrodynamic telemetry streams are live. How can I assist your aquatic species observations?"
+
+    # 2. Species-Specific Marine Biology Knowledge
+    sp_lower = (sp + " " + q).lower()
+    if any(k in sp_lower for k in ["salmo", "trutta", "forelle", "trout"]):
+        if is_de:
+            return f"Salmo trutta (Bachforelle) reagiert hochsensibel auf thermische Gradienten und Hypoxie. Als rheophile Salmonidenart dient sie als primärer Bioindikator intakter Kaltwasserströmungen."
+        return f"Salmo trutta (Brown trout) exhibits high sensitivity to dissolved oxygen and thermal gradients. As a rheophilic salmonid, it serves as a critical indicator for lotic ecosystem health."
+
+    if any(k in sp_lower for k in ["gadus", "morhua", "cod", "kabeljau", "dorsch"]):
+        if is_de:
+            return f"Gadus morhua (Atlantischer Kabeljau) demonstriert drastische historische Trophie-Verschiebungen. Effektive Bestandserholung erfordert strenge marine Schutzgebiete und reduzierte Schleppnetzfischerei."
+        return f"Gadus morhua (Atlantic cod) is the textbook demonstration of trophic cascade collapse from historic overexploitation. Biomass replenishment demands rigorous Marine Protected Areas."
+
+    if any(k in sp_lower for k in ["thunnus", "tuna", "thunfisch"]):
+        if is_de:
+            return f"Thunfische besitzen eine bemerkenswerte regionale Endothermie. Ihr hoher Sauerstoffbedarf macht sie jedoch besonders vulnerabel gegenüber sich ausdehnenden hypoxischen Todeszonen."
+        return f"Tuna species utilize regional endothermy for high-speed cruising. However, their extreme metabolic rate makes them exceptionally vulnerable to expanding oceanic oxygen minimum zones."
+
+    if any(k in sp_lower for k in ["octopus", "squid", "krake", "oktopus", "tintenfisch"]):
+        if is_de:
+            return f"Kopffüßer zeichnen sich durch rasantes somatisches Wachstum und hohe neurobiologische Anpassungsfähigkeit aus, wodurch sie ökologische Nischen gestresster Knochenfische besetzen."
+        return f"Cephalopods exhibit rapid somatic turnover and complex behavioral plasticity, enabling opportunistic niche colonization where teleost competitors decline under climate stress."
+
+    if any(k in sp_lower for k in ["shark", "hai", "selachii"]):
+        if is_de:
+            return f"Als K-Strategen und Spitzenprädatoren regulieren Haie marine Nahrungsnetze von oben nach unten. Der Verlust dieser Spitzenprädatoren destabilisiert das gesamte pelagische Gleichgewicht."
+        return f"As apex K-strategists, sharks regulate oceanic food webs through top-down trophic control. Their removal triggers destructive mesopredator release cascades across marine biomes."
+
+    # 3. Scientific Theories & Environmental Topics
+    if any(k in q for k in ["golt", "oxygen", "sauerstoff", "gill", "kieme", "warm", "temperature"]):
+        if is_de:
+            return "Gemäß meiner Kiemen-Sauerstoff-Limitierungstheorie (GOLT) wächst die zweidimensionale Kiemenoberfläche langsamer als das dreidimensionale Körpervolumen, wodurch wärmeres Wasser das Maximalgewicht von Fischen deckelt."
+        return "Under my Gill-Oxygen Limitation Theory (GOLT), 2D gill surface area cannot keep pace with 3D body volume growth. In warming oceans, metabolic oxygen stress strictly limits maximum fish size."
+
+    if any(k in q for k in ["overfishing", "fishing", "extinction", "überfischung", "aussterben", "bestand", "collapse"]):
+        if is_de:
+            return "Das Phänomen des 'Fishing Down Marine Food Webs' ersetzt langlebige Spitzenfische durch kleine Wirbellose. Zur Stabilisierung sind unverzüglich schutzzonierte Sperrgebiete erforderlich."
+        return "Global fishing trends demonstrate 'Fishing Down Marine Food Webs', replacing long-lived apex predators with smaller planktivores. Sustainable quotas and strictly enforced no-take MPAs are imperative."
+
+    if any(k in q for k in ["what is this", "identify", "what fish", "was ist", "welcher fisch"]):
+        if is_de:
+            return f"Unsere optische Sensorik erfasst {sp}. Das hydrodynamische Profil und die Flossenfrequenz bestätigen ein stabiles Schwimmverhalten im aktuellen Transektschnitt."
+        return f"Optical telemetry confirms specimen identification as {sp}. The swimming kinematic signature indicates healthy hydrodynamic locomotion within the observed transect."
+
+    # 4. Default Telemetry & Ecological Synthesis
+    if is_de:
+        if target_specimen_info:
+            return f"Dr. Pauly Telemetriebericht: {target_specimen_info} zeigt ungestörte Schwimmmuster. Die stochastische Zustandsschätzung bestätigt stabile Populationsparameter."
+        return f"Dr. Pauly Telemetriebericht: Exemplar {sp} weist typische ökologische Merkmale auf. Kontinuierliche Sensordaten-Assimilation ist aktiv."
+    else:
+        if target_specimen_info:
+            return f"Dr. Pauly Telemetry Report: {target_specimen_info} exhibits optimal locomotion. Stochastic state filtering confirms stable population abundance parameters."
+        return f"Dr. Pauly Telemetry Report: Specimen {sp} exhibits characteristic ecological resilience. Sensor data assimilation remains synchronized with baseline population models."
 
 def run_multi_agent_synthesis(session_summary_text):
     """
@@ -151,8 +292,10 @@ def run_multi_agent_synthesis(session_summary_text):
     )
     
     try:
-        res_pauly = clean_pauly_response(pauly_llm.invoke(prompt_pauly))
-        res_risk = clean_pauly_response(risk_analyst_llm.invoke(prompt_risk))
+        pauly_raw = query_ollama_direct(prompt_pauly)
+        risk_raw = query_ollama_direct(prompt_risk)
+        res_pauly = clean_pauly_response(pauly_raw) if pauly_raw else "Biological assessment indicates active species tracking with baseline population stability."
+        res_risk = clean_pauly_response(risk_raw) if risk_raw else "Environmental risk evaluation recommends continued non-invasive telemetry monitoring."
     except Exception:
         res_pauly = "Biological assessment indicates active species tracking with baseline population stability."
         res_risk = "Environmental risk evaluation recommends continued non-invasive telemetry monitoring."
@@ -172,7 +315,6 @@ def run_multi_agent_synthesis(session_summary_text):
 def is_pauly_speaking():
     with pauly_lock:
         return pauly_speech_active or audio_manager.is_speaking
-
 
 def set_pauly_speaking(val):
     global pauly_speech_active, ACTIVE_COMM
@@ -222,6 +364,15 @@ pauly_ui_alpha = 0.0
 pauly_fade_state = "IDLE"
 pauly_reading_timer = 0
 
+# Persistent Chat Log History for Live Chat Portal
+pauly_chat_history = [
+    {
+        "sender": "DR. PAULY",
+        "text": "Dr. Daniel Pauly marine research assistant ready. Select any fish specimen in the video feed, then ask your question here in English or German.",
+        "time": time.time()
+    }
+]
+
 def update_pauly_fade_state_machine():
     global pauly_ui_alpha, pauly_fade_state
     fade_speed = 0.08
@@ -256,57 +407,101 @@ def clean_pauly_response(text):
         
     return text.strip()
 
+pauly_query_id = 0
+
 def trigger_pauly_call(species_name, user_question=None, target_specimen_info=None, hud_notifs=None, force=False):
-    global pauly_active_dialogue, pauly_ui_alpha, pauly_fade_state, pauly_reading_timer, language_mode
+    global pauly_active_dialogue, pauly_ui_alpha, pauly_fade_state, pauly_reading_timer, language_mode, pauly_chat_history, pauly_query_id
     
-    # Interrupt any ongoing audio/speech before starting new query or forced call
-    if force or user_question or is_pauly_speaking() or johnny_relic.is_active:
-        audio_manager.stop()
-        if johnny_relic.is_active:
-            johnny_relic.cancel(hud_notifs)
+    with pauly_lock:
+        pauly_query_id += 1
+        current_qid = pauly_query_id
+
+    audio_manager.stop()
+    if johnny_relic.is_active:
+        johnny_relic.cancel(hud_notifs)
             
     set_pauly_speaking(True)
     pauly_fade_state = "FADE_IN"
     pauly_reading_timer = time.time()
     
     specimen_context = f" Target details: {target_specimen_info}." if target_specimen_info else ""
+    # Robust German vs English detection
+    german_indicators = ['ich', 'der', 'die', 'das', 'ist', 'sind', 'und', 'nicht', 'fisch', 'fische', 'wasser', 'deutsch', 'wer', 'wie', 'was', 'wo', 'warum', 'welche', 'welcher', 'welches', 'kann', 'können', 'zeig', 'zeige', 'bitte', 'danke', 'hallo', 'moin', 'guten', 'ä', 'ö', 'ü', 'ß']
+    is_user_german = user_question and any(w in user_question.lower() for w in german_indicators)
+    effective_lang = "DE" if (language_mode == "DE" or is_user_german) else "EN"
     
     if user_question:
-        pauly_active_dialogue = f"Dr. Pauly analyzing: '{user_question}'..."
-        prompt = (f"You are Dr. Daniel Pauly, world-renowned marine biologist. "
-                  f"Directly answer the user's question without any introductory meta-talk or language declarations. "
-                  f"Question: '{user_question}' regarding specimen '{species_name}'.{specimen_context} "
-                  f"Language rule: If the question is in German, answer in German. Otherwise answer in English. "
-                  f"Provide a direct 2-sentence expert marine biology answer.")
+        clean_q = user_question.strip()
+        pauly_chat_history.append({"sender": "USER", "text": clean_q, "time": time.time()})
+        pauly_active_dialogue = f"Analyzing: '{clean_q}'..."
+        
+        if effective_lang == "DE":
+            prompt = (f"Du bist Dr. Daniel Pauly, renommierter Meeresbiologe. "
+                      f"Beantworte die folgende Frage des Nutzers präzise auf Deutsch bezüglich des Fisches '{species_name}'.{specimen_context} "
+                      f"Frage: '{clean_q}'. "
+                      f"Antworte in 2-3 wissenschaftlich fundierten Sätzen direkt ohne Vorworte.")
+        else:
+            prompt = (f"You are Dr. Daniel Pauly, world-renowned marine biologist. "
+                      f"Directly answer the user's question in English regarding specimen '{species_name}'.{specimen_context} "
+                      f"Question: '{clean_q}'. "
+                      f"Provide a concise, direct 2-3 sentence expert marine biology answer without introductory filler.")
+                      
+        if hud_notifs:
+            hud_notifs.add(f"💬 QUESTION POSTED: \"{clean_q[:28]}\"", (89, 199, 52), 2.5)
     else:
-        lang_instruction = "Respond in German." if language_mode == "DE" else "Respond in English."
-        pauly_active_dialogue = f"Dr. Pauly analyzing selected specimen {species_name}..."
+        lang_instruction = "Respond in German." if effective_lang == "DE" else "Respond in English."
+        pauly_active_dialogue = f"Dr. Pauly analyzing specimen: {species_name}..."
         prompt = (f"You are Dr. Daniel Pauly, world-renowned marine biologist. {lang_instruction} "
                   f"Directly provide a 2-sentence fascinating scientific insight about '{species_name}' ecology.{specimen_context}")
+        if hud_notifs:
+            hud_notifs.add(f"📞 DR. PAULY: {species_name}", (89, 199, 52), 2.5)
 
-    tok = audio_manager.speech_token
-
-    def _worker(current_tok):
-        global pauly_active_dialogue, pauly_fade_state, pauly_reading_timer
+    def _worker(qid):
+        global pauly_active_dialogue, pauly_fade_state, pauly_reading_timer, pauly_chat_history
+        
+        # 1. Query live Ollama LLM first
+        raw_ollama = None
         try:
-            raw_res = pauly_llm.invoke(prompt).strip()
-            response = clean_pauly_response(raw_res)
-            if audio_manager.speech_token != current_tok:
-                return
-            pauly_active_dialogue = response
-            pauly_reading_timer = time.time()
-            play_sound_async(900, 200)
-            speak_tts_async(response)
+            raw_ollama = query_ollama_direct(prompt, timeout=3.5)
         except Exception:
-            if audio_manager.speech_token == current_tok:
-                pauly_active_dialogue = f"Dr. Pauly: Specimen {species_name} exhibits remarkable ecological traits."
-        finally:
-            time.sleep(7)
-            if audio_manager.speech_token == current_tok:
+            raw_ollama = None
+            
+        if raw_ollama and len(raw_ollama.strip()) > 10:
+            response = clean_pauly_response(raw_ollama)
+        else:
+            # 2. Instant authentic expert marine biology fallback
+            response = generate_offline_pauly_response(
+                species_name=species_name,
+                user_question=user_question,
+                target_specimen_info=target_specimen_info,
+                lang=effective_lang
+            )
+            response = clean_pauly_response(response)
+            
+        with pauly_lock:
+            if pauly_query_id != qid:
+                return
+            
+        pauly_chat_history.append({"sender": "DR. PAULY", "text": response, "time": time.time()})
+        if len(pauly_chat_history) > 25:
+            pauly_chat_history = pauly_chat_history[-25:]
+            
+        pauly_active_dialogue = response
+        pauly_reading_timer = time.time()
+        
+        # Audio voice in male voice (Microsoft David)
+        speak_tts_async(response, lang=effective_lang)
+        
+        est_words = len(response.split())
+        sleep_dur = max(3.0, est_words * 0.35)
+        time.sleep(sleep_dur)
+        
+        with pauly_lock:
+            if pauly_query_id == qid:
                 set_pauly_speaking(False)
                 pauly_fade_state = "FADE_OUT"
 
-    threading.Thread(target=_worker, args=(tok,), daemon=True).start()
+    threading.Thread(target=_worker, args=(current_qid,), daemon=True).start()
 
 # --- JOHNNY SILVERHAND RELIC SUB-SYSTEM [J] ---
 class JohnnySilverhandRelic:
@@ -510,7 +705,9 @@ def generate_executive_ollama_report(session_info, census_summary, enkf_filter, 
     
     try:
         print(f"[Ollama Exporter] Querying Ollama LLM for per-video executive report...")
-        report_md = pauly_llm.invoke(prompt)
+        report_md = query_ollama_direct(prompt, timeout=12.0)
+        if not report_md or len(report_md) < 50:
+            raise RuntimeError("Ollama offline or empty response")
         with open(report_path, "w", encoding="utf-8") as f:
             f.write(report_md)
         print(f"[Ollama Exporter] Successfully saved Markdown report to: {report_path}")

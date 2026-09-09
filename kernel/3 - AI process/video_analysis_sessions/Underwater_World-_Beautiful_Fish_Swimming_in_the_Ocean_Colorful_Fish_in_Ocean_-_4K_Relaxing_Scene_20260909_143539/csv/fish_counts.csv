@@ -1,0 +1,6 @@
+Rank,Species Name,Unique Count
+1,Sarpa salpa,7
+2,Coris julis,4
+3,Mullus surmuletus,3
+
+"Methodology: The system utilizes custom YOLO neural weights for frame-by-frame object detection. To prevent double-counting, BoT-SORT / ByteTrack assigns persistent unique IDs across frames using Kalman filtering. Bounding box coordinates are stabilized via Exponential Moving Averages (EMA)."

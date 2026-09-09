@@ -242,8 +242,14 @@ def on_mouse_event(event, x, y, flags, param):
         for btn in buttons:
             if btn.contains(x, y):
                 action_trigger = btn.callback_id
-                comm.play_sound_async(1000, 100)
+                if action_trigger != "trigger_chat":
+                    comm.play_sound_async(1000, 100)
                 return
+
+        # Check if user clicked the Chat Input Bar in Pane 4
+        if x >= left_panel_w + video_w and y >= canvas_h - 90:
+            action_trigger = "trigger_chat"
+            return
 
         left_offset = left_panel_w
         if left_offset <= x <= left_offset + video_w and y <= video_h:
@@ -304,14 +310,11 @@ active_tracker_cfg = "botsort.yaml"
 iou_threshold = 0.5
 
 # Advanced AI / ML / Probabilistic Tool Flags
-tool_gmm_active = False
-tool_bnn_active = False
-tool_dann_active = False
 tool_kinematics_active = False
 tool_kde_active = False
 tool_smc_pf_active = False
 tool_nsde_active = False
-tool_acousto_active = True
+tool_acousto_active = False
 show_help_overlay = False
 
 theme_mgr = ui.theme_mgr
@@ -400,9 +403,7 @@ while cap.isOpened():
         water_bg = vision.generate_water_gif_frame(video_h, video_w, time.time())
         frame = cv2.addWeighted(frame, 0.85, water_bg, 0.15, 0)
 
-    if tool_dann_active:
-        inference_input = vision.apply_domain_adaptation_filter(frame)
-    elif use_adaptive_clahe:
+    if use_adaptive_clahe:
         inference_input = vision.adaptive_underwater_enhance(frame)
     else:
         inference_input = frame
@@ -520,7 +521,7 @@ while cap.isOpened():
                     best_target_crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
 
             prompt_query = user_chat_buffer if chat_mode_active else None
-            vision.draw_target_box(frame, smooth_b, tid, sp_name, conf_val, custom_color=sp_color, is_selected=is_this_locked, prompt_query=prompt_query, show_bnn_uncertainty=tool_bnn_active)
+            vision.draw_target_box(frame, smooth_b, tid, sp_name, conf_val, custom_color=sp_color, is_selected=is_this_locked, prompt_query=prompt_query, show_bnn_uncertainty=False)
 
             if tool_smc_pf_active:
                 smc_pf_trackers[tid].render_particle_cloud(frame, center_x, center_y)
@@ -530,9 +531,6 @@ while cap.isOpened():
                 cv2.polylines(frame, [pts], False, sp_color, 1, cv2.LINE_AA)
 
     # Render Active AI / ML / Probabilistic Overlay Tools
-    if tool_gmm_active:
-        enkf.render_gmm_spatial_clusters(frame, current_targets, n_clusters=3)
-
     if tool_kde_active:
         frame = enkf.render_kde_density_heatmap(frame, current_targets)
 
@@ -634,7 +632,7 @@ while cap.isOpened():
     if risk_bar_w > 0:
         cv2.rectangle(pane1, (18, p1_y + 98), (18 + risk_bar_w, p1_y + 110), risk_color, -1)
         
-    cv2.putText(pane1, "Hotkeys: [E] Heatwave  [P] Pollution  [I] Invasive", (18, p1_y + 124),
+    cv2.putText(pane1, "Hotkeys: [E] Heatwave  [I] Invasive  [N] Normal", (18, p1_y + 124),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.30, (89, 199, 52), 1)
     p1_y += 140
 
@@ -653,7 +651,6 @@ while cap.isOpened():
     p1_y += 125
 
     # LIVE CALCULATED NUMERICAL METRICS FOR ACTIVE TOOLS
-    avg_bnn_unc = float(np.mean([(1.0 - t['conf']) * 25.0 for t in current_targets])) if current_targets else 0.0
     nsde_ent, nsde_risk = nsde_forecaster.compute_swarm_forecasting(current_targets, track_history)
     
     speeds = []
@@ -664,37 +661,24 @@ while cap.isOpened():
     max_speed = float(np.max(speeds)) if speeds else 0.0
     avg_speed = float(np.mean(speeds)) if speeds else 0.0
 
-    if current_targets and len(current_targets) >= 2:
-        c_pts = np.array([[(t['box'][0]+t['box'][2])/2.0, (t['box'][1]+t['box'][3])/2.0] for t in current_targets])
-        gmm_cx, gmm_cy = int(np.mean(c_pts[:, 0])), int(np.mean(c_pts[:, 1]))
-        gmm_disp = float(np.mean(np.std(c_pts, axis=0)))
-    else:
-        gmm_cx, gmm_cy, gmm_disp = 0, 0, 0.0
-
     # AI / ML & PROBABILISTIC LIVE TELEMETRY RESULTS CARD
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 182), theme_mgr.get("canvas_bg"), -1)
-    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 182), theme_mgr.get("btn_border"), 1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 140), theme_mgr.get("canvas_bg"), -1)
+    cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, p1_y + 140), theme_mgr.get("btn_border"), 1)
     cv2.putText(pane1, "LIVE AI / ML TELEMETRY CALCULATED RESULTS", (18, p1_y + 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.38, theme_mgr.get("accent_text"), 1, cv2.LINE_AA)
     
-    gmm_res = f"GMM (M): K=3 | Center: ({gmm_cx},{gmm_cy}) | Rad: {gmm_disp:.1f}px" if tool_gmm_active else "GMM [Key M]: INACTIVE"
-    bnn_res = f"BNN (B): Avg Unc: +/-{avg_bnn_unc:.1f}% | Conf: {100.0-avg_bnn_unc:.1f}%" if tool_bnn_active else "BNN [Key B]: INACTIVE"
-    dann_res = f"DANN (G): LAB Gain: +2.4dB | Dehaze: ACTIVE" if tool_dann_active else "DANN [Key G]: INACTIVE"
-    kin_res = f"Kinematics (K): Max v={max_speed:.1f}px/s | Avg v={avg_speed:.1f}px/s" if tool_kinematics_active else "Kinematics [Key K]: INACTIVE"
-    kde_res = f"KDE (D): Peak Hotspot ({gmm_cx},{gmm_cy}) | Density: {min(100.0, len(current_targets)*22.5):.1f}%" if tool_kde_active else "KDE [Key D]: INACTIVE"
     pf_res = f"Particle Filter (F): N={len(current_targets)*100} | Cloud Var: 11.2px" if tool_smc_pf_active else "Particle Filter [Key F]: INACTIVE"
+    kin_res = f"Kinematics (K): Max v={max_speed:.1f}px/s | Avg v={avg_speed:.1f}px/s" if tool_kinematics_active else "Kinematics [Key K]: INACTIVE"
+    kde_res = f"KDE Heatmap (D): Density: {min(100.0, len(current_targets)*22.5):.1f}%" if tool_kde_active else "KDE Heatmap [Key D]: INACTIVE"
     nsde_res = f"Neural SDE Cone (P): Entropy H={nsde_ent:.2f} | 30s Risk: {nsde_risk:.1f}%" if tool_nsde_active else "Neural SDE [Key P]: INACTIVE"
-    acousto_res = f"Hydroacoustic (H): {acousto_engine.tail_beat_freq_hz:.1f}Hz | {acousto_engine.acoustic_source_db:.0f}dB | {acousto_engine.pressure_pa:.1f}Pa" if tool_acousto_active else "Hydroacoustic [Key H]: INACTIVE"
+    acousto_res = f"Hydroacoustic (H): {acousto_engine.tail_beat_freq_hz:.1f}Hz | {acousto_engine.acoustic_source_db:.0f}dB" if tool_acousto_active else "Hydroacoustic [Key H]: INACTIVE"
 
-    cv2.putText(pane1, vision.fit_text_to_width(gmm_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 36), cv2.FONT_HERSHEY_SIMPLEX, 0.31, theme_mgr.get("title_text") if tool_gmm_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(bnn_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 52), cv2.FONT_HERSHEY_SIMPLEX, 0.31, theme_mgr.get("accent_text") if tool_bnn_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(dann_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 68), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (89, 199, 52) if tool_dann_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(kin_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 84), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (222, 82, 175) if tool_kinematics_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(kde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.31, theme_mgr.get("title_text") if tool_kde_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(pf_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 116), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (255, 0, 255) if tool_smc_pf_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(nsde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 132), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (244, 208, 63) if tool_nsde_active else theme_mgr.get("sub_text"), 1)
-    cv2.putText(pane1, vision.fit_text_to_width(acousto_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 148), cv2.FONT_HERSHEY_SIMPLEX, 0.31, (0, 220, 255) if tool_acousto_active else theme_mgr.get("sub_text"), 1)
-    p1_y += 190
+    cv2.putText(pane1, vision.fit_text_to_width(pf_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 40), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (255, 0, 255) if tool_smc_pf_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(kin_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (222, 82, 175) if tool_kinematics_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(kde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 80), cv2.FONT_HERSHEY_SIMPLEX, 0.32, theme_mgr.get("title_text") if tool_kde_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(nsde_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 100), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (244, 208, 63) if tool_nsde_active else theme_mgr.get("sub_text"), 1)
+    cv2.putText(pane1, vision.fit_text_to_width(acousto_res, max_pixel_width=left_panel_w - 40), (18, p1_y + 120), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (0, 220, 255) if tool_acousto_active else theme_mgr.get("sub_text"), 1)
+    p1_y += 150
 
     cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, canvas_h - 10), (250, 250, 252), -1)
     cv2.rectangle(pane1, (10, p1_y), (left_panel_w - 10, canvas_h - 10), (204, 199, 199), 1)
@@ -739,33 +723,31 @@ while cap.isOpened():
         ui.ControlButton(c2, btn_start_y, btn_w, bh, "[->] +10s SEEK", "seek_fwd", (89, 199, 52)),
         ui.ControlButton(c3, btn_start_y, btn_w, bh, "[X] STOP VIDEO", "stop_video", (48, 59, 255)),
 
-        # Row 2: Optical & Neural AI
+        # Row 2: Optical & Vision Enhancements
         ui.ControlButton(c0, btn_start_y + 33, btn_w, bh, f"[A] CLAHE: {'ON' if use_adaptive_clahe else 'OFF'}", "toggle_clahe", (89, 199, 52)),
-        ui.ControlButton(c1, btn_start_y + 33, btn_w, bh, f"[G] DANN: {'ON' if tool_dann_active else 'OFF'}", "toggle_dann", (89, 199, 52)),
-        ui.ControlButton(c2, btn_start_y + 33, btn_w, bh, f"[V] FX: {vision_fx_names[current_fx_idx]}", "toggle_fx", (222, 82, 175)),
-        ui.ControlButton(c3, btn_start_y + 33, btn_w, bh, f"[W] WATER: {'ON' if show_water_gif else 'OFF'}", "toggle_gif", (255, 122, 0)),
+        ui.ControlButton(c1, btn_start_y + 33, btn_w, bh, f"[V] FX: {vision_fx_names[current_fx_idx]}", "toggle_fx", (222, 82, 175)),
+        ui.ControlButton(c2, btn_start_y + 33, btn_w, bh, f"[W] WATER: {'ON' if show_water_gif else 'OFF'}", "toggle_gif", (255, 122, 0)),
+        ui.ControlButton(c3, btn_start_y + 33, btn_w, bh, f"[Z] ZOOM PiP: {'ON' if show_pip_zoom else 'OFF'}", "toggle_pip", (0, 149, 255)),
 
-        # Row 3: ML & Probabilistic Tools
-        ui.ControlButton(c0, btn_start_y + 66, btn_w, bh, f"[M] GMM: {'ON' if tool_gmm_active else 'OFF'}", "toggle_gmm", (255, 122, 0)),
-        ui.ControlButton(c1, btn_start_y + 66, btn_w, bh, f"[B] BNN: {'ON' if tool_bnn_active else 'OFF'}", "toggle_bnn", (0, 149, 255)),
-        ui.ControlButton(c2, btn_start_y + 66, btn_w, bh, f"[K] KINEMATICS: {'ON' if tool_kinematics_active else 'OFF'}", "toggle_kinematics", (222, 82, 175)),
-        ui.ControlButton(c3, btn_start_y + 66, btn_w, bh, f"[D] KDE: {'ON' if tool_kde_active else 'OFF'}", "toggle_kde", (255, 122, 0)),
+        # Row 3: ML & Tracking Tools
+        ui.ControlButton(c0, btn_start_y + 66, btn_w, bh, f"[F] PARTICLE: {'ON' if tool_smc_pf_active else 'OFF'}", "toggle_smc_pf", (255, 0, 255)),
+        ui.ControlButton(c1, btn_start_y + 66, btn_w, bh, f"[K] KINEMATICS: {'ON' if tool_kinematics_active else 'OFF'}", "toggle_kinematics", (222, 82, 175)),
+        ui.ControlButton(c2, btn_start_y + 66, btn_w, bh, f"[D] KDE: {'ON' if tool_kde_active else 'OFF'}", "toggle_kde", (255, 122, 0)),
+        ui.ControlButton(c3, btn_start_y + 66, btn_w, bh, f"[P] NEURAL SDE: {'ON' if tool_nsde_active else 'OFF'}", "toggle_nsde", (244, 208, 63)),
 
-        # Row 4: Tracking & Stress Testing
-        ui.ControlButton(c0, btn_start_y + 99, btn_w, bh, f"[P] NEURAL SDE: {'ON' if tool_nsde_active else 'OFF'}", "toggle_nsde", (244, 208, 63)),
-        ui.ControlButton(c1, btn_start_y + 99, btn_w, bh, f"[F] PARTICLE: {'ON' if tool_smc_pf_active else 'OFF'}", "toggle_smc_pf", (255, 0, 255)),
-        ui.ControlButton(c2, btn_start_y + 99, btn_w, bh, "[E] HEATWAVE SHOCK", "shock_heatwave", (48, 59, 255)),
-        ui.ControlButton(c3, btn_start_y + 99, btn_w, bh, "[P] POLLUTION SHOCK", "shock_pollution", (48, 59, 255)),
+        # Row 4: Ecological Stress & Theme
+        ui.ControlButton(c0, btn_start_y + 99, btn_w, bh, "[E] HEATWAVE SHOCK", "shock_heatwave", (48, 59, 255)),
+        ui.ControlButton(c1, btn_start_y + 99, btn_w, bh, "[I] INVASIVE PREDATOR", "shock_invasive", (48, 59, 255)),
+        ui.ControlButton(c2, btn_start_y + 99, btn_w, bh, "[N] RESET STRESS", "shock_reset", (89, 199, 52)),
+        ui.ControlButton(c3, btn_start_y + 99, btn_w, bh, f"[T] THEME: {theme_mgr.mode}", "toggle_theme", (244, 208, 63)),
 
-        # Row 5: Voice AI & Theme Switcher
-        ui.ControlButton(c0, btn_start_y + 132, btn_w, bh, "[C] DR. PAULY", "call_pauly", (89, 199, 52)),
-        ui.ControlButton(c1, btn_start_y + 132, btn_w, bh, "[J] JOHNNY RELIC", "trigger_johnny", (222, 82, 175)),
-        ui.ControlButton(c2, btn_start_y + 132, btn_w, bh, f"[T] THEME: {theme_mgr.mode}", "toggle_theme", (244, 208, 63)),
-        ui.ControlButton(c3, btn_start_y + 132, btn_w, bh, "[N] RESET STRESS", "shock_reset", (89, 199, 52)),
+        # Row 5: Voice Relic, Language & Cheatsheet
+        ui.ControlButton(c0, btn_start_y + 132, btn_w, bh, "[J] JOHNNY RELIC", "trigger_johnny", (222, 82, 175)),
+        ui.ControlButton(c1, btn_start_y + 132, btn_w, bh, f"[L] LANG: {comm.language_mode}", "toggle_lang", (255, 122, 0)),
+        ui.ControlButton(c2, btn_start_y + 132, btn_w * 2 + 10, bh, "⌨️ [H] 26-KEY CHEATSHEET", "toggle_help", (244, 208, 63)),
 
-        # Row 6: Live Chat & Full Dock
-        ui.ControlButton(c0, btn_start_y + 165, (video_w - 30) // 2, 30, "⌨️ [H] 26-KEY CHEATSHEET", "toggle_help", (255, 122, 0)),
-        ui.ControlButton(c0 + (video_w - 30) // 2 + 10, btn_start_y + 165, (video_w - 30) // 2, 30, "💬 [TAB / ENTER] LIVE CHAT", "trigger_chat", (89, 199, 52))
+        # Row 6: Live Specimen Chatbot
+        ui.ControlButton(c0, btn_start_y + 165, video_w - 24, 30, "💬 [CTRL + T] DR. PAULY AI CHATBOT (SELECT FISH & ASK)", "trigger_chat", (89, 199, 52))
     ]
 
     mouse_cb_param['buttons'] = buttons
@@ -846,23 +828,64 @@ while cap.isOpened():
 
     comm.update_pauly_fade_state_machine()
     
-    if comm.pauly_active_dialogue:
-        text_lines = ui.get_wrapped_text_lines(comm.pauly_active_dialogue, max_w=right_panel_w - 36, font_scale=0.35)
-        pauly_card_h = max(140, len(text_lines) * 18 + 48)
-    else:
-        pauly_card_h = 90
-
+    # Calculate responsive card height for Dr. Pauly Chatbot Portal
+    avail_pauly_h = max(260, canvas_h - p4_y - 20)
+    if comm.johnny_relic.is_active:
+        avail_pauly_h = max(160, avail_pauly_h - 170)
+        
+    pauly_card_h = avail_pauly_h
     cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + pauly_card_h), (250, 250, 252), -1)
-    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + pauly_card_h), (89, 199, 52) if comm.is_pauly_speaking() else (204, 199, 199), 1)
+    status_border = (89, 199, 52) if comm.is_pauly_speaking() else ((255, 122, 0) if chat_mode_active else (204, 199, 199))
+    cv2.rectangle(pane4, (10, p4_y), (right_panel_w - 10, p4_y + pauly_card_h), status_border, 1)
 
-    cv2.putText(pane4, "DR. PAULY NEURAL VOICE TELEMETRY", (18, p4_y + 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.38, (89, 199, 52), 1, cv2.LINE_AA)
+    # Portal Header with live status badge
+    speaking_dot_color = (89, 199, 52) if comm.is_pauly_speaking() else ((255, 122, 0) if chat_mode_active else (142, 142, 147))
+    cv2.circle(pane4, (22, p4_y + 18), 5, speaking_dot_color, -1)
+    
+    status_badge = "SPEAKING" if comm.is_pauly_speaking() else ("CHAT ACTIVE" if chat_mode_active else f"ONLINE [{comm.language_mode}]")
+    cv2.putText(pane4, f"DR. PAULY AI CHATBOT [{status_badge}]", (34, p4_y + 22),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.36, (89, 199, 52) if comm.is_pauly_speaking() else (31, 29, 29), 1, cv2.LINE_AA)
 
-    if comm.pauly_active_dialogue:
-        ui.draw_wrapped_text(pane4, comm.pauly_active_dialogue, 18, p4_y + 40, max_w=right_panel_w - 36, max_lines=12, font_scale=0.35, text_color=(31, 29, 29))
+    # Specimen Target Focus banner
+    if locked_target is not None:
+        focus_txt = f"🎯 FOCUS: #{locked_target['id']} {locked_target['species']}"
+        cv2.putText(pane4, vision.fit_text_to_width(focus_txt, max_pixel_width=right_panel_w - 30), (18, p4_y + 38),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.32, (255, 122, 0), 1)
     else:
-        cv2.putText(pane4, "Press [C] or click fish to trigger Dr. Pauly audio", (18, p4_y + 55),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.34, (142, 142, 147), 1)
+        cv2.putText(pane4, "⚠️ NO SPECIMEN SELECTED (CLICK FISH IN VIDEO)", (18, p4_y + 38),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.30, (142, 142, 147), 1)
+
+    # Render Conversation Exchange Log like a Chat Bot
+    chat_box_y = p4_y + 54
+    input_bar_y = p4_y + pauly_card_h - 45
+    
+    recent_msgs = comm.pauly_chat_history[-5:]
+    for msg in recent_msgs:
+        is_user = (msg["sender"] == "USER")
+        sender_lbl = "[YOU]:" if is_user else "[DR. PAULY]:"
+        sender_color = (255, 122, 0) if is_user else (89, 199, 52)
+        cv2.putText(pane4, sender_lbl, (18, chat_box_y), cv2.FONT_HERSHEY_SIMPLEX, 0.32, sender_color, 1, cv2.LINE_AA)
+        chat_box_y += 14
+        lines_drawn = ui.draw_wrapped_text(pane4, msg["text"], 18, chat_box_y, max_w=right_panel_w - 36, max_lines=4, font_scale=0.32, text_color=(45, 45, 45))
+        chat_box_y += max(1, lines_drawn) * 15 + 8
+        if chat_box_y > input_bar_y - 20:
+            break
+
+    # Bottom Input Bar inside Pane 4
+    cv2.rectangle(pane4, (14, input_bar_y), (right_panel_w - 14, input_bar_y + 35), (242, 242, 247), -1)
+    input_border = (255, 122, 0) if chat_mode_active else (204, 199, 199)
+    cv2.rectangle(pane4, (14, input_bar_y), (right_panel_w - 14, input_bar_y + 35), input_border, 1)
+
+    if chat_mode_active:
+        cursor_str = "_" if int(time.time() * 3) % 2 == 0 else ""
+        in_lbl = f"> {user_chat_buffer}{cursor_str}"
+        in_lbl = vision.fit_text_to_width(in_lbl, max_pixel_width=right_panel_w - 40, font_scale=0.34)
+        cv2.putText(pane4, in_lbl, (20, input_bar_y + 16), cv2.FONT_HERSHEY_SIMPLEX, 0.34, (255, 122, 0), 1)
+        cv2.putText(pane4, "[ENTER] Send Question  |  [CTRL + T] Exit", (20, input_bar_y + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.28, (142, 142, 147), 1)
+    else:
+        cv2.putText(pane4, "Press [CTRL + T] or Click to Chat", (20, input_bar_y + 22),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.32, (142, 142, 147), 1)
+
     p4_y += pauly_card_h + 10
 
     comm.johnny_relic.update_and_render(canvas, pane4_x, right_panel_w, start_y=p4_y, draw_text_fn=ui.draw_wrapped_text)
@@ -928,15 +951,9 @@ while cap.isOpened():
         elif action_trigger == "toggle_clahe":
             use_adaptive_clahe = not use_adaptive_clahe
             ui.hud_notifs.add(f"🧪 ADAPTIVE CLAHE BOOST: {'ACTIVE' if use_adaptive_clahe else 'DISABLED'}", (89, 199, 52), 2.5)
-        elif action_trigger == "toggle_dann":
-            tool_dann_active = not tool_dann_active
-            ui.hud_notifs.add(f"🧪 [KEY G] DANN DOMAIN GRADIENT FILTER: {'ACTIVE' if tool_dann_active else 'OFF'}", (89, 199, 52), 2.5)
-        elif action_trigger == "toggle_gmm":
-            tool_gmm_active = not tool_gmm_active
-            ui.hud_notifs.add(f"📊 [KEY M] GMM SPATIAL CLUSTERING: {'ACTIVE' if tool_gmm_active else 'OFF'}", (255, 122, 0), 2.5)
-        elif action_trigger == "toggle_bnn":
-            tool_bnn_active = not tool_bnn_active
-            ui.hud_notifs.add(f"🎲 [KEY B] BNN EPISTEMIC UNCERTAINTY: {'ACTIVE' if tool_bnn_active else 'OFF'}", (0, 149, 255), 2.5)
+        elif action_trigger == "toggle_clahe":
+            use_adaptive_clahe = not use_adaptive_clahe
+            ui.hud_notifs.add(f"🧪 ADAPTIVE CLAHE BOOST: {'ACTIVE' if use_adaptive_clahe else 'DISABLED'}", (89, 199, 52), 2.5)
         elif action_trigger == "toggle_kinematics":
             tool_kinematics_active = not tool_kinematics_active
             ui.hud_notifs.add(f"🚀 [KEY K] KALMAN KINEMATICS VECTORS: {'ACTIVE' if tool_kinematics_active else 'OFF'}", (222, 82, 175), 2.5)
@@ -952,13 +969,9 @@ while cap.isOpened():
         elif action_trigger == "toggle_theme":
             new_mode = theme_mgr.toggle()
             ui.hud_notifs.add(f"🎨 [KEY T] COLOR THEME: {new_mode} MODE ACTIVE", (244, 208, 63) if new_mode == "DARK" else (255, 122, 0), 2.5)
-            ui.hud_notifs.add(f"🌀 [KEY F] SMC PARTICLE FILTER TRACKER: {'ACTIVE' if tool_smc_pf_active else 'OFF'}", (255, 0, 255), 2.5)
         elif action_trigger == "shock_heatwave":
             enkf_filter.inject_environmental_shock('heatwave')
             ui.hud_notifs.add("🔥 [KEY E] HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
-        elif action_trigger == "shock_pollution":
-            enkf_filter.inject_environmental_shock('pollution')
-            ui.hud_notifs.add("☣️ [KEY P] POLLUTION SPILL INJECTED", (48, 59, 255), 3.0)
         elif action_trigger == "shock_invasive":
             enkf_filter.inject_environmental_shock('invasive_predator')
             ui.hud_notifs.add("🦈 [KEY I] INVASIVE PREDATOR INJECTED", (48, 59, 255), 3.0)
@@ -967,30 +980,13 @@ while cap.isOpened():
             ui.hud_notifs.add("🌿 [KEY N] ENVIRONMENTAL STRESS RESET TO NORMAL", (89, 199, 52), 2.5)
         elif action_trigger == "toggle_help":
             show_help_overlay = not show_help_overlay
-            ui.hud_notifs.add(f"⌨️ [KEY H] 26-KEYBOARD SHORTCUTS CHEATSHEET: {'ACTIVE' if show_help_overlay else 'CLOSED'}", (255, 122, 0), 2.5)
+            ui.hud_notifs.add(f"⌨️ [KEY H] SHORTCUTS CHEATSHEET: {'ACTIVE' if show_help_overlay else 'CLOSED'}", (255, 122, 0), 2.5)
         elif action_trigger == "toggle_gif":
             show_water_gif = not show_water_gif
             ui.hud_notifs.add(f"🌊 WATER LAYER: {'ACTIVE' if show_water_gif else 'INACTIVE'}", (255, 122, 0), 2.5)
-        elif action_trigger == "toggle_stats":
-            show_stats_analyzer = not show_stats_analyzer
-            ui.hud_notifs.add(f"📊 STATS & PREDICTOR: {'ACTIVE' if show_stats_analyzer else 'DISABLED'}", (222, 82, 175), 2.5)
-        elif action_trigger == "toggle_tracker":
-            if "botsort" in active_tracker_cfg:
-                active_tracker_cfg = "bytetrack.yaml"
-            else:
-                active_tracker_cfg = "botsort.yaml"
-            ui.hud_notifs.add(f"🤖 TRACKER ALGORITHM: {active_tracker_cfg.upper()}", (0, 149, 255), 2.5)
-        elif action_trigger == "call_pauly":
-            if comm.ACTIVE_COMM == "JOHNNY":
-                ui.hud_notifs.add("⛔ COMM LINK LOCKED: JOHNNY RELIC ACTIVE", (48, 59, 255), 2.5)
-            elif comm.is_pauly_speaking() or comm.pauly_fade_state != "IDLE":
-                comm.stop_pauly_audio()
-                comm.pauly_fade_state = "FADE_OUT"
-                ui.hud_notifs.add("🛑 DR. PAULY CALL TERMINATED", (48, 59, 255), 2.5)
-            else:
-                target_species = locked_target["species"] if locked_target is not None else ("Salmo trutta" if len(recent_gbif_species)==0 else recent_gbif_species[-1])
-                target_spec_info = f"Specimen ID #{locked_target['id']} ({locked_target['species']}, Conf: {locked_target['conf']*100:.0f}%)" if locked_target is not None else None
-                comm.trigger_pauly_call(target_species, target_specimen_info=target_spec_info, hud_notifs=ui.hud_notifs)
+        elif action_trigger == "toggle_pip":
+            show_pip_zoom = not show_pip_zoom
+            ui.hud_notifs.add(f"🔍 [KEY Z] MAGNIFIER PiP: {'ENABLED' if show_pip_zoom else 'DISABLED'}", (0, 149, 255), 2.5)
         elif action_trigger == "trigger_johnny":
             if comm.ACTIVE_COMM == "PAULY":
                 ui.hud_notifs.add("⛔ COMM LINK LOCKED: DR. PAULY CALL ACTIVE", (48, 59, 255), 2.5)
@@ -1001,49 +997,12 @@ while cap.isOpened():
         elif action_trigger == "trigger_chat":
             chat_mode_active = not chat_mode_active
             user_chat_buffer = ""
+            comm.stop_pauly_audio()  # Silent activation!
             if chat_mode_active:
-                ui.hud_notifs.add("💬 LIVE CHAT PORTAL ACTIVE (TYPE & PRESS ENTER / ESC TO CLOSE)", (255, 122, 0), 3.5)
+                ui.hud_notifs.add("💬 LIVE CHATBOT ACTIVE [SELECT FISH & PRESS ENTER]", (255, 122, 0), 2.5)
             else:
-                ui.hud_notifs.add("💬 CHAT MODE CLOSED", (142, 142, 147), 2.0)
+                ui.hud_notifs.add("💬 CHAT CLOSED [SHORTCUTS RESTORED]", (142, 142, 147), 2.0)
         action_trigger = None
-
-    if chat_mode_active:
-        ui.hud_notifs.add("💬 LIVE CHAT MODE: TYPE & PRESS ENTER (TAB / ESC TO CLOSE)", (255, 122, 0), 2.0)
-        while chat_mode_active:
-            sidebar = canvas[:, pane4_x:]
-            chat_y = canvas_h - 105
-            cv2.rectangle(sidebar, (15, chat_y), (right_panel_w - 15, chat_y + 35), (242, 242, 247), -1)
-            cv2.rectangle(sidebar, (15, chat_y), (right_panel_w - 15, chat_y + 35), (255, 122, 0), 1)
-            
-            cursor_str = "_" if int(time.time()*3)%2==0 else ""
-            chat_lbl = f"USER CHAT [EN/DE]: {user_chat_buffer}{cursor_str}"
-            chat_lbl = vision.fit_text_to_width(chat_lbl, max_pixel_width=340, font_scale=0.36)
-            cv2.putText(sidebar, chat_lbl, (25, chat_y + 22), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (255, 122, 0), 1)
-            
-            cv2.imshow(window_name, canvas)
-            try:
-                c_key = cv2.waitKey(20) & 0xFF
-            except KeyboardInterrupt:
-                c_key = 3
-            
-            if c_key in [3, 9, 20, 27]:
-                chat_mode_active = False
-                ui.hud_notifs.add("💬 CHAT MODE CLOSED", (142, 142, 147), 2.0)
-            elif c_key == 13:
-                if user_chat_buffer.strip():
-                    if comm.ACTIVE_COMM == "JOHNNY":
-                        comm.johnny_relic.cancel(ui.hud_notifs)
-                    target_species = locked_target["species"] if locked_target is not None else ("Salmo trutta" if len(recent_gbif_species)==0 else recent_gbif_species[-1])
-                    target_spec_info = f"Specimen ID #{locked_target['id']} ({locked_target['species']}, Conf: {locked_target['conf']*100:.0f}%)" if locked_target is not None else None
-                    comm.trigger_pauly_call(target_species, user_question=user_chat_buffer, target_specimen_info=target_spec_info, hud_notifs=ui.hud_notifs, force=True)
-                chat_mode_active = False
-            elif c_key == 27:
-                chat_mode_active = False
-            elif c_key in [8, 127]:
-                user_chat_buffer = user_chat_buffer[:-1]
-            elif 32 <= c_key <= 126:
-                if len(user_chat_buffer) < 42:
-                    user_chat_buffer += chr(c_key)
 
     try:
         key_raw = cv2.waitKeyEx(1)
@@ -1052,123 +1011,137 @@ while cap.isOpened():
         key_raw = 3
         key = 3
 
-    if key_raw in [2424832, 65361, 37] or key in [81, ord(','), ord('b'), ord('B')]:
-        seek_request = -int(10 * fps)
-        ui.hud_notifs.add("⏪ SEEK BACKWARD 10s (Left Arrow)", (89, 199, 52), 2.5)
-    elif key_raw in [2555904, 65363, 39] or key in [83, ord('.'), ord('n'), ord('N')]:
-        seek_request = int(10 * fps)
-        ui.hud_notifs.add("⏩ SEEK FORWARD 10s (Right Arrow)", (89, 199, 52), 2.5)
-    elif key == 32:
-        if is_stopped:
-            is_stopped = False
-            is_paused = False
-            ui.hud_notifs.add("🎬 VIDEO PLAYBACK RESUMED", (255, 122, 0), 2.5)
-        else:
-            is_paused = not is_paused
-            ui.hud_notifs.add(f"🎬 VIDEO {'PAUSED' if is_paused else 'PLAYING'}", (255, 122, 0), 2.5)
-    elif key == ord('r') or key == ord('R'):
-        repeat_infinitely = not repeat_infinitely
-        ui.hud_notifs.add(f"🔄 INFINITE REPEAT: {'ENABLED' if repeat_infinitely else 'DISABLED'}", (0, 149, 255), 2.5)
-    elif key == ord('x') or key == ord('X'):
-        is_stopped = True
-        ui.hud_notifs.add("⏹ VIDEO STOPPED (INSPECTION MODE)", (48, 59, 255), 2.5)
-    elif key in [3, 9, 20]:
-        chat_mode_active = not chat_mode_active
-        user_chat_buffer = ""
-        if chat_mode_active:
-            ui.hud_notifs.add("💬 CHAT MODE ACTIVE (TYPE & PRESS ENTER / TAB / ESC TO CLOSE)", (255, 122, 0), 3.5)
-        else:
-            ui.hud_notifs.add("💬 CHAT MODE CLOSED", (142, 142, 147), 2.0)
-    elif key == ord('q') or key == ord('Q'):  
-        break
-    elif key == ord('o') or key == ord('O'):
-        new_vid = select_video_file_dialog()
-        if new_vid and os.path.exists(new_vid):
-            new_cap = cv2.VideoCapture(new_vid)
-            if new_cap.isOpened():
-                cap.release()
-                cap = new_cap
-                video_path = new_vid
-                ui.hud_notifs.add(f"🎬 SWITCHED VIDEO: {os.path.basename(video_path)}", (89, 199, 52), 3.0)
-            else:
-                ui.hud_notifs.add("⚠️ FAILED TO OPEN SELECTED VIDEO", (48, 59, 255), 2.5)
-    elif key == ord('c') or key == ord('C'):
-        if comm.ACTIVE_COMM == "JOHNNY":
-            ui.hud_notifs.add("⛔ COMM LINK LOCKED: JOHNNY RELIC ACTIVE", (48, 59, 255), 2.5)
-        elif comm.is_pauly_speaking() or comm.pauly_fade_state != "IDLE":
+    if chat_mode_active:
+        # Non-blocking Chatbot typing: all keystrokes go to the chat buffer
+        if key in [3, 20, 27]:  # Ctrl+C, Ctrl+T, ESC exits chat silently
+            chat_mode_active = False
             comm.stop_pauly_audio()
-            comm.pauly_fade_state = "FADE_OUT"
-            ui.hud_notifs.add("🛑 DR. PAULY CALL TERMINATED", (48, 59, 255), 2.5)
-        else:
-            target_species = locked_target["species"] if locked_target is not None else ("Salmo trutta" if len(recent_gbif_species)==0 else recent_gbif_species[-1])
-            target_spec_info = f"Specimen ID #{locked_target['id']} ({locked_target['species']}, Conf: {locked_target['conf']*100:.0f}%)" if locked_target is not None else None
-            comm.trigger_pauly_call(target_species, target_specimen_info=target_spec_info, hud_notifs=ui.hud_notifs)
-    elif key == ord('j') or key == ord('J'):
-        if comm.ACTIVE_COMM == "PAULY":
-            ui.hud_notifs.add("⛔ COMM LINK LOCKED: DR. PAULY CALL ACTIVE", (48, 59, 255), 2.5)
-        elif comm.johnny_relic.is_active:
-            comm.johnny_relic.cancel(ui.hud_notifs)
-        else:
-            comm.johnny_relic.trigger(ui.hud_notifs)
-    elif key == ord('l') or key == ord('L'):
-        comm.language_mode = "DE" if comm.language_mode == "EN" else "EN"
-        ui.hud_notifs.add(f"🌐 LANGUAGE MODE SET TO: {comm.language_mode}", (255, 122, 0), 2.5)
-    elif key == ord('w') or key == ord('W'):
-        show_water_gif = not show_water_gif
-        ui.hud_notifs.add(f"🌊 WATER LAYER: {'ACTIVE' if show_water_gif else 'INACTIVE'}", (255, 122, 0), 2.5)
-    elif key == ord('a') or key == ord('A'):
-        use_adaptive_clahe = not use_adaptive_clahe
-        ui.hud_notifs.add(f"🧪 ADAPTIVE CLAHE BOOST: {'ACTIVE' if use_adaptive_clahe else 'DISABLED'}", (89, 199, 52), 2.5)
-    elif key == ord('s') or key == ord('S'):
-        current_filter_idx = (current_filter_idx + 1) % len(selectable_filters)
-        active_f = selectable_filters[current_filter_idx]
-        ui.hud_notifs.add(f"🎯 TARGET FILTER: {active_f.upper()}", (255, 122, 0), 2.5)
-    elif key == ord('v') or key == ord('V'):
-        current_fx_idx = (current_fx_idx + 1) % len(vision_fx_names)
-        fx_name = vision_fx_names[current_fx_idx]
-        ui.hud_notifs.add(f"👁️ VISION FX MODE: {fx_name}", (222, 82, 175), 2.5)
-    elif key == ord('m') or key == ord('M'):
-        tool_gmm_active = not tool_gmm_active
-        ui.hud_notifs.add(f"📊 [KEY M] GMM SPATIAL CLUSTERING: {'ACTIVE' if tool_gmm_active else 'OFF'}", (255, 122, 0), 2.5)
-    elif key == ord('b') or key == ord('B'):
-        tool_bnn_active = not tool_bnn_active
-        ui.hud_notifs.add(f"🎲 [KEY B] BNN EPISTEMIC UNCERTAINTY: {'ACTIVE' if tool_bnn_active else 'OFF'}", (0, 149, 255), 2.5)
-    elif key == ord('g') or key == ord('G'):
-        tool_dann_active = not tool_dann_active
-        ui.hud_notifs.add(f"🧪 [KEY G] DANN DOMAIN GRADIENT FILTER: {'ACTIVE' if tool_dann_active else 'OFF'}", (89, 199, 52), 2.5)
-    elif key == ord('k') or key == ord('K'):
-        tool_kinematics_active = not tool_kinematics_active
-        ui.hud_notifs.add(f"🚀 [KEY K] KALMAN KINEMATICS VECTORS: {'ACTIVE' if tool_kinematics_active else 'OFF'}", (222, 82, 175), 2.5)
-    elif key == ord('d') or key == ord('D'):
-        tool_kde_active = not tool_kde_active
-        ui.hud_notifs.add(f"🗺️ [KEY D] 2D KDE OCCUPANCY HEATMAP: {'ACTIVE' if tool_kde_active else 'OFF'}", (255, 122, 0), 2.5)
-    elif key == ord('f') or key == ord('F'):
-        tool_smc_pf_active = not tool_smc_pf_active
-        ui.hud_notifs.add(f"🌀 [KEY F] SMC PARTICLE FILTER TRACKER: {'ACTIVE' if tool_smc_pf_active else 'OFF'}", (255, 0, 255), 2.5)
-    elif key == ord('u') or key == ord('U'):
-        show_stats_analyzer = not show_stats_analyzer
-        ui.hud_notifs.add(f"📊 [KEY U] ECOLOGICAL STATS ANALYZER: {'ACTIVE' if show_stats_analyzer else 'OFF'}", (222, 82, 175), 2.5)
-    elif key == ord('t') or key == ord('T'):
-        new_mode = theme_mgr.toggle()
-        ui.hud_notifs.add(f"🎨 [KEY T] COLOR THEME: {new_mode} MODE ACTIVE", (244, 208, 63) if new_mode == "DARK" else (255, 122, 0), 2.5)
-    elif key == ord('p') or key == ord('P'):
-        tool_nsde_active = not tool_nsde_active
-        ui.hud_notifs.add(f"🔮 [KEY P] NEURAL SDE 30s TRAJECTORY FORECASTER: {'ACTIVE' if tool_nsde_active else 'OFF'}", (244, 208, 63), 2.5)
-    elif key == ord('z') or key == ord('Z'):
-        show_pip_zoom = not show_pip_zoom
-        ui.hud_notifs.add(f"🔍 [KEY Z] MAGNIFIER PiP ZOOM: {'ENABLED' if show_pip_zoom else 'DISABLED'}", (222, 82, 175), 2.5)
-    elif key == ord('e') or key == ord('E'):
-        enkf_filter.inject_environmental_shock('heatwave')
-        ui.hud_notifs.add("🔥 [KEY E] HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
-    elif key == ord('i') or key == ord('I'):
-        enkf_filter.inject_environmental_shock('invasive_predator')
-        ui.hud_notifs.add("🦈 [KEY I] INVASIVE PREDATOR INJECTED", (48, 59, 255), 3.0)
-    elif key == ord('h') or key == ord('H'):
-        show_help_overlay = not show_help_overlay
-        ui.hud_notifs.add(f"⌨️ [KEY H] 26-KEYBOARD SHORTCUTS CHEATSHEET: {'ACTIVE' if show_help_overlay else 'CLOSED'}", (255, 122, 0), 2.5)
-    elif key == ord('n') or key == ord('N'):
-        enkf_filter.active_shock_name = "NORMAL"
-        ui.hud_notifs.add("🌿 [KEY N] ENVIRONMENTAL STRESS RESET TO NORMAL", (89, 199, 52), 2.5)
+            ui.hud_notifs.add("💬 CHAT CLOSED [SHORTCUTS RESTORED]", (142, 142, 147), 2.0)
+        elif key in [10, 13]:  # ENTER / RETURN submits question
+            if user_chat_buffer.strip():
+                sent_msg = user_chat_buffer.strip()
+                user_chat_buffer = ""
+                if comm.ACTIVE_COMM == "JOHNNY":
+                    comm.johnny_relic.cancel(ui.hud_notifs)
+                
+                # Check if a fish is selected
+                if locked_target is None:
+                    # Enforce specimen-first requirement
+                    is_de_q = any(w in sent_msg.lower() for w in ['ich', 'der', 'die', 'das', 'ist', 'sind', 'und', 'nicht', 'fisch', 'fische', 'wasser', 'deutsch', 'wer', 'wie', 'was', 'wo', 'warum', 'welche', 'welcher', 'welches', 'kann', 'können', 'zeig', 'zeige', 'bitte', 'danke', 'hallo', 'moin', 'guten', 'ä', 'ö', 'ü', 'ß'])
+                    comm.pauly_chat_history.append({"sender": "USER", "text": sent_msg, "time": time.time()})
+                    if is_de_q:
+                        no_spec_reply = "Bitte wählen Sie zuerst ein Fischexemplar aus, indem Sie es im Videobild anklicken. Danach analysiere ich diesen Fisch für Sie."
+                    else:
+                        no_spec_reply = "Please select a fish specimen first by clicking on it in the video viewport. Then I will analyze this fish for you."
+                    comm.pauly_chat_history.append({"sender": "DR. PAULY", "text": no_spec_reply, "time": time.time()})
+                    comm.speak_tts_async(no_spec_reply, lang="DE" if is_de_q else "EN")
+                    ui.hud_notifs.add("⚠️ PLEASE SELECT A FISH SPECIMEN FIRST", (255, 122, 0), 2.5)
+                else:
+                    target_species = locked_target["species"]
+                    target_spec_info = f"Specimen ID #{locked_target['id']} ({locked_target['species']}, Conf: {locked_target['conf']*100:.0f}%)"
+                    comm.trigger_pauly_call(target_species, user_question=sent_msg, target_specimen_info=target_spec_info, hud_notifs=ui.hud_notifs, force=True)
+        elif key in [8, 127]:  # Backspace
+            user_chat_buffer = user_chat_buffer[:-1]
+        elif 32 <= key <= 126:  # Regular printable characters
+            if len(user_chat_buffer) < 60:
+                user_chat_buffer += chr(key)
+    else:
+        # Standard shortcut key processing
+        if key_raw in [2424832, 65361, 37] or key in [81, ord(',')]:
+            seek_request = -int(10 * fps)
+            ui.hud_notifs.add("⏪ SEEK BACKWARD 10s (Left Arrow)", (89, 199, 52), 2.5)
+        elif key_raw in [2555904, 65363, 39] or key in [83, ord('.')]:
+            seek_request = int(10 * fps)
+            ui.hud_notifs.add("⏩ SEEK FORWARD 10s (Right Arrow)", (89, 199, 52), 2.5)
+        elif key == 32:
+            if is_stopped:
+                is_stopped = False
+                is_paused = False
+                ui.hud_notifs.add("🎬 VIDEO PLAYBACK RESUMED", (255, 122, 0), 2.5)
+            else:
+                is_paused = not is_paused
+                ui.hud_notifs.add(f"🎬 VIDEO {'PAUSED' if is_paused else 'PLAYING'}", (255, 122, 0), 2.5)
+        elif key == ord('r') or key == ord('R'):
+            repeat_infinitely = not repeat_infinitely
+            ui.hud_notifs.add(f"🔄 INFINITE REPEAT: {'ENABLED' if repeat_infinitely else 'DISABLED'}", (0, 149, 255), 2.5)
+        elif key == ord('x') or key == ord('X'):
+            is_stopped = True
+            ui.hud_notifs.add("⏹ VIDEO STOPPED (INSPECTION MODE)", (48, 59, 255), 2.5)
+        elif key == 20:  # CTRL + T
+            chat_mode_active = True
+            user_chat_buffer = ""
+            comm.stop_pauly_audio()  # Completely silent activation!
+            ui.hud_notifs.add("💬 LIVE CHATBOT ACTIVE [SELECT FISH & PRESS ENTER]", (255, 122, 0), 2.5)
+        elif key == ord('q') or key == ord('Q'):  
+            break
+        elif key == ord('o') or key == ord('O'):
+            new_vid = select_video_file_dialog()
+            if new_vid and os.path.exists(new_vid):
+                new_cap = cv2.VideoCapture(new_vid)
+                if new_cap.isOpened():
+                    cap.release()
+                    cap = new_cap
+                    video_path = new_vid
+                    ui.hud_notifs.add(f"🎬 SWITCHED VIDEO: {os.path.basename(video_path)}", (89, 199, 52), 3.0)
+                else:
+                    ui.hud_notifs.add("⚠️ FAILED TO OPEN SELECTED VIDEO", (48, 59, 255), 2.5)
+        elif key == ord('j') or key == ord('J'):
+            if comm.ACTIVE_COMM == "PAULY":
+                ui.hud_notifs.add("⛔ COMM LINK LOCKED: DR. PAULY CALL ACTIVE", (48, 59, 255), 2.5)
+            elif comm.johnny_relic.is_active:
+                comm.johnny_relic.cancel(ui.hud_notifs)
+            else:
+                comm.johnny_relic.trigger(ui.hud_notifs)
+        elif key == ord('l') or key == ord('L'):
+            comm.language_mode = "DE" if comm.language_mode == "EN" else "EN"
+            ui.hud_notifs.add(f"🌐 LANGUAGE MODE SET TO: {comm.language_mode}", (255, 122, 0), 2.5)
+        elif key == ord('w') or key == ord('W'):
+            show_water_gif = not show_water_gif
+            ui.hud_notifs.add(f"🌊 WATER LAYER: {'ACTIVE' if show_water_gif else 'INACTIVE'}", (255, 122, 0), 2.5)
+        elif key == ord('a') or key == ord('A'):
+            use_adaptive_clahe = not use_adaptive_clahe
+            ui.hud_notifs.add(f"🧪 ADAPTIVE CLAHE BOOST: {'ACTIVE' if use_adaptive_clahe else 'DISABLED'}", (89, 199, 52), 2.5)
+        elif key == ord('s') or key == ord('S'):
+            current_filter_idx = (current_filter_idx + 1) % len(selectable_filters)
+            active_f = selectable_filters[current_filter_idx]
+            ui.hud_notifs.add(f"🎯 TARGET FILTER: {active_f.upper()}", (255, 122, 0), 2.5)
+        elif key == ord('v') or key == ord('V'):
+            current_fx_idx = (current_fx_idx + 1) % len(vision_fx_names)
+            fx_name = vision_fx_names[current_fx_idx]
+            ui.hud_notifs.add(f"👁️ VISION FX MODE: {fx_name}", (222, 82, 175), 2.5)
+        elif key == ord('k') or key == ord('K'):
+            tool_kinematics_active = not tool_kinematics_active
+            ui.hud_notifs.add(f"🚀 [KEY K] KALMAN KINEMATICS VECTORS: {'ACTIVE' if tool_kinematics_active else 'OFF'}", (222, 82, 175), 2.5)
+        elif key == ord('d') or key == ord('D'):
+            tool_kde_active = not tool_kde_active
+            ui.hud_notifs.add(f"🗺️ [KEY D] 2D KDE OCCUPANCY HEATMAP: {'ACTIVE' if tool_kde_active else 'OFF'}", (255, 122, 0), 2.5)
+        elif key == ord('f') or key == ord('F'):
+            tool_smc_pf_active = not tool_smc_pf_active
+            ui.hud_notifs.add(f"🌀 [KEY F] SMC PARTICLE FILTER TRACKER: {'ACTIVE' if tool_smc_pf_active else 'OFF'}", (255, 0, 255), 2.5)
+        elif key == ord('u') or key == ord('U'):
+            show_stats_analyzer = not show_stats_analyzer
+            ui.hud_notifs.add(f"📊 [KEY U] ECOLOGICAL STATS ANALYZER: {'ACTIVE' if show_stats_analyzer else 'OFF'}", (222, 82, 175), 2.5)
+        elif key == ord('t') or key == ord('T'):
+            new_mode = theme_mgr.toggle()
+            ui.hud_notifs.add(f"🎨 [KEY T] COLOR THEME: {new_mode} MODE ACTIVE", (244, 208, 63) if new_mode == "DARK" else (255, 122, 0), 2.5)
+        elif key == ord('p') or key == ord('P'):
+            tool_nsde_active = not tool_nsde_active
+            ui.hud_notifs.add(f"🔮 [KEY P] NEURAL SDE 30s TRAJECTORY FORECASTER: {'ACTIVE' if tool_nsde_active else 'OFF'}", (244, 208, 63), 2.5)
+        elif key == ord('z') or key == ord('Z'):
+            show_pip_zoom = not show_pip_zoom
+            ui.hud_notifs.add(f"🔍 [KEY Z] MAGNIFIER PiP ZOOM: {'ENABLED' if show_pip_zoom else 'DISABLED'}", (222, 82, 175), 2.5)
+        elif key == ord('e') or key == ord('E'):
+            enkf_filter.inject_environmental_shock('heatwave')
+            ui.hud_notifs.add("🔥 [KEY E] HEATWAVE SHOCK INJECTED", (48, 59, 255), 3.0)
+        elif key == ord('i') or key == ord('I'):
+            enkf_filter.inject_environmental_shock('invasive_predator')
+            ui.hud_notifs.add("🦈 [KEY I] INVASIVE PREDATOR INJECTED", (48, 59, 255), 3.0)
+        elif key == ord('h') or key == ord('H'):
+            show_help_overlay = not show_help_overlay
+            ui.hud_notifs.add(f"⌨️ [KEY H] SHORTCUTS CHEATSHEET: {'ACTIVE' if show_help_overlay else 'CLOSED'}", (255, 122, 0), 2.5)
+        elif key == ord('n') or key == ord('N'):
+            enkf_filter.active_shock_name = "NORMAL"
+            ui.hud_notifs.add("🌿 [KEY N] ENVIRONMENTAL STRESS RESET TO NORMAL", (89, 199, 52), 2.5)
 
     if show_help_overlay:
         overlay = canvas.copy()
@@ -1176,23 +1149,20 @@ while cap.isOpened():
         cv2.addWeighted(overlay, 0.90, canvas, 0.10, 0, canvas)
         cv2.rectangle(canvas, (50, 30), (canvas_w - 50, canvas_h - 30), (255, 122, 0), 2)
         
-        cv2.putText(canvas, "⌨️ AQUAPULSE MASTER 26-KEYBOARD SHORTCUTS CHEATSHEET [PRESS KEY H TO CLOSE]",
+        cv2.putText(canvas, "⌨️ MASTER KEYBOARD SHORTCUTS CHEATSHEET [PRESS KEY H TO CLOSE]",
                     (70, 65), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (255, 122, 0), 2, cv2.LINE_AA)
 
         cheat_keys = [
-            ("A: Adaptive CLAHE Dehazer", "N: Normal Stress Reset"),
-            ("B: BNN Epistemic Uncertainty", "O: Open Video File Dialog"),
-            ("C: Call Dr. Pauly AI Voice", "P: Toxic Pollution Spill Shock"),
-            ("D: 2D KDE Occupancy Heatmap", "Q: Quit Application Cleanly"),
-            ("E: Heatwave Thermal Stress Shock", "R: Infinite Loop Repeat Mode"),
-            ("F: SMC Particle Filter Tracker", "S: Target Species Filter"),
-            ("G: DANN Domain Adaptation Filter", "T: Neural Tracker Engine (BoT/Byte)"),
-            ("H: Help & Shortcuts Cheat Sheet", "U: Ecological Stats Analyzer"),
-            ("I: Invasive Predator Influx Shock", "V: Vision FX Mode (Thermal/Night/Sonar)"),
-            ("J: Johnny Silverhand Relic AI", "W: Water Surface GIF Layer"),
-            ("K: Kalman Swarm Kinematics", "X: Stop Video / Inspection Mode"),
-            ("L: Language Mode (EN/DE)", "Y: Trajectory Motion Vectors"),
-            ("M: GMM Spatial Clustering", "Z: Magnifier PiP Zoom Lens")
+            ("A: Adaptive CLAHE Dehazer", "N: Normal Environmental Stress"),
+            ("D: 2D KDE Occupancy Heatmap", "O: Open Video File Dialog"),
+            ("E: Heatwave Thermal Stress Shock", "P: Neural SDE 30s Forecaster"),
+            ("F: SMC Particle Filter Tracker", "Q: Quit Application Cleanly"),
+            ("H: Help & Shortcuts Cheat Sheet", "R: Infinite Loop Repeat Mode"),
+            ("I: Invasive Predator Influx Shock", "S: Target Species Filter"),
+            ("J: Johnny Silverhand Relic AI", "T: Toggle Theme (Dark/Light)"),
+            ("K: Kalman Swarm Kinematics", "U: Ecological Stats Analyzer"),
+            ("L: Language Mode (EN/DE)", "V: Vision FX Mode (Thermal/Night/Sonar)"),
+            ("W: Water Surface GIF Layer", "Z: Magnifier PiP Zoom Lens")
         ]
 
         y_pos = 100
@@ -1201,7 +1171,7 @@ while cap.isOpened():
             cv2.putText(canvas, f"• [Key {col2[0]}] {col2[3:]}", (canvas_w // 2 + 10, y_pos), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (240, 240, 245), 1)
             y_pos += 22
 
-        cv2.putText(canvas, "Space: Play/Pause | Left/Right: Seek 10s | Tab/Enter: Live Open-Vocab Chat",
+        cv2.putText(canvas, "Space: Play/Pause | Left/Right: Seek 10s | Ctrl+T: Dr. Pauly Chatbot | Click Fish to Lock",
                     (75, canvas_h - 45), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (89, 199, 52), 1)
 
     if not is_headless:
@@ -1217,30 +1187,40 @@ print(f"✅ Video processing complete. Tracked video saved to: {output_path}")
 
 # --- EXPORT PER-VIDEO UNIQUE SESSION ARTIFACTS WITH END-OF-SESSION LOADING SCREEN ---
 if save_analysis_enabled and session_info is not None:
-    def _do_full_export():
-        print("\n" + "="*70)
-        print(f"📦 EXPORTING PER-VIDEO SESSION ARTIFACTS: {session_info['session_name']}")
-        print("="*70)
-        census.generate_csv_report(output_dir=session_info["csv_dir"], output_filename="fish_counts.csv")
-        chart.save_all_20_session_plots(enkf_filter, census.get_census_summary(), session_info["plots_dir"])
-        comm.generate_executive_ollama_report(session_info, census.get_census_summary(), enkf_filter, session_info["analysis_dir"])
+    should_run_analysis = True
+    if not is_headless:
         try:
-            import docx_report_generator as docx_gen
-            docx_gen.generate_docx_report(enkf_filter, census.get_census_summary(), analysis_dir=session_info["analysis_dir"], plots_dir=session_info["plots_dir"], script_dir=cfg.script_dir)
-        except Exception as _de:
-            print(f"[DOCX Exporter Notice]: {_de}")
-        print("="*70)
-        print(f"✨ All session outputs successfully generated in: {session_info['session_dir']}")
-        print("="*70 + "\n")
-
-    if is_headless:
-        print("📦 Headless mode active: Exporting all session artifacts directly...")
-        _do_full_export()
-    else:
-        try:
-            ui.display_analysis_export_loading_screen(window_name, canvas_w, canvas_h, session_info, _do_full_export)
+            should_run_analysis = ui.display_quit_analysis_prompt(window_name, canvas_w, canvas_h, session_info)
         except Exception:
+            should_run_analysis = True
+
+    if should_run_analysis:
+        def _do_full_export():
+            print("\n" + "="*70)
+            print(f"📦 EXPORTING PER-VIDEO SESSION ARTIFACTS: {session_info['session_name']}")
+            print("="*70)
+            census.generate_csv_report(output_dir=session_info["csv_dir"], output_filename="fish_counts.csv")
+            chart.save_all_20_session_plots(enkf_filter, census.get_census_summary(), session_info["plots_dir"])
+            comm.generate_executive_ollama_report(session_info, census.get_census_summary(), enkf_filter, session_info["analysis_dir"])
+            try:
+                import docx_report_generator as docx_gen
+                docx_gen.generate_docx_report(enkf_filter, census.get_census_summary(), analysis_dir=session_info["analysis_dir"], plots_dir=session_info["plots_dir"], script_dir=cfg.script_dir)
+            except Exception as _de:
+                print(f"[DOCX Exporter Notice]: {_de}")
+            print("="*70)
+            print(f"✨ All session outputs successfully generated in: {session_info['session_dir']}")
+            print("="*70 + "\n")
+
+        if is_headless:
+            print("📦 Headless mode active: Exporting all session artifacts directly...")
             _do_full_export()
+        else:
+            try:
+                ui.display_analysis_export_loading_screen(window_name, canvas_w, canvas_h, session_info, _do_full_export)
+            except Exception:
+                _do_full_export()
+    else:
+        print("⏩ User opted to skip analysis export upon quit. Exiting cleanly...")
 
 if not is_headless:
     try:

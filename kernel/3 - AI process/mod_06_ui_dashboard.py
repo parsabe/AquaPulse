@@ -441,3 +441,89 @@ def display_end_of_session_screen(window_name, canvas_w, canvas_h, session_info,
         
         cv2.imshow(window_name, load_canvas)
         cv2.waitKey(100)
+
+def display_quit_analysis_prompt(window_name, canvas_w, canvas_h, session_info):
+    """
+    Renders an on-screen dialog asking whether to perform the full analysis & report export before quitting.
+    [Y] YES - EXPORT REPORTS & PLOTS
+    [N] NO - QUIT IMMEDIATELY
+    """
+    import os
+    selected_choice = [None]
+    
+    def prompt_mouse_cb(event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            btn_yes = param['btn_yes']
+            btn_no = param['btn_no']
+            if btn_yes['x'] <= x <= btn_yes['x'] + btn_yes['w'] and btn_yes['y'] <= y <= btn_yes['y'] + btn_yes['h']:
+                selected_choice[0] = True
+            elif btn_no['x'] <= x <= btn_no['x'] + btn_no['w'] and btn_no['y'] <= y <= btn_no['y'] + btn_no['h']:
+                selected_choice[0] = False
+
+    card_w, card_h = 720, 360
+    card_x = (canvas_w - card_w) // 2
+    card_y = (canvas_h - card_h) // 2
+
+    btn_w, btn_h = 280, 48
+    btn_yes_x = card_x + 50
+    btn_no_x = card_x + card_w - 50 - btn_w
+    btn_y = card_y + 270
+
+    btn_yes = {'x': btn_yes_x, 'y': btn_y, 'w': btn_w, 'h': btn_h}
+    btn_no = {'x': btn_no_x, 'y': btn_y, 'w': btn_w, 'h': btn_h}
+
+    param = {'btn_yes': btn_yes, 'btn_no': btn_no}
+    cv2.setMouseCallback(window_name, prompt_mouse_cb, param=param)
+
+    session_name = session_info.get('session_name', 'Session') if session_info else 'Session'
+
+    while selected_choice[0] is None:
+        canvas = np.zeros((canvas_h, canvas_w, 3), dtype=np.uint8)
+        canvas[:] = (247, 245, 245)
+
+        # Draw outer card box
+        cv2.rectangle(canvas, (card_x, card_y), (card_x + card_w, card_y + card_h), (255, 255, 255), -1)
+        cv2.rectangle(canvas, (card_x, card_y), (card_x + card_w, card_y + card_h), (229, 235, 234), 1)
+
+        # Header Title
+        cv2.rectangle(canvas, (card_x, card_y), (card_x + card_w, card_y + 55), (242, 242, 247), -1)
+        cv2.rectangle(canvas, (card_x, card_y), (card_x + card_w, card_y + 55), (255, 122, 0), 1)
+        cv2.putText(canvas, "QUIT SESSION: RUN ANALYSIS & EXPORT ARTIFACTS?", (card_x + 35, card_y + 36),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.44, (255, 122, 0), 1, cv2.LINE_AA)
+
+        # Subtitle & Context
+        v_str = fit_text_to_width(f"Target Session: {session_name}", max_pixel_width=card_w - 70, font_scale=0.40)
+        cv2.putText(canvas, v_str, (card_x + 35, card_y + 92),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.40, (31, 29, 29), 1, cv2.LINE_AA)
+
+        cv2.putText(canvas, "You requested session analysis at the beginning of the run.",
+                    (card_x + 35, card_y + 125), cv2.FONT_HERSHEY_SIMPLEX, 0.36, (60, 58, 58), 1, cv2.LINE_AA)
+
+        cv2.putText(canvas, "Would you like to compile all reports, 20 plots & PDF now before quitting?",
+                    (card_x + 35, card_y + 160), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (31, 29, 29), 1, cv2.LINE_AA)
+
+        cv2.putText(canvas, "- Press [Y] or click YES to run full analysis, generate PDF & save session.",
+                    (card_x + 45, card_y + 195), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (142, 142, 147), 1, cv2.LINE_AA)
+        cv2.putText(canvas, "- Press [N] or click NO to quit immediately without compiling reports.",
+                    (card_x + 45, card_y + 218), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (142, 142, 147), 1, cv2.LINE_AA)
+
+        # Button YES
+        cv2.rectangle(canvas, (btn_yes_x, btn_y), (btn_yes_x + btn_w, btn_y + btn_h), (89, 199, 52), -1)
+        cv2.rectangle(canvas, (btn_yes_x, btn_y), (btn_yes_x + btn_w, btn_y + btn_h), (255, 255, 255), 1)
+        cv2.putText(canvas, "[Y] YES - RUN ANALYSIS", (btn_yes_x + 30, btn_y + 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 255, 255), 1, cv2.LINE_AA)
+
+        # Button NO
+        cv2.rectangle(canvas, (btn_no_x, btn_y), (btn_no_x + btn_w, btn_y + btn_h), (48, 59, 255), -1)
+        cv2.rectangle(canvas, (btn_no_x, btn_y), (btn_no_x + btn_w, btn_y + btn_h), (255, 255, 255), 1)
+        cv2.putText(canvas, "[N] NO - QUIT NOW", (btn_no_x + 50, btn_y + 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.40, (255, 255, 255), 1, cv2.LINE_AA)
+
+        cv2.imshow(window_name, canvas)
+        key = cv2.waitKey(30) & 0xFF
+        if key in [ord('y'), ord('Y'), 13]:
+            selected_choice[0] = True
+        elif key in [ord('n'), ord('N'), 27]:
+            selected_choice[0] = False
+
+    return selected_choice[0]
