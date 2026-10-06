@@ -11,6 +11,9 @@
 [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-parsabe99%2Faquapulse--ai%3Alatest-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://hub.docker.com/r/parsabe99/aquapulse-ai)
 [![Official Website](https://img.shields.io/badge/Website-aquapulse.ai-10B981?style=for-the-badge&logo=googlechrome&logoColor=white)](https://aquapulse.ai)
 
+## A new release for Linux is out - check out <a href="https://github.com/parsabe/AquaPulse/releases/tag/deb-install">here.</a>
+
+
 **AquaPulse** is an enterprise-grade, non-invasive artificial intelligence and computer vision framework for real-time aquatic ecosystem telemetry, multi-species fish detection, BotSORT target tracking, stochastic population estimation, and automated Cloud LaTeX scientific report generation.
 
 Designed for turbid underwater environments (such as the Spreewald river network), AquaPulse fuses deep neural computer vision with stochastic nonlinear data assimilation (Ensemble Kalman Filtering), local LLM intelligence, a cross-platform **Flutter Android Mobile Application**, a containerized **Docker Hub distribution**, and an automated Windows installation suite.
